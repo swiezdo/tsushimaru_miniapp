@@ -1,9 +1,8 @@
 :root {
-  --bg:#0e1621; --fg:#fff; --muted:#aeb7c2;
-  --card:rgba(255,255,255,0.04); --accent:#2ea6ff;
-  --stroke:rgba(255,255,255,0.08); --radius:16px;
+  --bg:#0e1621;--fg:#fff;--muted:#aeb7c2;
+  --card:rgba(255,255,255,0.04);--accent:#2ea6ff;
+  --stroke:rgba(255,255,255,0.08);--radius:16px;
 }
-
 *{box-sizing:border-box;margin:0;padding:0}
 body{
   font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu;
@@ -28,8 +27,14 @@ body{
   width:100%;padding:10px 12px;border-radius:12px;
   border:1px solid var(--stroke);background:transparent;color:var(--fg);
 }
-.input select[multiple]{min-height:140px}
-.actions{display:flex;gap:8px;justify-content:flex-end}
+.checkbox-group{display:flex;flex-wrap:wrap;gap:6px}
+.checkbox-group label{
+  font-size:14px;background:var(--card);
+  border:1px solid var(--stroke);border-radius:10px;
+  padding:6px 10px;display:flex;align-items:center;gap:4px;
+}
+.checkbox-group input{accent-color:var(--accent)}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
 .btn{border:1px solid var(--stroke);border-radius:12px;padding:10px 14px;
      background:transparent;color:var(--fg);cursor:pointer}
 .btn.primary{background:var(--accent);border-color:transparent;color:#00131f;font-weight:600}

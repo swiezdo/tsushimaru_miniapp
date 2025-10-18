@@ -8,7 +8,7 @@
   }
 
   // ==== Storage (с fallback в память) ====
-  var STORAGE_KEY = 'demo_profile_v4';
+  var STORAGE_KEY = 'demo_profile_v6';
   var memStore = null;
 
   function loadProfile(){
@@ -19,10 +19,10 @@
     return memStore || {
       real_name:'Дмитрий',
       psn:'swiezdo',
-      platform:['🎮 PlayStation'],           // теперь массив
+      platform:['🎮 PlayStation'],
       modes:['🏹 Выживание','🗻 Испытания Иё'],
       goals:['🏆 Получение трофеев'],
-      difficulty:['👻 Кошмар','🔥 HellMode'] // дефолт для вида
+      difficulty:['👻 Кошмар','🔥 HellMode']
     };
   }
   function saveProfile(p){
@@ -64,9 +64,33 @@
     for(var i=0;i<nodes.length;i++) out.push(nodes[i].getAttribute('data-value'));
     return out;
   }
+  function joinLines(arr){ return (arr && arr.length) ? arr.join('\n') : '—'; }
 
-  function joinLines(arr){
-    return (arr && arr.length) ? arr.join('\n') : '—';
+  // ===== Небольшая обратная связь =====
+  function scrollTopSmooth(){
+    try{ window.scrollTo({top:0, behavior:'smooth'}); }
+    catch(e){ window.scrollTo(0,0); }
+  }
+  function showFeedback(message){
+    try{
+      if(tg && tg.showPopup){ tg.showPopup({title:'Готово', message: message}); return; }
+    }catch(e){}
+    // Фоллбэк-тост
+    var t = document.createElement('div');
+    t.textContent = message;
+    t.style.position = 'fixed';
+    t.style.top = '12px';
+    t.style.left = '50%';
+    t.style.transform = 'translateX(-50%)';
+    t.style.padding = '10px 14px';
+    t.style.borderRadius = '12px';
+    t.style.border = '1px solid var(--stroke)';
+    t.style.background = 'var(--card)';
+    t.style.color = 'var(--fg)';
+    t.style.zIndex = '9999';
+    t.style.boxShadow = '0 4px 16px rgba(0,0,0,.25)';
+    document.body.appendChild(t);
+    setTimeout(function(){ if(t && t.parentNode) t.parentNode.removeChild(t); }, 1600);
   }
 
   onReady(function(){
@@ -94,9 +118,9 @@
     try{
       if(tg && tg.themeParams){
         var tp = tg.themeParams;
-        if(tp.bg_color)   document.documentElement.style.setProperty('--bg', tp.bg_color);
-        if(tp.text_color) document.documentElement.style.setProperty('--fg', tp.text_color);
-        if(tp.hint_color) document.documentElement.style.setProperty('--muted', tp.hint_color);
+        if(tp.bg_color)     document.documentElement.style.setProperty('--bg', tp.bg_color);
+        if(tp.text_color)   document.documentElement.style.setProperty('--fg', tp.text_color);
+        if(tp.hint_color)   document.documentElement.style.setProperty('--muted', tp.hint_color);
         if(tp.button_color) document.documentElement.style.setProperty('--accent', tp.button_color);
         if(tg.ready) tg.ready();
         if(tg.expand) tg.expand();
@@ -114,7 +138,7 @@
     renderChips(goalsChips, GOALS);
     renderChips(difficultyChips, DIFFICULTY);
 
-    // Профиль
+    // Профиль -> форма
     var p = loadProfile();
     renderProfile(p);
     fillForm(p);
@@ -146,38 +170,43 @@
         difficulty:getSelectedFromChips(difficultyChips)
       };
       saveProfile(updated);
-      renderProfile(updated); // мгновенно обновляем карточку
+      renderProfile(updated); // мгновенное обновление карточки
       try{ if(tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred) tg.HapticFeedback.notificationOccurred('success'); }catch(e){}
+      scrollTopSmooth();
+      showFeedback('Профиль обновлён');
+      // В форме остаётся то, что ввёл пользователь — как просил
     });
 
-    // Сброс
+    // Сброс (полностью пусто)
     resetBtn.addEventListener('click', function(){
-      var def = {
-        real_name:'Дмитрий',
-        psn:'swiezdo',
-        platform:['🎮 PlayStation'],
-        modes:['🏹 Выживание','🗻 Испытания Иё'],
-        goals:['🏆 Получение трофеев'],
-        difficulty:['👻 Кошмар','🔥 HellMode']
+      var empty = {
+        real_name:'',
+        psn:'',
+        platform:[],
+        modes:[],
+        goals:[],
+        difficulty:[]
       };
-      saveProfile(def);
-      renderProfile(def);
-      fillForm(def);
-      setChipsActive(platformChips,   def.platform);
-      setChipsActive(modesChips,      def.modes);
-      setChipsActive(goalsChips,      def.goals);
-      setChipsActive(difficultyChips, def.difficulty);
+      saveProfile(empty);
+      renderProfile(empty);
+      fillForm(empty);
+      setChipsActive(platformChips,   []);
+      setChipsActive(modesChips,      []);
+      setChipsActive(goalsChips,      []);
+      setChipsActive(difficultyChips, []);
       try{ if(tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred) tg.HapticFeedback.impactOccurred('light'); }catch(e){}
+      scrollTopSmooth();
+      showFeedback('Профиль очищен');
     });
 
     function renderProfile(p){
-      out.real_name.textContent = p.real_name || '—';
-      out.psn.textContent       = p.psn || '—';
-      out.platform.textContent  = joinLines(p.platform);
-      out.modes.textContent     = joinLines(p.modes);
-      out.goals.textContent     = joinLines(p.goals);
-      out.difficulty.textContent= joinLines(p.difficulty);
-      out.trophies.innerHTML    = 'Легенда Цусимы 🗡<br>Легенда Эдзо 🏔';
+      out.real_name.textContent   = p.real_name || '—';
+      out.psn.textContent         = p.psn || '—';
+      out.platform.textContent    = joinLines(p.platform);
+      out.modes.textContent       = joinLines(p.modes);
+      out.goals.textContent       = joinLines(p.goals);
+      out.difficulty.textContent  = joinLines(p.difficulty);
+      out.trophies.innerHTML      = 'Легенда Цусимы 🗡<br>Легенда Эдзо 🏔';
     }
     function fillForm(p){
       form.real_name.value = p.real_name || '';

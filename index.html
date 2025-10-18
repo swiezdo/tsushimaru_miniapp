@@ -3,58 +3,41 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Профиль — Mini App</title>
-    <meta name="description" content="Визуальный прототип профиля в Telegram Mini App" />
+    <title>Профиль</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <main id="app" class="container">
-      <header class="topbar" role="banner">
+    <main class="container">
+      <header class="topbar">
         <div class="title">Профиль</div>
-        <div id="userChip" class="chip" aria-live="polite">Гость</div>
+        <div id="userChip" class="chip">Гость</div>
       </header>
 
-      <!-- Карточка профиля -->
-      <section class="card" aria-labelledby="profileHeader">
-        <h2 id="profileHeader" class="card-title">Ваш профиль</h2>
-        <div id="profileView" class="profile-grid">
+      <section class="card">
+        <h2 class="card-title">Ваш профиль</h2>
+        <div class="profile-grid">
           <div class="field"><label>Имя</label><div id="v_real_name" class="value">—</div></div>
-
-          <div class="field"><label>Ник в PlayStation Network</label>
-            <div id="v_psn" class="value">—</div>
-          </div>
-
-          <div class="field"><label>Платформа</label>
-            <div id="v_platform" class="value">—</div>
-          </div>
-
-          <div class="field"><label>Режимы</label>
-            <div id="v_modes" class="value">—</div>
-          </div>
-
-          <div class="field"><label>Цели</label>
-            <div id="v_goals" class="value">—</div>
-          </div>
+          <div class="field"><label>Ник в PlayStation Network</label><div id="v_psn" class="value">—</div></div>
+          <div class="field"><label>Платформа</label><div id="v_platform" class="value">—</div></div>
+          <div class="field"><label>Режимы</label><div id="v_modes" class="value">—</div></div>
+          <div class="field"><label>Цели</label><div id="v_goals" class="value">—</div></div>
 
           <div class="field span-2"><label>Сложность</label>
-            <div id="v_difficulty" class="value lines">
-              👻 Кошмар<br/>🔥 HellMode
-            </div>
+            <div id="v_difficulty" class="value lines">👻 Кошмар<br>🔥 HellMode</div>
           </div>
 
           <div class="field span-2"><label>Трофеи</label>
             <div id="v_trophies" class="value lines">
-              Легенда Цусимы 🗡<br/>Легенда Эдзо 🏔
+              Легенда Цусимы 🗡<br>Легенда Эдзо 🏔
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Форма регистрации / обновления -->
-      <section class="card" aria-labelledby="formHeader">
-        <h2 id="formHeader" class="card-title">Регистрация / Обновление</h2>
-        <form id="profileForm" class="form" autocomplete="on">
+      <section class="card">
+        <h2 class="card-title">Регистрация / Обновление</h2>
+        <form id="profileForm" class="form">
           <div class="input">
             <label for="real_name">Имя</label>
             <input id="real_name" name="real_name" type="text" maxlength="64" placeholder="например, Дмитрий" />
@@ -67,7 +50,7 @@
 
           <div class="input">
             <label for="platform">Платформа</label>
-            <select id="platform" name="platform" required>
+            <select id="platform" name="platform">
               <option value="">Выберите…</option>
               <option value="🎮 PlayStation">🎮 PlayStation</option>
               <option value="💻 ПК">💻 ПК</option>
@@ -83,7 +66,6 @@
               <option value="⚔️ Соперники">⚔️ Соперники</option>
               <option value="📜 Главы">📜 Главы</option>
             </select>
-            <p class="hint">Можно выбрать несколько (Ctrl/Shift на ПК, удержание/выделение на телефоне).</p>
           </div>
 
           <div class="input">
@@ -93,17 +75,15 @@
               <option value="🔎 Узнать что-то новое">🔎 Узнать что-то новое</option>
               <option value="👥 Поиск тиммейтов">👥 Поиск тиммейтов</option>
             </select>
-            <p class="hint">Можно выбрать несколько.</p>
           </div>
 
           <div class="actions">
-            <button type="submit" class="btn primary" id="saveBtn">Сохранить</button>
-            <button type="button" class="btn ghost" id="resetBtn">Сбросить</button>
+            <button type="submit" class="btn primary">Сохранить</button>
+            <button type="button" id="resetBtn" class="btn ghost">Сбросить</button>
           </div>
         </form>
       </section>
     </main>
-
     <script src="app.js"></script>
   </body>
 </html>

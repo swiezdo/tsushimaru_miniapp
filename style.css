@@ -24,12 +24,12 @@ body{
 
 .form{display:grid;gap:12px}
 .input label{font-size:13px;color:var(--muted);margin-bottom:6px}
-.input input,.input select{
+.input input{
   width:100%;padding:10px 12px;border-radius:12px;
   border:1px solid var(--stroke);background:transparent;color:var(--fg);
 }
 
-/* ЧИПЫ (красиво и минимально) */
+/* ЧИПЫ */
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip-btn{
   display:inline-flex;align-items:center;gap:6px;

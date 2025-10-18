@@ -20,12 +20,21 @@
         <div class="profile-grid">
           <div class="field"><label>Имя</label><div id="v_real_name" class="value">—</div></div>
           <div class="field"><label>Ник в PlayStation Network</label><div id="v_psn" class="value">—</div></div>
-          <div class="field"><label>Платформа</label><div id="v_platform" class="value">—</div></div>
-          <div class="field"><label>Режимы</label><div id="v_modes" class="value">—</div></div>
-          <div class="field"><label>Цели</label><div id="v_goals" class="value">—</div></div>
 
-          <div class="field span-2"><label>Сложность</label>
-            <div id="v_difficulty" class="value lines">👻 Кошмар<br>🔥 HellMode</div>
+          <div class="field"><label>Платформа</label>
+            <div id="v_platform" class="value lines">—</div>
+          </div>
+
+          <div class="field"><label>Режимы</label>
+            <div id="v_modes" class="value lines">—</div>
+          </div>
+
+          <div class="field"><label>Цели</label>
+            <div id="v_goals" class="value lines">—</div>
+          </div>
+
+          <div class="field"><label>Сложность</label>
+            <div id="v_difficulty" class="value lines">—</div>
           </div>
 
           <div class="field span-2"><label>Трофеи</label>
@@ -49,12 +58,8 @@
           </div>
 
           <div class="input">
-            <label for="platform">Платформа</label>
-            <select id="platform" name="platform">
-              <option value="">Выберите…</option>
-              <option value="🎮 PlayStation">🎮 PlayStation</option>
-              <option value="💻 ПК">💻 ПК</option>
-            </select>
+            <label>Платформа</label>
+            <div id="platformChips" class="chips"></div>
           </div>
 
           <div class="input">
@@ -65,6 +70,11 @@
           <div class="input">
             <label>Цели</label>
             <div id="goalsChips" class="chips"></div>
+          </div>
+
+          <div class="input">
+            <label>Сложность</label>
+            <div id="difficultyChips" class="chips"></div>
           </div>
 
           <div class="actions">

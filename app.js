@@ -1,5 +1,6 @@
 (function () {
 const me = tg.initDataUnsafe?.user;
+const API_BASE = 'https://flexible-puzzles-abroad-sizes.trycloudflare.com/api';
 if (me) userChip.textContent = `${me.first_name || ''} ${me.last_name || ''}`.trim() || `@${me.username || me.id}`;
 
 

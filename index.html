@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Профиль — Mini App</title>
+<meta name="description" content="Регистрация и просмотр профиля в Telegram Mini App" />
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<main id="app" class="container">
+<header class="topbar" role="banner">
+<div class="title">Профиль</div>
+<div id="userChip" class="chip" aria-live="polite"></div>
+</header>
+
+
+<section class="card" aria-labelledby="profileHeader">
+<h2 id="profileHeader" class="card-title">Ваш профиль</h2>
+<div id="profileView" class="profile-grid" hidden>
+<div class="field"><label>PSN ID</label><div id="v_psn_id" class="value">—</div></div>
+<div class="field"><label>Платформа</label><div id="v_platform" class="value">—</div></div>
+<div class="field"><label>Режимы</label><div id="v_modes" class="value">—</div></div>
+<div class="field"><label>Цели</label><div id="v_goals" class="value">—</div></div>
+<div class="field"><label>Уровень</label><div id="v_level" class="value">—</div></div>
+<div class="field"><label>Трофеи</label><div id="v_trophies" class="value">—</div></div>
+<details class="muted small">
+<summary>Технические поля</summary>
+<div class="tech"><span>message_id:</span> <code id="v_message_id">—</code></div>
+<div class="tech"><span>state:</span> <code id="v_state">—</code></div>
+</details>
+</div>
+<div id="emptyState" class="empty" hidden>Профиль не найден. Заполните форму ниже и сохраните.</div>
+</section>
+
+
+<section class="card" aria-labelledby="formHeader">
+<h2 id="formHeader" class="card-title">Регистрация / Обновление</h2>
+<form id="profileForm" class="form" autocomplete="on">
+<div class="input">
+<label for="psn_id">PSN ID</label>
+<input id="psn_id" name="psn_id" type="text" inputmode="latin" maxlength="32" placeholder="например, swiezdo" required />
+<p class="hint">Ваш игровой PSN идентификатор.</p>
+</div>
+
+
+<div class="input">
+<label for="platform">Платформа</label>
+<select id="platform" name="platform" required>
+<option value="">Выберите…</option>
+<option value="PS4">PS4</option>
+<option value="PS5">PS5</option>
+</select>
+</div>
+
+
+<div class="input">
+<label for="modes">Режимы</label>
+<input id="modes" name="modes" type="text" placeholder="например, Legends, Story, Survival" />
+</div>
+
+
+<div class="input">
+<label for="goals">Цели</label>
+<textarea id="goals" name="goals" rows="2" placeholder="Чего хотите добиться (рейды, платина и т.д.)"></textarea>
+</div>
+
+
+<div class="input">
+<label for="level">Уровень</label>
+<input id="level" name="level" type="text" placeholder="например, 120" />
+</div>
+
+
+<div class="input">
+<label for="trophies">Трофеи</label>
+<input id="trophies" name="trophies" type="text" placeholder="например, Платина, Йотэй" />
+<p class="hint">Через запятую или свободным текстом.</p>
+</div>
+
+
+<div class="actions">
+<button type="submit" class="btn primary" id="saveBtn">Сохранить</button>
+<button type="button" class="btn ghost" id="refreshBtn" aria-label="Обновить профиль">Обновить</button>
+</div>
+</form>
+</section>
+
+
+<footer class="foot muted small" role="contentinfo">
+Сделано в стиле Telegram. Данные отправляются боту по защищённой схеме.
+</footer>
+</main>
+
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Профиль — Mini App</title>
     <meta name="description" content="Визуальный прототип профиля в Telegram Mini App" />
-    <!-- SDK Telegram (внутри Telegram уже есть, но подключим для демо в браузере) -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -16,61 +15,85 @@
         <div id="userChip" class="chip" aria-live="polite">Гость</div>
       </header>
 
+      <!-- Карточка профиля -->
       <section class="card" aria-labelledby="profileHeader">
         <h2 id="profileHeader" class="card-title">Ваш профиль</h2>
         <div id="profileView" class="profile-grid">
-          <div class="field"><label>PSN ID</label><div id="v_psn_id" class="value">—</div></div>
-          <div class="field"><label>Платформа</label><div id="v_platform" class="value">—</div></div>
-          <div class="field"><label>Режимы</label><div id="v_modes" class="value">—</div></div>
-          <div class="field"><label>Цели</label><div id="v_goals" class="value">—</div></div>
-          <div class="field"><label>Уровень</label><div id="v_level" class="value">—</div></div>
-          <div class="field"><label>Трофеи</label><div id="v_trophies" class="value">—</div></div>
+          <div class="field"><label>Имя</label><div id="v_real_name" class="value">—</div></div>
 
-          <details class="muted small techbox">
-            <summary>Технические поля</summary>
-            <div class="tech"><span>message_id:</span> <code id="v_message_id">—</code></div>
-            <div class="tech"><span>state:</span> <code id="v_state">—</code></div>
-          </details>
+          <div class="field"><label>Ник в PlayStation Network</label>
+            <div id="v_psn" class="value">—</div>
+          </div>
+
+          <div class="field"><label>Платформа</label>
+            <div id="v_platform" class="value">—</div>
+          </div>
+
+          <div class="field"><label>Режимы</label>
+            <div id="v_modes" class="value">—</div>
+          </div>
+
+          <div class="field"><label>Цели</label>
+            <div id="v_goals" class="value">—</div>
+          </div>
+
+          <div class="field span-2"><label>Сложность</label>
+            <div id="v_difficulty" class="value lines">
+              👻 Кошмар<br/>🔥 HellMode
+            </div>
+          </div>
+
+          <div class="field span-2"><label>Трофеи</label>
+            <div id="v_trophies" class="value lines">
+              Легенда Цусимы 🗡<br/>Легенда Эдзо 🏔
+            </div>
+          </div>
         </div>
       </section>
 
+      <!-- Форма регистрации / обновления -->
       <section class="card" aria-labelledby="formHeader">
         <h2 id="formHeader" class="card-title">Регистрация / Обновление</h2>
         <form id="profileForm" class="form" autocomplete="on">
           <div class="input">
-            <label for="psn_id">PSN ID</label>
-            <input id="psn_id" name="psn_id" type="text" inputmode="latin" maxlength="32" placeholder="например, swiezdo" required />
-            <p class="hint">Ваш игровой PSN идентификатор.</p>
+            <label for="real_name">Имя</label>
+            <input id="real_name" name="real_name" type="text" maxlength="64" placeholder="например, Дмитрий" />
+          </div>
+
+          <div class="input">
+            <label for="psn">Ник в PlayStation Network</label>
+            <input id="psn" name="psn" type="text" inputmode="latin" maxlength="32" placeholder="например, swiezdo" />
           </div>
 
           <div class="input">
             <label for="platform">Платформа</label>
             <select id="platform" name="platform" required>
               <option value="">Выберите…</option>
-              <option value="PS4">PS4</option>
-              <option value="PS5">PS5</option>
+              <option value="🎮 PlayStation">🎮 PlayStation</option>
+              <option value="💻 ПК">💻 ПК</option>
             </select>
           </div>
 
           <div class="input">
             <label for="modes">Режимы</label>
-            <input id="modes" name="modes" type="text" placeholder="например, Legends, Story, Survival" />
+            <select id="modes" name="modes" multiple size="5">
+              <option value="📖 Сюжет">📖 Сюжет</option>
+              <option value="🏹 Выживание">🏹 Выживание</option>
+              <option value="🗻 Испытания Иё">🗻 Испытания Иё</option>
+              <option value="⚔️ Соперники">⚔️ Соперники</option>
+              <option value="📜 Главы">📜 Главы</option>
+            </select>
+            <p class="hint">Можно выбрать несколько (Ctrl/Shift на ПК, удержание/выделение на телефоне).</p>
           </div>
 
           <div class="input">
             <label for="goals">Цели</label>
-            <textarea id="goals" name="goals" rows="2" placeholder="Чего хотите добиться (рейды, платина и т.д.)"></textarea>
-          </div>
-
-          <div class="input">
-            <label for="level">Уровень</label>
-            <input id="level" name="level" type="text" placeholder="например, 120" />
-          </div>
-
-          <div class="input">
-            <label for="trophies">Трофеи</label>
-            <input id="trophies" name="trophies" type="text" placeholder="например, Платина, Йотэй" />
-            <p class="hint">Через запятую или свободным текстом.</p>
+            <select id="goals" name="goals" multiple size="3">
+              <option value="🏆 Получение трофеев">🏆 Получение трофеев</option>
+              <option value="🔎 Узнать что-то новое">🔎 Узнать что-то новое</option>
+              <option value="👥 Поиск тиммейтов">👥 Поиск тиммейтов</option>
+            </select>
+            <p class="hint">Можно выбрать несколько.</p>
           </div>
 
           <div class="actions">
@@ -79,10 +102,6 @@
           </div>
         </form>
       </section>
-
-      <footer class="foot muted small" role="contentinfo">
-        Мини-эпп в стиле Telegram. Эта версия работает локально (демо).
-      </footer>
     </main>
 
     <script src="app.js"></script>

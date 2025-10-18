@@ -14,7 +14,7 @@
         <div id="userChip" class="chip">Гость</div>
       </header>
 
-      <!-- ПРОФИЛЬ -->
+      <!-- Профиль -->
       <section class="card">
         <h2 class="card-title">Ваш профиль</h2>
         <div class="profile-grid">
@@ -34,10 +34,10 @@
         </div>
       </section>
 
-      <!-- РЕГИСТРАЦИЯ / ОБНОВЛЕНИЕ -->
+      <!-- Регистрация / Обновление -->
       <section class="card">
         <h2 class="card-title">Регистрация / Обновление</h2>
-        <form id="profileForm" class="form">
+        <form id="profileForm" class="form" autocomplete="on">
           <div class="input">
             <label for="real_name">Имя</label>
             <input id="real_name" name="real_name" type="text" maxlength="64" placeholder="например, Дмитрий" />
@@ -59,22 +59,12 @@
 
           <div class="input">
             <label>Режимы</label>
-            <div class="checkbox-group" id="modes-group">
-              <label><input type="checkbox" name="modes" value="📖 Сюжет">📖 Сюжет</label>
-              <label><input type="checkbox" name="modes" value="🏹 Выживание">🏹 Выживание</label>
-              <label><input type="checkbox" name="modes" value="🗻 Испытания Иё">🗻 Испытания Иё</label>
-              <label><input type="checkbox" name="modes" value="⚔️ Соперники">⚔️ Соперники</label>
-              <label><input type="checkbox" name="modes" value="📜 Главы">📜 Главы</label>
-            </div>
+            <div id="modesChips" class="chips"></div>
           </div>
 
           <div class="input">
             <label>Цели</label>
-            <div class="checkbox-group" id="goals-group">
-              <label><input type="checkbox" name="goals" value="🏆 Получение трофеев">🏆 Получение трофеев</label>
-              <label><input type="checkbox" name="goals" value="🔎 Узнать что-то новое">🔎 Узнать что-то новое</label>
-              <label><input type="checkbox" name="goals" value="👥 Поиск тиммейтов">👥 Поиск тиммейтов</label>
-            </div>
+            <div id="goalsChips" class="chips"></div>
           </div>
 
           <div class="actions">
@@ -84,6 +74,7 @@
         </form>
       </section>
     </main>
-    <script src="app.js"></script>
+
+    <script src="app.js" defer></script>
   </body>
 </html>

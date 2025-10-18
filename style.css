@@ -29,15 +29,14 @@ body{
   border:1px solid var(--stroke);background:transparent;color:var(--fg);
 }
 
-.checkbox-group{
-  display:flex;flex-wrap:wrap;gap:8px
+/* ЧИПЫ (красиво и минимально) */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 12px;border-radius:999px;border:1px solid var(--stroke);
+  background:transparent;color:var(--fg);cursor:pointer;font-size:14px;
 }
-.checkbox-group label{
-  display:flex;align-items:center;gap:6px;
-  background:var(--card);border:1px solid var(--stroke);
-  padding:6px 10px;border-radius:10px;font-size:14px;
-}
-.checkbox-group input{accent-color:var(--accent)}
+.chip-btn.active{background:var(--accent);border-color:transparent;color:#00131f;font-weight:600}
 
 .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
 .btn{border:1px solid var(--stroke);border-radius:12px;padding:10px 14px;

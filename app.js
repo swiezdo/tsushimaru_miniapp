@@ -1,105 +1,180 @@
 (function(){
-  const tg = window.Telegram?.WebApp;
+  // БЕЗ современного синтаксиса, чтобы Telegram WebView не тупил
 
-  // ===== UI refs
-  const userChip = document.getElementById('userChip');
-  const form = document.getElementById('profileForm');
-  const resetBtn = document.getElementById('resetBtn');
+  var tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 
-  const out = {
-    real_name: document.getElementById('v_real_name'),
-    psn:       document.getElementById('v_psn'),
-    platform:  document.getElementById('v_platform'),
-    modes:     document.getElementById('v_modes'),
-    goals:     document.getElementById('v_goals'),
-    difficulty:document.getElementById('v_difficulty'),
-    trophies:  document.getElementById('v_trophies'),
-  };
+  function onReady(fn){
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', fn);
+    } else {
+      fn();
+    }
+  }
 
-  // ===== Demo store
-  const STORAGE_KEY = 'demo_profile_v2';
-  const DEFAULTS = {
-    real_name: 'Дмитрий',
-    psn: 'swiezdo',
-    platform: '🎮 PlayStation',
-    modes: ['🏹 Выживание','🗻 Испытания Иё'],
-    goals: ['🏆 Получение трофеев'],
-  };
+  // ===== Хранилище: localStorage с fallback в память =====
+  var STORAGE_KEY = 'demo_profile_v3';
+  var memStore = null;
 
-  const load = () => {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || { ...DEFAULTS }; }
-    catch { return { ...DEFAULTS }; }
-  };
-  const save = (p) => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); } catch {}
-  };
+  function loadProfile(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){ return JSON.parse(raw); }
+    }catch(e){ /* no-op */ }
+    return memStore || {
+      real_name:'Дмитрий',
+      psn:'swiezdo',
+      platform:'🎮 PlayStation',
+      modes:['🏹 Выживание','🗻 Испытания Иё'],
+      goals:['🏆 Получение трофеев']
+    };
+  }
+  function saveProfile(p){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+    }catch(e){
+      memStore = p; // если localStorage заблокирован — храним в памяти на сессию
+    }
+  }
 
-  // ===== Helpers
-  const getChecked = (name) => Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(c => c.value);
-  const setChecked = (name, values=[]) => {
-    const set = new Set(values);
-    document.querySelectorAll(`input[name="${name}"]`).forEach(c => c.checked = set.has(c.value));
-  };
-  const list = (arr) => (arr && arr.length) ? arr.join(', ') : '—';
+  // ===== Отрисовка "чипов" =====
+  var MODES = ['📖 Сюжет','🏹 Выживание','🗻 Испытания Иё','⚔️ Соперники','📜 Главы'];
+  var GOALS = ['🏆 Получение трофеев','🔎 Узнать что-то новое','👥 Поиск тиммейтов'];
 
-  const render = (p) => {
-    out.real_name.textContent = p.real_name || '—';
-    out.psn.textContent       = p.psn || '—';
-    out.platform.textContent  = p.platform || '—';
-    out.modes.textContent     = list(p.modes);
-    out.goals.textContent     = list(p.goals);
-    out.difficulty.innerHTML  = '👻 Кошмар<br>🔥 HellMode';
-    out.trophies.innerHTML    = 'Легенда Цусимы 🗡<br>Легенда Эдзо 🏔';
-  };
+  function renderChips(container, values){
+    container.innerHTML = '';
+    for(var i=0;i<values.length;i++){
+      var v = values[i];
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip-btn';
+      b.textContent = v;
+      b.setAttribute('data-value', v);
+      container.appendChild(b);
+    }
+  }
+  function setChipsActive(container, selectedArr){
+    var set = {};
+    for(var i=0;i<selectedArr.length;i++){ set[selectedArr[i]] = true; }
+    var nodes = container.querySelectorAll('.chip-btn');
+    for(var j=0;j<nodes.length;j++){
+      var val = nodes[j].getAttribute('data-value');
+      if(set[val]) nodes[j].classList.add('active');
+      else nodes[j].classList.remove('active');
+    }
+  }
+  function getSelectedFromChips(container){
+    var nodes = container.querySelectorAll('.chip-btn.active');
+    var out = [];
+    for(var i=0;i<nodes.length;i++){ out.push(nodes[i].getAttribute('data-value')); }
+    return out;
+  }
 
-  const fillForm = (p) => {
-    form.real_name.value = p.real_name || '';
-    form.psn.value       = p.psn || '';
-    form.platform.value  = p.platform || '';
-    setChecked('modes', p.modes);
-    setChecked('goals', p.goals);
-  };
+  // ===== Основная логика =====
+  onReady(function(){
+    // UI refs
+    var userChip = document.getElementById('userChip');
+    var form = document.getElementById('profileForm');
+    var resetBtn = document.getElementById('resetBtn');
 
-  // ===== Init
-  const init = () => {
-    if (tg?.initDataUnsafe) {
-      tg.ready?.(); tg.expand?.();
-      const me = tg.initDataUnsafe.user;
-      userChip.textContent = (me?.first_name || '') || (me?.username ? '@'+me.username : 'Пользователь');
+    var out = {
+      real_name: document.getElementById('v_real_name'),
+      psn:       document.getElementById('v_psn'),
+      platform:  document.getElementById('v_platform'),
+      modes:     document.getElementById('v_modes'),
+      goals:     document.getElementById('v_goals'),
+      difficulty:document.getElementById('v_difficulty'),
+      trophies:  document.getElementById('v_trophies')
+    };
+
+    var modesChips = document.getElementById('modesChips');
+    var goalsChips = document.getElementById('goalsChips');
+
+    // Тема Телеграма (минимально)
+    if(tg && tg.themeParams){
+      try{
+        var tp = tg.themeParams;
+        if(tp.bg_color) document.documentElement.style.setProperty('--bg', tp.bg_color);
+        if(tp.text_color) document.documentElement.style.setProperty('--fg', tp.text_color);
+        if(tp.hint_color) document.documentElement.style.setProperty('--muted', tp.hint_color);
+        if(tp.button_color) document.documentElement.style.setProperty('--accent', tp.button_color);
+      }catch(e){}
+      if(tg.ready) tg.ready();
+      if(tg.expand) tg.expand();
+      var me = tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
+      if(me && me.first_name){ userChip.textContent = me.first_name; }
     } else {
       userChip.textContent = 'Демо';
     }
 
-    const profile = load();
-    render(profile);
-    fillForm(profile);
+    // Отрисовать чипы
+    renderChips(modesChips, MODES);
+    renderChips(goalsChips, GOALS);
 
-    form.addEventListener('submit', (e) => {
+    // Подготовить профиль
+    var p = loadProfile();
+    renderProfile(p);
+    fillForm(p);
+    setChipsActive(modesChips, p.modes || []);
+    setChipsActive(goalsChips, p.goals || []);
+
+    // Тоггл по клику на чип
+    modesChips.addEventListener('click', function(e){
+      if(e.target && e.target.classList.contains('chip-btn')){
+        e.target.classList.toggle('active');
+      }
+    });
+    goalsChips.addEventListener('click', function(e){
+      if(e.target && e.target.classList.contains('chip-btn')){
+        e.target.classList.toggle('active');
+      }
+    });
+
+    // Сохранить
+    form.addEventListener('submit', function(e){
       e.preventDefault();
-
-      // собираем строго из полей и чекбоксов
-      const updated = {
-        real_name: form.real_name.value.trim(),
-        psn:       form.psn.value.trim(),
-        platform:  form.platform.value,
-        modes:     getChecked('modes'),
-        goals:     getChecked('goals'),
+      var updated = {
+        real_name: (form.real_name.value || '').trim(),
+        psn:       (form.psn.value || '').trim(),
+        platform:  form.platform.value || '',
+        modes:     getSelectedFromChips(modesChips),
+        goals:     getSelectedFromChips(goalsChips)
       };
-
-      // сохраняем и обновляем профиль
-      save(updated);
-      render(updated);
-      // поля уже содержат введённое — оставляем как есть
-      tg?.HapticFeedback?.notificationOccurred?.('success');
+      saveProfile(updated);
+      renderProfile(updated); // мгновенно обновляем карточку
+      try{ if(tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred) tg.HapticFeedback.notificationOccurred('success'); }catch(e){}
     });
 
-    resetBtn.addEventListener('click', () => {
-      save({ ...DEFAULTS });
-      render(DEFAULTS);
-      fillForm(DEFAULTS);
-      tg?.HapticFeedback?.impactOccurred?.('light');
+    // Сбросить к дефолту
+    resetBtn.addEventListener('click', function(){
+      var def = {
+        real_name:'Дмитрий',
+        psn:'swiezdo',
+        platform:'🎮 PlayStation',
+        modes:['🏹 Выживание','🗻 Испытания Иё'],
+        goals:['🏆 Получение трофеев']
+      };
+      saveProfile(def);
+      renderProfile(def);
+      fillForm(def);
+      setChipsActive(modesChips, def.modes);
+      setChipsActive(goalsChips, def.goals);
+      try{ if(tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred) tg.HapticFeedback.impactOccurred('light'); }catch(e){}
     });
-  };
 
-  init();
+    // helpers: отрисовать профиль и заполнить форму
+    function renderProfile(p){
+      out.real_name.textContent = p.real_name || '—';
+      out.psn.textContent       = p.psn || '—';
+      out.platform.textContent  = p.platform || '—';
+      out.modes.textContent     = (p.modes && p.modes.length) ? p.modes.join(', ') : '—';
+      out.goals.textContent     = (p.goals && p.goals.length) ? p.goals.join(', ') : '—';
+      out.difficulty.innerHTML  = '👻 Кошмар<br>🔥 HellMode';
+      out.trophies.innerHTML    = 'Легенда Цусимы 🗡<br>Легенда Эдзо 🏔';
+    }
+    function fillForm(p){
+      form.real_name.value = p.real_name || '';
+      form.psn.value       = p.psn || '';
+      form.platform.value  = p.platform || '';
+    }
+  });
 })();

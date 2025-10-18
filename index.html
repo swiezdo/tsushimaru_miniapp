@@ -14,6 +14,7 @@
         <div id="userChip" class="chip">Гость</div>
       </header>
 
+      <!-- ПРОФИЛЬ -->
       <section class="card">
         <h2 class="card-title">Ваш профиль</h2>
         <div class="profile-grid">
@@ -28,13 +29,12 @@
           </div>
 
           <div class="field span-2"><label>Трофеи</label>
-            <div id="v_trophies" class="value lines">
-              Легенда Цусимы 🗡<br>Легенда Эдзо 🏔
-            </div>
+            <div id="v_trophies" class="value lines">Легенда Цусимы 🗡<br>Легенда Эдзо 🏔</div>
           </div>
         </div>
       </section>
 
+      <!-- РЕГИСТРАЦИЯ / ОБНОВЛЕНИЕ -->
       <section class="card">
         <h2 class="card-title">Регистрация / Обновление</h2>
         <form id="profileForm" class="form">
@@ -58,23 +58,23 @@
           </div>
 
           <div class="input">
-            <label for="modes">Режимы</label>
-            <select id="modes" name="modes" multiple size="5">
-              <option value="📖 Сюжет">📖 Сюжет</option>
-              <option value="🏹 Выживание">🏹 Выживание</option>
-              <option value="🗻 Испытания Иё">🗻 Испытания Иё</option>
-              <option value="⚔️ Соперники">⚔️ Соперники</option>
-              <option value="📜 Главы">📜 Главы</option>
-            </select>
+            <label>Режимы</label>
+            <div class="checkbox-group" id="modes-group">
+              <label><input type="checkbox" name="modes" value="📖 Сюжет">📖 Сюжет</label>
+              <label><input type="checkbox" name="modes" value="🏹 Выживание">🏹 Выживание</label>
+              <label><input type="checkbox" name="modes" value="🗻 Испытания Иё">🗻 Испытания Иё</label>
+              <label><input type="checkbox" name="modes" value="⚔️ Соперники">⚔️ Соперники</label>
+              <label><input type="checkbox" name="modes" value="📜 Главы">📜 Главы</label>
+            </div>
           </div>
 
           <div class="input">
-            <label for="goals">Цели</label>
-            <select id="goals" name="goals" multiple size="3">
-              <option value="🏆 Получение трофеев">🏆 Получение трофеев</option>
-              <option value="🔎 Узнать что-то новое">🔎 Узнать что-то новое</option>
-              <option value="👥 Поиск тиммейтов">👥 Поиск тиммейтов</option>
-            </select>
+            <label>Цели</label>
+            <div class="checkbox-group" id="goals-group">
+              <label><input type="checkbox" name="goals" value="🏆 Получение трофеев">🏆 Получение трофеев</label>
+              <label><input type="checkbox" name="goals" value="🔎 Узнать что-то новое">🔎 Узнать что-то новое</label>
+              <label><input type="checkbox" name="goals" value="👥 Поиск тиммейтов">👥 Поиск тиммейтов</label>
+            </div>
           </div>
 
           <div class="actions">

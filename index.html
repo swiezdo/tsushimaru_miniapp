@@ -9,7 +9,6 @@
   </head>
   <body>
     <main class="container">
-      <!-- Шапка: скрываем на Home, показываем на остальных -->
       <header class="topbar">
         <div class="title" id="appTitle">Tsushima.Ru</div>
         <div id="userChip" class="chip">Гость</div>
@@ -43,32 +42,18 @@
 
       <!-- ====== ЭКРАН 2: ПРОФИЛЬ ====== -->
       <section id="profileScreen" class="hidden">
-        <!-- Профиль -->
         <section class="card">
           <h2 class="card-title">Ваш профиль</h2>
           <div class="profile-grid">
             <div class="field"><label>Имя</label><div id="v_real_name" class="value">—</div></div>
             <div class="field"><label>Ник в PlayStation Network</label><div id="v_psn" class="value">—</div></div>
-
-            <div class="field"><label>Платформа</label>
-              <div id="v_platform" class="value lines">—</div>
-            </div>
-
-            <div class="field"><label>Режимы</label>
-              <div id="v_modes" class="value lines">—</div>
-            </div>
-
-            <div class="field"><label>Цели</label>
-              <div id="v_goals" class="value lines">—</div>
-            </div>
-
-            <div class="field"><label>Сложность</label>
-              <div id="v_difficulty" class="value lines">—</div>
-            </div>
+            <div class="field"><label>Платформа</label><div id="v_platform" class="value lines">—</div></div>
+            <div class="field"><label>Режимы</label><div id="v_modes" class="value lines">—</div></div>
+            <div class="field"><label>Цели</label><div id="v_goals" class="value lines">—</div></div>
+            <div class="field"><label>Сложность</label><div id="v_difficulty" class="value lines">—</div></div>
           </div>
         </section>
 
-        <!-- Регистрация / Обновление -->
         <section class="card">
           <h2 class="card-title">Обновление профиля</h2>
           <form id="profileForm" class="form" autocomplete="on">
@@ -114,27 +99,21 @@
         </div>
       </section>
 
-      <!-- ====== ЭКРАН 3: ТРОФЕИ (СПИСОК) ====== -->
+      <!-- ====== ЭКРАН 3: ТРОФЕИ ====== -->
       <section id="trophiesScreen" class="hidden">
         <section class="card">
           <h2 class="card-title">Ваши трофеи</h2>
-          <!-- Точно такой же стиль, как поля профиля -->
           <div class="profile-grid">
             <div class="field span-2">
               <label>Полученные трофеи</label>
-              <div class="value lines">
-                Легенда Цусимы 🗡<br>
-                Легенда Эдзо 🏔
-              </div>
+              <div class="value lines">Легенда Цусимы 🗡<br>Легенда Эдзо 🏔</div>
             </div>
           </div>
         </section>
 
         <section class="card">
           <h2 class="card-title">Список трофеев</h2>
-          <div id="trophyList" class="list-buttons">
-            <!-- генерируется из JSON -->
-          </div>
+          <div id="trophyList" class="list-buttons"></div>
         </section>
 
         <div class="footer-actions">
@@ -146,9 +125,7 @@
       <section id="trophyDetailScreen" class="hidden">
         <section class="card">
           <h2 id="trophyTitle" class="card-title">Трофей</h2>
-          <ul id="trophyDesc" class="desc-list">
-            <!-- описание из JSON -->
-          </ul>
+          <ul id="trophyDesc" class="desc-list"></ul>
         </section>
 
         <section class="card">

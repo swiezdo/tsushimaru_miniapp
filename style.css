@@ -78,7 +78,7 @@ body{
 }
 .input input:focus,.input textarea:focus{border-color:var(--accent)}
 
-/* Панель действий под карточкой (тот же нижний отступ, что и у остальных кнопок) */
+/* Панель действий под карточкой */
 .actions-bar{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -99,35 +99,6 @@ body{
   font-size:36px;line-height:1;cursor:pointer;user-select:none;min-height:44px
 }
 .upload-box:active{transform:translateY(1px)}
-
-/* Узкий прямоугольник-триггер для медиа (трофеи) */
-.upload-row{
-  width:100%;
-  min-height:44px; /* одна строка */
-  border-radius:10px;
-  border:1px solid var(--stroke);
-  background:rgba(255,255,255,0.04);
-  color:var(--tg-tx);
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;line-height:1;cursor:pointer;user-select:none;
-}
-.upload-row:active{transform:translateY(1px)}
-
-/* Лента миниатюр (трофеи) */
-.preview-row{
-  display:flex;gap:6px;margin-top:8px;
-  overflow-x:auto;padding-bottom:4px;
-}
-.preview-item{
-  width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.06);
-  border:1px solid var(--stroke);display:flex;align-items:center;justify-content:center;
-  overflow:hidden;font-size:12px;color:var(--tg-hint);flex:0 0 auto;
-}
-.preview-item img{width:100%;height:100%;object-fit:cover}
-.preview-more{
-  width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.1);
-  color:var(--tg-hint);display:flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto;
-}
 
 /* Chips */
 .chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -230,7 +201,7 @@ body{
 }
 
 /* Touch */
-button,.btn,.big-btn,.list-btn,.chip-btn,.build-item,.upload-box,.upload-row{
+button,.btn,.big-btn,.list-btn,.chip-btn,.build-item,.upload-box{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;
   -webkit-tap-highlight-color:transparent;touch-action:manipulation
 }

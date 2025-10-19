@@ -38,6 +38,9 @@ body{
 .card{background:var(--card);border:1px solid var(--stroke);border-radius:var(--radius);padding:16px;margin-bottom:16px}
 .card-title{font-weight:600;margin-bottom:12px}
 
+/* Кнопка под заголовком «Билды» */
+.top-action{margin:-4px 0 12px}
+
 /* Grid */
 .profile-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .field label{font-size:12px;color:var(--tg-hint);margin-bottom:4px;display:block}
@@ -60,6 +63,15 @@ body{
   overflow-y:auto;
 }
 .input input:focus,.input textarea:focus{border-color:var(--accent)}
+
+/* Upload box (квадрат с плюсом) */
+.upload-box{
+  width:88px;height:88px;border-radius:10px;border:1px solid var(--stroke);
+  background:rgba(255,255,255,0.04);color:var(--tg-tx);
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:36px;line-height:1;cursor:pointer;user-select:none;min-height:44px
+}
+.upload-box:active{transform:translateY(1px)}
 
 /* Chips */
 .chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -139,7 +151,7 @@ body{
 }
 .shake{animation:shake .3s}
 
-/* Экран успеха (если когда-нибудь вернём) */
+/* Экран успеха */
 .success-message{
   text-align:center;font-size:16px;font-weight:500;margin-top:40px;color:var(--tg-tx);
 }
@@ -152,14 +164,15 @@ body{
 .list-builds{display:grid;gap:8px}
 .build-item{
   display:grid;grid-template-columns:48px 1fr;gap:10px;align-items:center;
-  padding:10px 12px;border-radius:12px;border:1px solid var(--stroke);background:transparent;cursor:pointer;min-height:48px
+  padding:10px 12px;border-radius:12px;border:1px solid var(--stroke);background:transparent;cursor:pointer;min-height:48px;
+  color:var(--tg-tx);
 }
 .build-item:active{transform:translateY(1px)}
 .build-icon{
   width:48px;height:48px;border-radius:10px;border:1px solid var(--stroke);display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.04);overflow:hidden
 }
 .build-icon img{width:70%;height:70%;object-fit:contain;opacity:.95}
-.build-title{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.build-title{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tg-tx)}
 .muted{color:var(--tg-hint);font-size:14px}
 
 /* Билды — превью и сетка скринов */
@@ -177,7 +190,6 @@ body{
   position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999
 }
 .lightbox img{max-width:92vw;max-height:88vh;border-radius:12px;border:1px solid var(--stroke)}
-/* ВАЖНО: скрывать лайтбокс по классу .hidden (перекрывает display:flex выше) */
 .lightbox.hidden{display:none!important}
 
 /* Responsive */
@@ -187,7 +199,7 @@ body{
 }
 
 /* Touch */
-button,.btn,.big-btn,.list-btn,.chip-btn,.build-item{
+button,.btn,.big-btn,.list-btn,.chip-btn,.build-item,.upload-box{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;
   -webkit-tap-highlight-color:transparent;touch-action:manipulation
 }

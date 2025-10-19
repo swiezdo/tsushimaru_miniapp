@@ -153,12 +153,12 @@
       <section id="buildsScreen" class="hidden">
         <section class="card">
           <h2 class="card-title">Билды</h2>
-          <div class="actions" style="justify-content:flex-start;margin-top:0">
-            <button id="createBuildBtn" class="chip-btn" type="button" aria-label="Создать билд">
-              <span style="font-weight:700">＋</span> <span>Создать билд</span>
-            </button>
-          </div>
         </section>
+
+        <!-- Отдельная широкая кнопка под заголовком -->
+        <div class="fullwidth-row">
+          <button id="createBuildBtn" class="btn primary wide">＋ Создать билд</button>
+        </div>
 
         <section class="card">
           <h3 class="card-title">Мои билды</h3>
@@ -173,14 +173,14 @@
         </div>
       </section>
 
-      <!-- ====== ДОБАВИТЬ БИЛД ====== -->
+      <!-- ====== СОЗДАТЬ БИЛД ====== -->
       <section id="buildCreateScreen" class="hidden">
         <section class="card">
-          <h2 class="card-title">Добавить билд</h2>
+          <h2 class="card-title">Создать билд</h2>
           <form id="buildForm" class="form" autocomplete="off">
             <div class="input">
               <label for="build_name">Название</label>
-              <input id="build_name" name="build_name" type="text" maxlength="64" placeholder="Название билда" />
+              <input id="build_name" name="build_name" type="text" maxlength="36" placeholder="Название билда" />
             </div>
 
             <div class="input">
@@ -199,9 +199,16 @@
             </div>
 
             <div class="input">
-              <label for="build_shots">Скриншот (2 изображения: «Техники» и «Снаряжение»)</label>
-              <input id="build_shots" type="file" accept="image/*" multiple />
-              <div id="buildShotsPreview" class="shots-preview"></div>
+              <label for="build_shots">Скриншоты (2 изображения: «Техники» и «Снаряжение»)</label>
+
+              <!-- Скрытый инпут -->
+              <input id="build_shots" type="file" accept="image/*" multiple class="visually-hidden" />
+
+              <!-- Квадратик с плюсиком -->
+              <div class="uploader">
+                <button type="button" id="shotAddBtn" class="shot-add" aria-label="Добавить изображения">＋</button>
+                <div id="buildShotsPreview" class="shots-preview"></div>
+              </div>
             </div>
 
             <div class="actions">

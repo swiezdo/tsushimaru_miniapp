@@ -1,4 +1,4 @@
-// --- Telegram WebApp init (безопасно) ---
+// --- Telegram WebApp init ---
 const tg = window.Telegram?.WebApp || null;
 (function initTG(){
   if(!tg) return;
@@ -10,7 +10,6 @@ const tg = window.Telegram?.WebApp || null;
     if(th.text_color) document.documentElement.style.setProperty('--tg-tx', th.text_color);
     if(th.hint_color) document.documentElement.style.setProperty('--tg-hint', th.hint_color);
     document.documentElement.classList.add('tg');
-
     tg.MainButton.hide();
   }catch(e){}
 })();
@@ -18,7 +17,6 @@ function hapticOK(){ try{ tg?.HapticFeedback?.notificationOccurred('success'); }
 function hapticERR(){ try{ tg?.HapticFeedback?.notificationOccurred('error'); }catch{} }
 function hapticTap(){ try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{} }
 
-// --- DOM helpers ---
 function $(id){ return document.getElementById(id); }
 function scrollTopSmooth(){ window.scrollTo({top:0, behavior:'smooth'}); }
 
@@ -59,13 +57,13 @@ function showScreen(name){
   else if(name === 'trophies') setTopbar(true, 'Трофеи');
   else if(name === 'trophyDetail') setTopbar(true, 'Трофеи');
   else if(name === 'builds') setTopbar(true, 'Билды');
-  else if(name === 'buildCreate') setTopbar(true, 'Добавить билд');
+  else if(name === 'buildCreate') setTopbar(true, 'Создать билд'); // ← обновлено
   else if(name === 'buildDetail') setTopbar(true, 'Билд');
 
   scrollTopSmooth();
 }
 
-// вспомогательная: inline-кнопка «Отправить» на экране трофея
+// inline «Отправить» на экране трофея
 function ensureInlineSubmitButton(){
   const backBtn = $('backToListBtn');
   if(!backBtn) return;
@@ -84,14 +82,14 @@ function ensureInlineSubmitButton(){
   submitInline.onclick = (e)=>{ e.preventDefault(); submitProof(); };
 }
 
-// --- Header user chip ---
+// Header user chip
 (function(){
   const chip = $('userChip');
   const uname = tg?.initDataUnsafe?.user?.username;
   if(chip && uname) chip.textContent = '@' + uname;
 })();
 
-// --- ЧИПЫ (профиль) ---
+// Chips (профиль)
 const PLATFORM   = ['🎮 PlayStation','💻 ПК'];
 const MODES      = ['📖 Сюжет','🏹 Выживание','🗻 Испытания Иё','⚔️ Соперники','📜 Главы'];
 const GOALS      = ['🏆 Получение трофеев','🔎 Узнать что-то новое','👥 Поиск тиммейтов'];
@@ -131,7 +129,7 @@ function setActive(container, arr){
   });
 }
 
-// --- Профиль: отображение ---
+// Профиль: отображение
 const v_real_name  = $('v_real_name');
 const v_psn        = $('v_psn');
 const v_platform   = $('v_platform');
@@ -147,7 +145,7 @@ function refreshProfileView(){
   if(v_difficulty) v_difficulty.textContent = prettyLines(activeValues($('difficultyChips')));
 }
 
-// --- Профиль: форма ---
+// Профиль: форма
 const profileForm = $('profileForm');
 const resetBtn    = $('resetBtn');
 
@@ -157,7 +155,6 @@ if(profileForm){
   renderChips($('goalsChips'),      GOALS,      {onChange:refreshProfileView});
   renderChips($('difficultyChips'), DIFFICULTY, {onChange:refreshProfileView});
 
-  // PSN validation
   const psnInput = profileForm.psn;
   const psnError = document.createElement('div');
   psnError.className = 'error-text';
@@ -206,7 +203,7 @@ if(profileForm){
   }
 }
 
-// --- Трофеи: загрузка и список ---
+// --- Трофеи ---
 const trophyListEl  = $('trophyList');
 const trophyTitleEl = $('trophyTitle');
 const trophyDescEl  = $('trophyDesc');
@@ -237,7 +234,6 @@ function renderTrophyList(data){
   });
 }
 
-// --- Трофеи: форма доказательств ---
 const proofFormEl  = $('proofForm');
 const proofFilesEl = $('proofFiles');
 const commentEl    = $('commentText');
@@ -342,7 +338,7 @@ async function submitProof(){
   showScreen('trophies');
 }
 
-// привязки (трофеи)
+// Навигация «трофеи»
 if(proofFormEl){
   proofFormEl.addEventListener('submit', (e)=>{ e.preventDefault(); submitProof(); });
 }
@@ -354,18 +350,15 @@ $('backToListBtn')?.addEventListener('click', ()=>{
 // системная назад-кнопка Telegram
 if(tg){
   tg.onEvent('backButtonClicked', ()=>{
-    // при открытом билде/создании — вернёмся к списку билдов
     if(!screens.builds?.classList.contains('hidden')){
       showScreen('builds');
       return;
     }
-    // при экране трофея — вернуться к списку трофеев
     if(!screens.trophyDetail?.classList.contains('hidden')){
       resetProofForm();
       showScreen('trophies');
       return;
     }
-    // дефолт
     showScreen('home');
   });
 }
@@ -380,8 +373,6 @@ $('trophiesHomeBtn')?.addEventListener('click', ()=> showScreen('home'));
 $('buildsHomeBtn')?.addEventListener('click', ()=> showScreen('home'));
 
 // ===================== БИЛДЫ =====================
-
-// Константы
 const LS_KEY_BUILDS = 'tsu_builds_v1';
 const CLASS_VALUES = ['Самурай','Охотник','Убийца','Ронин'];
 const TAG_VALUES   = ['HellMode','Спидран','Соло','Сюжет','Соперники'];
@@ -403,6 +394,7 @@ const buildDescEl    = $('build_desc');
 const classChipsEl   = $('classChips');
 const tagsChipsEl    = $('tagsChips');
 const buildShotsEl   = $('build_shots');
+const uploadBoxBtn   = $('uploadBox');
 const buildShotsPrev = $('buildShotsPreview');
 const buildCancelBtn = $('buildCancelBtn');
 
@@ -426,6 +418,13 @@ if(buildDescEl){
   setTimeout(autoResize, 0);
 }
 
+// Клик по квадрату с плюсом -> открыть выбор файлов
+if(uploadBoxBtn && buildShotsEl){
+  uploadBoxBtn.addEventListener('click', ()=>{
+    buildShotsEl.click();
+  });
+}
+
 // Превью выбранных скринов (ровно 2)
 if(buildShotsEl && buildShotsPrev){
   buildShotsEl.addEventListener('change', ()=>{
@@ -444,14 +443,13 @@ if(buildShotsEl && buildShotsPrev){
     });
 
     if(files.length !== 2){
-      // мягкая подсветка, чтобы было понятно, что нужно ровно 2
       buildShotsPrev.classList.add('shake');
       setTimeout(()=>buildShotsPrev.classList.remove('shake'), 300);
     }
   });
 }
 
-// Работа с localStorage
+// Storage
 function loadBuilds(){
   try{
     const raw = localStorage.getItem(LS_KEY_BUILDS);
@@ -462,7 +460,7 @@ function saveBuilds(arr){
   try{ localStorage.setItem(LS_KEY_BUILDS, JSON.stringify(arr||[])); }catch(_){}
 }
 
-// Утилита: чтение файла в DataURL
+// File -> DataURL
 function fileToDataURL(file){
   return new Promise((resolve, reject)=>{
     const r = new FileReader();
@@ -472,7 +470,7 @@ function fileToDataURL(file){
   });
 }
 
-// Рендер списка «Мои билды»
+// Рендер «Мои билды»
 function renderMyBuilds(){
   const items = loadBuilds();
   myBuildsList.innerHTML = '';
@@ -497,7 +495,11 @@ function renderMyBuilds(){
 
     const title = document.createElement('div');
     title.className = 'build-title';
-    title.textContent = b.name || 'Без названия';
+
+    // Безопасное ограничение длины на случай старых кэшей
+    const name = (b.name || 'Без названия').toString();
+    const safeName = name.length > 40 ? (name.slice(0,40) + '…') : name;
+    title.textContent = safeName;
 
     row.appendChild(icon);
     row.appendChild(title);
@@ -510,7 +512,7 @@ function renderMyBuilds(){
   });
 }
 
-// Открыть экран «Добавить билд»
+// Открыть экран «Создать билд»
 createBuildBtn?.addEventListener('click', ()=>{
   resetBuildForm();
   showScreen('buildCreate');
@@ -522,7 +524,7 @@ function resetBuildForm(){
   setActive(classChipsEl, []);
   setActive(tagsChipsEl,  []);
   buildShotsPrev.innerHTML = '';
-  buildShotsEl.value = '';
+  if(buildShotsEl) buildShotsEl.value = '';
   buildDescEl.style.height = 'auto';
 }
 
@@ -536,18 +538,19 @@ if(buildForm){
   buildForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
 
-    const name = (buildNameEl?.value || '').trim();
+    // Жёсткое ограничение имени
+    let name = (buildNameEl?.value || '').trim();
+    if(name.length > 40) name = name.slice(0,40);
+
     const klass = activeValues(classChipsEl)[0] || '';
     const tags  = activeValues(tagsChipsEl);
     const desc  = (buildDescEl?.value || '').trim();
     const files = Array.from(buildShotsEl?.files || []);
 
-    // Валидация: Название, Класс, Ровно 2 изображения
     if(!name){ shake(buildNameEl); buildNameEl?.focus(); return; }
     if(!klass){ shake(classChipsEl); return; }
     if(files.length !== 2){ shake(buildShotsPrev || buildShotsEl); return; }
 
-    // Конвертируем 2 изображения в DataURL
     let shots = [];
     try{
       shots = [

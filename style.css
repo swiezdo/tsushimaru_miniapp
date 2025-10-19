@@ -229,6 +229,6 @@ a.big-btn { cursor:pointer; }
   font-size:15px;
   word-break:break-word;
   white-space:pre-line;
-  line-height:1.25; /* уменьшен вертикальный отступ */
+  line-height:1.15; /* было 1.25 — сделали плотнее */
 }
 #trophiesScreen .span-2 { grid-column:1/-1; }

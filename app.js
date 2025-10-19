@@ -20,11 +20,12 @@ function hapticTap(){ try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{}
 function $(id){ return document.getElementById(id); }
 function scrollTopSmooth(){ window.scrollTo({top:0, behavior:'smooth'}); }
 
-// ===== Отступ сверху под системные элементы Telegram =====
+// ===== ВАЖНО: отступ сверху под системные элементы Telegram =====
 const TOP_OFFSET_PX = 64; // ≈ 4 строки
-function applyTopInset() {
+function applyTopInset(){
   const root = document.querySelector('main.container');
-  if (!root) return;
+  if(!root) return;
+  // учитываем вырез/статус-бар через env(safe-area-inset-top)
   root.style.paddingTop = `calc(env(safe-area-inset-top, 0px) + ${TOP_OFFSET_PX}px)`;
 }
 window.addEventListener('resize', applyTopInset);
@@ -55,6 +56,7 @@ function showScreen(name){
   if(el) el.classList.remove('hidden');
 
   if(tg){
+    // показываем системную кнопку «Назад» там, где нужна
     if (['profile','trophies','builds','buildCreate','buildDetail','trophyDetail'].includes(name)){
       tg.BackButton.show();
       if(name === 'trophyDetail') ensureInlineSubmitButton();
@@ -74,17 +76,38 @@ function showScreen(name){
   scrollTopSmooth();
 }
 
-// ==== КНОПКА «Отправить заявку» (вне карточки) ====
-const proofFormEl  = $('proofForm');
-const proofFilesEl = $('proofFiles');
-const commentEl    = $('commentText');
-const previewEl    = $('filePreview'); // может отсутствовать — ок
-
+// inline «Отправить» на экране трофея
 function ensureInlineSubmitButton(){
-  // Кнопка вынесена за форму. Просто навешиваем обработчик.
-  const sendBtn = $('sendProofBtn');
-  if(sendBtn){
-    sendBtn.onclick = (e)=>{ e.preventDefault(); proofFormEl?.requestSubmit(); };
+  const backBtn = $('backToListBtn'); // кнопки больше нет — будет undefined
+  const form = $('proofForm');
+
+  if(backBtn && backBtn.parentNode){
+    let submitInline = $('submitInlineBtn');
+    if(!submitInline){
+      submitInline = document.createElement('button');
+      submitInline.id = 'submitInlineBtn';
+      submitInline.className = backBtn.className || 'btn';
+      submitInline.textContent = 'Отправить';
+      backBtn.parentNode.insertBefore(submitInline, backBtn);
+      submitInline.style.marginBottom = '8px';
+    }else{
+      submitInline.textContent = 'Отправить';
+    }
+    submitInline.onclick = (e)=>{ e.preventDefault(); submitProof(); };
+    return;
+  }
+
+  if(form){
+    let submitInline = $('submitInlineBtn');
+    if(!submitInline){
+      submitInline = document.createElement('button');
+      submitInline.id = 'submitInlineBtn';
+      submitInline.type = 'button';
+      submitInline.className = 'btn primary wide';
+      submitInline.textContent = 'Отправить';
+      form.appendChild(submitInline);
+    }
+    submitInline.onclick = (e)=>{ e.preventDefault(); submitProof(); };
   }
 }
 
@@ -152,8 +175,8 @@ function refreshProfileView(){
 }
 
 // Профиль: форма
-const profileForm     = $('profileForm');
-const profileSaveBtn  = $('profileSaveBtn');
+const profileForm = $('profileForm');
+const resetBtn    = $('resetBtn');
 
 if(profileForm){
   renderChips($('platformChips'),   PLATFORM,   {onChange:refreshProfileView});
@@ -196,7 +219,17 @@ if(profileForm){
     scrollTopSmooth();
   });
 
-  profileSaveBtn?.addEventListener('click', ()=> profileForm.requestSubmit());
+  if(resetBtn){
+    resetBtn.addEventListener('click', ()=>{
+      try{ profileForm.reset(); }catch{}
+      setActive($('platformChips'), []);
+      setActive($('modesChips'), []);
+      setActive($('goalsChips'), []);
+      setActive($('difficultyChips'), []);
+      refreshProfileView();
+      if(tg?.showPopup){ tg.showPopup({ title:'Сброс', message:'Все поля очищены.', buttons:[{type:'ok'}] }); }
+    });
+  }
 }
 
 // --- Трофеи ---
@@ -229,6 +262,11 @@ function renderTrophyList(data){
     trophyListEl.appendChild(btn);
   });
 }
+
+const proofFormEl  = $('proofForm');
+const proofFilesEl = $('proofFiles');
+const commentEl    = $('commentText');
+const previewEl    = $('filePreview');
 
 function resetProofForm(){
   if(previewEl) previewEl.innerHTML = '';
@@ -354,6 +392,11 @@ $('openProfileBtn')?.addEventListener('click', ()=> showScreen('profile'));
 $('trophiesBtn')?.addEventListener('click', ()=> showScreen('trophies'));
 $('buildsBtn')?.addEventListener('click', ()=> { renderMyBuilds(); showScreen('builds'); });
 
+// Домой-кнопки удалены, обработчики оставлены безопасно (не сработают)
+$('homeBtn')?.addEventListener('click', ()=> showScreen('home'));
+$('trophiesHomeBtn')?.addEventListener('click', ()=> showScreen('home'));
+$('buildsHomeBtn')?.addEventListener('click', ()=> showScreen('home'));
+
 // ===================== БИЛДЫ =====================
 const LS_KEY_BUILDS = 'tsu_builds_v1';
 const CLASS_VALUES = ['Самурай','Охотник','Убийца','Ронин'];
@@ -380,6 +423,7 @@ const shotInput1     = $('build_shot1');
 const shotInput2     = $('build_shot2');
 const shotsTwo       = $('shotsTwo');
 
+const buildCancelBtn = $('buildCancelBtn');
 const buildSubmitBtn = $('buildSubmitBtn');
 
 const buildDetailTitle = $('buildDetailTitle');
@@ -422,12 +466,15 @@ function renderShotThumb(idx, src){
   const img = document.createElement('img');
   img.src = src;
   btn.appendChild(img);
+
+  // По тапу — снова открыть тот же input для замены файла
   btn.addEventListener('click', ()=>{
     const input = getShotInputByIdx(String(idx));
     if(!input) return;
     try{ input.value = ''; }catch{}
     input.click();
   });
+
   return btn;
 }
 
@@ -435,7 +482,7 @@ function renderShotThumb(idx, src){
 let shot1Data = null;
 let shot2Data = null;
 
-// Делегирование клика по квадратам
+// Делегирование клика по квадратам — надёжно в WebView
 if(shotsTwo){
   shotsTwo.addEventListener('click', (e)=>{
     const box = e.target.closest('.upload-box');
@@ -455,9 +502,11 @@ function bindShotInput(input, idx){
     if(!file) return;
     try{
       const data = await fileToDataURL(file);
+
       const targetEl =
         shotsTwo?.querySelector(`.upload-box[data-idx="${idx}"]`) ||
         shotsTwo?.querySelector(`.shot-thumb[data-idx="${idx}"]`);
+
       const thumb = renderShotThumb(idx, data);
 
       if(targetEl && targetEl.parentNode){
@@ -548,7 +597,8 @@ function resetBuildForm(){
   if(buildDescEl) buildDescEl.style.height = 'auto';
 }
 
-// Кнопка «Создать»
+// Кнопки под карточкой
+buildCancelBtn?.addEventListener('click', ()=> showScreen('builds'));
 buildSubmitBtn?.addEventListener('click', ()=> buildForm?.requestSubmit());
 
 // Создание билда
@@ -619,6 +669,7 @@ function openBuildDetail(id){
 
   showScreen('buildDetail');
 }
+$('backToBuildsBtn')?.addEventListener('click', ()=> showScreen('builds'));
 
 // Лайтбокс
 const lightbox = $('lightbox');
@@ -636,13 +687,10 @@ lightbox?.addEventListener('click', closeLightbox);
 
 // ===================== Старт =====================
 (async function start(){
+  applyTopInset();              // ← добавил вызов
   showScreen('home');
   const data = await loadTrophies();
   renderTrophyList(data);
   refreshProfileView();
-  // Привязка кнопки отправки заявки (вне карточки)
-  ensureInlineSubmitButton();
-  // Доп. биндинг: клик по вынесенной кнопке
-  $('sendProofBtn')?.addEventListener('click', ()=> proofFormEl?.requestSubmit());
   renderMyBuilds();
 })();

@@ -65,9 +65,21 @@ body{
 
 .footer-actions{margin:8px 0 16px}
 
-/* СПИСКИ */
-.list{display:grid;gap:8px}
-.list-item{padding:10px 12px;border:1px solid var(--stroke);border-radius:12px}
+/* Список моих трофеев — просто текст без карточек */
+.list {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.list-item {
+  border: none;
+  background: none;
+  padding: 2px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--muted);
+}
 
 .list-buttons{display:grid;gap:8px}
 .list-btn{

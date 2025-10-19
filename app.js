@@ -57,7 +57,7 @@ function showScreen(name){
   else if(name === 'trophies') setTopbar(true, 'Трофеи');
   else if(name === 'trophyDetail') setTopbar(true, 'Трофеи');
   else if(name === 'builds') setTopbar(true, 'Билды');
-  else if(name === 'buildCreate') setTopbar(true, 'Создать билд'); // ←
+  else if(name === 'buildCreate') setTopbar(true, 'Создать билд');
   else if(name === 'buildDetail') setTopbar(true, 'Билд');
 
   scrollTopSmooth();
@@ -67,7 +67,6 @@ function showScreen(name){
 function ensureInlineSubmitButton(){
   const backBtn = $('backToListBtn');
   if(!backBtn) return;
-
   let submitInline = $('submitInlineBtn');
   if(!submitInline){
     submitInline = document.createElement('button');
@@ -234,14 +233,83 @@ function renderTrophyList(data){
   });
 }
 
-const proofFormEl  = $('proofForm');
-const proofFilesEl = $('proofFiles');
-const commentEl    = $('commentText');
-const previewEl    = $('filePreview');
+const proofFormEl   = $('proofForm');
+const proofFilesEl  = $('proofFiles');      // скрытый input
+const proofUpload   = $('proofUploadBox');  // узкий прямоугольник
+const commentEl     = $('commentText');
+const previewEl     = $('filePreview');
+
+// Буфер выбранных медиа (накапливаем между выборами)
+let proofFilesBuffer = [];
+
+function uniqueKey(file){ return [file.name, file.size, file.lastModified, file.type].join('::'); }
+function syncProofInputFromBuffer(){
+  try{
+    const dt = new DataTransfer();
+    proofFilesBuffer.forEach(f=> dt.items.add(f));
+    proofFilesEl.files = dt.files;
+  }catch(_){}
+}
+function renderProofPreviews(){
+  if(!previewEl) return;
+  previewEl.innerHTML = '';
+  if(!proofFilesBuffer.length) return;
+
+  const limit = 8;
+  proofFilesBuffer.slice(0, limit).forEach(file=>{
+    const div = document.createElement('div');
+    div.className = 'preview-item';
+    if(file.type.startsWith('image/')){
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.onload = ()=> URL.revokeObjectURL(img.src);
+      div.appendChild(img);
+    }else if(file.type.startsWith('video/')){
+      div.textContent = '🎥';
+    }else{
+      div.textContent = '📄';
+    }
+    previewEl.appendChild(div);
+  });
+  if(proofFilesBuffer.length > limit){
+    const more = document.createElement('div');
+    more.className = 'preview-more';
+    more.textContent = `+${proofFilesBuffer.length - limit}`;
+    previewEl.appendChild(more);
+  }
+}
+
+// Триггер выбора медиа
+proofUpload?.addEventListener('click', ()=>{
+  try{ proofFilesEl.value = ''; }catch{}
+  proofFilesEl?.click();
+});
+
+// На каждое добавление — дополняем буфер, перерисовываем и синхронизируем input.files
+if(proofFilesEl){
+  proofFilesEl.addEventListener('change', ()=>{
+    const picked = Array.from(proofFilesEl.files || []);
+    if(!picked.length) return;
+
+    const existing = new Set(proofFilesBuffer.map(uniqueKey));
+    picked.forEach(f=>{
+      const key = uniqueKey(f);
+      if(!existing.has(key)){
+        proofFilesBuffer.push(f);
+        existing.add(key);
+      }
+    });
+
+    renderProofPreviews();
+    syncProofInputFromBuffer();
+  });
+}
 
 function resetProofForm(){
+  proofFilesBuffer = [];
+  syncProofInputFromBuffer();
   if(previewEl) previewEl.innerHTML = '';
-  if(proofFilesEl) proofFilesEl.value = '';
+  if(proofFilesEl) { try{ proofFilesEl.value = ''; }catch{} }
   if(commentEl){
     commentEl.value = '';
     commentEl.style.height = 'auto';
@@ -272,39 +340,6 @@ if(commentEl){
   setTimeout(autoResize, 0);
 }
 
-// превью файлов (трофеи)
-if(proofFilesEl && previewEl){
-  proofFilesEl.addEventListener('change', ()=>{
-    previewEl.innerHTML = '';
-    const files = Array.from(proofFilesEl.files || []);
-    if(!files.length) return;
-    const limit = 5;
-    files.slice(0, limit).forEach(file=>{
-      const div = document.createElement('div');
-      div.className = 'preview-item';
-      if(file.type.startsWith('image/')){
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(file);
-        img.onload = ()=> URL.revokeObjectURL(img.src);
-        div.appendChild(img);
-      } else if(file.type.startsWith('video/')){
-        const vid = document.createElement('div');
-        vid.textContent = '🎥';
-        div.appendChild(vid);
-      } else {
-        div.textContent = '📄';
-      }
-      previewEl.appendChild(div);
-    });
-    if(files.length > limit){
-      const more = document.createElement('div');
-      more.className = 'preview-more';
-      more.textContent = `+${files.length - limit}`;
-      previewEl.appendChild(more);
-    }
-  });
-}
-
 let submitting = false;
 function shake(el){
   if(!el) return;
@@ -318,22 +353,18 @@ async function submitProof(){
   submitting = true;
   setTimeout(()=>submitting=false, 1200);
 
-  const filesCount = proofFilesEl?.files?.length || 0;
+  const filesCount = (proofFilesEl?.files?.length || 0);
   const comment    = (commentEl?.value || '').trim();
 
   if(filesCount === 0 || !comment){
-    if(!filesCount) shake(proofFilesEl.closest('.form-group') || proofFilesEl);
-    if(!comment)    shake(commentEl);
-    if(tg?.showPopup){
-      tg.showPopup({ title:'Ошибка', message:'Добавьте файл и комментарий.', buttons:[{type:'ok'}] });
-    }
+    if(filesCount === 0) shake(proofUpload || proofFilesEl);
+    if(!comment)         shake(commentEl);
+    tg?.showPopup?.({ title:'Ошибка', message:'Добавьте медиа и комментарий.', buttons:[{type:'ok'}] });
     return;
   }
 
   hapticOK();
-  if(tg?.showPopup){
-    tg.showPopup({ title:'Заявка отправлена', message:'✅ Модераторы рассмотрят вашу заявку.' });
-  }
+  tg?.showPopup?.({ title:'Заявка отправлена', message:'✅ Модераторы рассмотрят вашу заявку.' });
   resetProofForm();
   showScreen('trophies');
 }
@@ -379,7 +410,7 @@ const TAG_VALUES   = ['HellMode','Спидран','Соло','Сюжет','Со�
 const CLASS_ICON = {
   'Самурай':'./samurai-wh.svg',
   'Охотник':'./hunter-wh.svg',
-  'Убийца':'./assassin-wh.svg',
+  'Убийица':'./assassin-wh.svg',
   'Ронин':'./ronin-wh.svg'
 };
 
@@ -413,12 +444,12 @@ renderChips(tagsChipsEl,  TAG_VALUES);
 
 // Авто-рост описания
 if(buildDescEl){
-  const autoResize = ()=>{
+  const autoResize2 = ()=>{
     buildDescEl.style.height = 'auto';
     buildDescEl.style.height = Math.min(buildDescEl.scrollHeight, 200) + 'px';
   };
-  buildDescEl.addEventListener('input', autoResize);
-  setTimeout(autoResize, 0);
+  buildDescEl.addEventListener('input', autoResize2);
+  setTimeout(autoResize2, 0);
 }
 
 // Helpers
@@ -430,9 +461,7 @@ function fileToDataURL(file){
     r.readAsDataURL(file);
   });
 }
-function getShotInputByIdx(idx){
-  return idx === '1' ? shotInput1 : shotInput2;
-}
+function getShotInputByIdx(idx){ return idx === '1' ? shotInput1 : shotInput2; }
 function renderShotThumb(idx, src){
   const btn = document.createElement('button');
   btn.type = 'button';
@@ -441,15 +470,12 @@ function renderShotThumb(idx, src){
   const img = document.createElement('img');
   img.src = src;
   btn.appendChild(img);
-
-  // По тапу — снова открыть тот же input для замены файла
   btn.addEventListener('click', ()=>{
     const input = getShotInputByIdx(String(idx));
     if(!input) return;
     try{ input.value = ''; }catch{}
     input.click();
   });
-
   return btn;
 }
 
@@ -477,21 +503,15 @@ function bindShotInput(input, idx){
     if(!file) return;
     try{
       const data = await fileToDataURL(file);
-
-      // Найти квадрат или уже существующую миниатюру для этого индекса
       const targetEl =
         shotsTwo?.querySelector(`.upload-box[data-idx="${idx}"]`) ||
         shotsTwo?.querySelector(`.shot-thumb[data-idx="${idx}"]`);
-
       const thumb = renderShotThumb(idx, data);
-
       if(targetEl && targetEl.parentNode){
         targetEl.parentNode.replaceChild(thumb, targetEl);
       } else if (shotsTwo){
-        // На всякий случай, если контейнер пуст — просто вставим
         shotsTwo.appendChild(thumb);
       }
-
       if(idx === '1') shot1Data = data; else shot2Data = data;
       hapticTap();
     }catch(_){
@@ -565,7 +585,6 @@ function resetBuildForm(){
   if(shotInput2) shotInput2.value = '';
   shot1Data = null; shot2Data = null;
 
-  // Восстановить квадраты (если были заменены превью)
   if(shotsTwo){
     shotsTwo.innerHTML = `
       <button type="button" class="upload-box" data-idx="1" aria-label="Загрузить первое изображение">＋</button>

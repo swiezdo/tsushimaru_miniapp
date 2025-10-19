@@ -128,7 +128,17 @@
           <form id="proofForm" class="form">
             <div class="input">
               <label for="proofFiles">Прикрепите скриншоты/видео</label>
-              <input id="proofFiles" type="file" multiple accept="image/*,video/*" />
+
+              <!-- Скрытый input (визуально скрыт) -->
+              <input id="proofFiles" type="file" multiple accept="image/*,video/*" class="visually-hidden" />
+
+              <!-- Узкий прямоугольник-триггер -->
+              <button type="button" id="proofUploadBox" class="upload-row" aria-label="Прикрепить медиа">
+                ＋ Прикрепить медиа
+              </button>
+
+              <!-- Лента миниатюр -->
+              <div id="filePreview" class="preview-row"></div>
             </div>
 
             <div class="input">

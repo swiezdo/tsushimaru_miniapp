@@ -21,56 +21,7 @@ function hapticTap(){ try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{}
 function $(id){ return document.getElementById(id); }
 function scrollTopSmooth(){ window.scrollTo({top:0, behavior:'smooth'}); }
 
-/* === ГЛОБАЛЬНЫЕ ФИКСЫ ВЁРСТКИ (без правок style.css) ===================== */
-/* 1) «Опускаем» контент ниже системной шапки Telegram (Back, title и т.п.)
-   2) Рубим горизонтальную прокрутку и потенциальные переполнения
-   3) Чиним превью на странице заявки (строго в пределах ширины) */
-(function injectGlobalFixStyles(){
-  const css = `
-    :root{
-      --safe-top: calc(14px + env(safe-area-inset-top, 0px));
-      --safe-bottom-js: calc(14px + env(safe-area-inset-bottom, 0px));
-    }
-    html,body{ overflow-x:hidden; }
-    /* Основной отступ сверху/снизу для ВСЕГО приложения (только в Telegram) */
-    html.tg body{ padding-top: calc(var(--safe-top) + 44px); padding-bottom: var(--safe-bottom-js); }
-
-    /* Страница заявки на трофей: ничто не должно выползать по ширине */
-    #trophyDetailScreen{ overflow-x:hidden; }
-    #trophyDetailScreen .form{ max-width:100%; }
-    #trophyDetailScreen .upload-row{ width:100%; max-width:100%; overflow:hidden; }
-    #trophyDetailScreen .preview-row{ display:flex; gap:8px; overflow:hidden; max-width:100%; }
-    #trophyDetailScreen .preview-item,
-    #trophyDetailScreen .preview-more{
-      flex:0 0 76px; height:76px; border-radius:12px; overflow:hidden;
-      display:flex; align-items:center; justify-content:center;
-    }
-    #trophyDetailScreen .preview-item img{ width:100%; height:100%; object-fit:cover; display:block; }
-  `;
-  const s = document.createElement('style');
-  s.id = 'js-global-fixes';
-  s.textContent = css;
-  document.head.appendChild(s);
-})();
-
-/* Доп. страховка: если Telegram не сообщает safe-area, слегка увеличим отступ */
-function applyTopSafeOffset(){
-  const isTG = document.documentElement.classList.contains('tg');
-  if(!isTG) return;
-  // Базовая высота шапки Telegram ~44–48px. Дадим чутка больше запаса.
-  const headerReserve = 52;
-  const safeTop = 14;    // небольшой базовый отступ
-  const safeBottom = 14; // небольшой базовый отступ
-  document.body.style.paddingTop = `calc(${safeTop}px + env(safe-area-inset-top, 0px) + ${headerReserve}px)`;
-  document.body.style.paddingBottom = `calc(${safeBottom}px + env(safe-area-inset-bottom, 0px))`;
-  // И полностью вырубим горизонтальную прокрутку, даже если где-то «перелив»
-  document.documentElement.style.overflowX = 'hidden';
-  document.body.style.overflowX = 'hidden';
-}
-window.addEventListener('resize', applyTopSafeOffset);
-window.addEventListener('orientationchange', applyTopSafeOffset);
-
-/* === ЭКРАНЫ =============================================================== */
+// --- Screens ---
 const screens = {
   home: $('homeScreen'),
   profile: $('profileScreen'),
@@ -89,18 +40,27 @@ function setTopbar(visible, title){
 }
 
 function setFooterSafeSpacing(name){
-  // Небольшой нижний «воздух», чтобы скругления не «съедали» кнопки
+  // По умолчанию: компактный, чтобы не «кусало» кнопки
   const APPLY = (rootSel, pxBottom) => {
     const el = document.querySelector(`${rootSel} .footer-actions`);
     if(el) el.style.margin = `8px 0 ${pxBottom}px`;
   };
-  if(name === 'home'){ APPLY('#homeScreen', 28); }
-  else if(name === 'profile'){ APPLY('#profileScreen', 28); }
-  else if(name === 'trophies'){ APPLY('#trophiesScreen', 28); }
-  else if(name === 'trophyDetail'){ APPLY('#trophyDetailScreen', 10); }
-  else if(name === 'builds'){ APPLY('#buildsScreen', 28); }
-  else if(name === 'buildCreate'){ APPLY('#buildCreateScreen', 28); }
-  else if(name === 'buildDetail'){ APPLY('#buildDetailScreen', 28); }
+  if(name === 'home'){
+    APPLY('#homeScreen', 28); // главная
+  } else if(name === 'profile'){
+    APPLY('#profileScreen', 28);
+  } else if(name === 'trophies'){
+    APPLY('#trophiesScreen', 28);
+  } else if(name === 'trophyDetail'){
+    // Здесь раньше была «пропасть». Делаем совсем небольшой отступ.
+    APPLY('#trophyDetailScreen', 8);
+  } else if(name === 'builds'){
+    APPLY('#buildsScreen', 28);
+  } else if(name === 'buildCreate'){
+    APPLY('#buildCreateScreen', 28);
+  } else if(name === 'buildDetail'){
+    APPLY('#buildDetailScreen', 28);
+  }
 }
 
 function configureSystemButtons(name){
@@ -132,7 +92,7 @@ function showScreen(name){
   setFooterSafeSpacing(name);
 
   if(tg){
-    // Жёстко синхронизируем BackButton
+    // На всякий случай жёстко синхронизируем BackButton:
     if(name === 'home') tg.BackButton.hide();
     else tg.BackButton.show();
   }
@@ -145,14 +105,13 @@ function showScreen(name){
   else if(name === 'buildCreate') setTopbar(true, 'Создать билд');
   else if(name === 'buildDetail') setTopbar(true, 'Билд');
 
+  // В Telegram: инлайн-кнопка отправки на экране трофея
   if(name === 'trophyDetail'){ ensureInlineSubmitButton(); }
 
-  // каждый раз страхуемся от переполнений/смещений
-  applyTopSafeOffset();
   scrollTopSmooth();
 }
 
-/* Инлайн «Отправить заявку» на экране трофея */
+// Инлайн «Отправить заявку» на экране трофея (для Telegram)
 function ensureInlineSubmitButton(){
   const form = $('proofForm');
   if(!form) return;
@@ -169,19 +128,19 @@ function ensureInlineSubmitButton(){
   }
   submitInline.onclick = (e)=>{ e.preventDefault(); submitProof(); };
 
-  // Убираем «левую пустоту» именно на этой странице
+  // Убедимся, что нет «лишнего» большого отступа снизу
   const fa = document.querySelector('#trophyDetailScreen .footer-actions');
-  if(fa) fa.style.margin = '8px 0 10px';
+  if(fa) fa.style.margin = '8px 0 8px';
 }
 
-/* Header user chip */
+// Header user chip
 (function(){
   const chip = $('userChip');
   const uname = tg?.initDataUnsafe?.user?.username;
   if(chip && uname) chip.textContent = '@' + uname;
 })();
 
-/* Chips (профиль) */
+// Chips (профиль)
 const PLATFORM   = ['🎮 PlayStation','💻 ПК'];
 const MODES      = ['📖 Сюжет','🏹 Выживание','🗻 Испытания Иё','⚔️ Соперники','📜 Главы'];
 const GOALS      = ['🏆 Получение трофеев','🔎 Узнать что-то новое','👥 Поиск тиммейтов'];
@@ -221,7 +180,7 @@ function setActive(container, arr){
   });
 }
 
-/* Профиль: отображение */
+// Профиль: отображение
 const v_real_name  = $('v_real_name');
 const v_psn        = $('v_psn');
 const v_platform   = $('v_platform');
@@ -237,7 +196,7 @@ function refreshProfileView(){
   if(v_difficulty) v_difficulty.textContent = prettyLines(activeValues($('difficultyChips')));
 }
 
-/* Профиль: форма */
+// Профиль: форма
 const profileForm = $('profileForm');
 const resetBtn    = $('resetBtn');
 
@@ -295,7 +254,7 @@ if(profileForm){
   }
 }
 
-/* --- Трофеи --- */
+// --- Трофеи ---
 const trophyListEl  = $('trophyList');
 const trophyTitleEl = $('trophyTitle');
 const trophyDescEl  = $('trophyDesc');
@@ -483,7 +442,7 @@ async function submitProof(){
   showScreen('trophies');
 }
 
-/* Навигация по системной кнопке «Назад» Telegram */
+// Навигация по системной кнопке «Назад» Telegram
 function handleBack(){
   switch(currentScreen){
     case 'profile':
@@ -506,12 +465,12 @@ if(tg){
   try{ tg.BackButton.onClick(handleBack); }catch{}
 }
 
-/* --- Навигация (главное меню) --- */
+// --- Навигация (главное меню) ---
 $('openProfileBtn')?.addEventListener('click', ()=> showScreen('profile'));
 $('trophiesBtn')?.addEventListener('click', ()=> showScreen('trophies'));
 $('buildsBtn')?.addEventListener('click', ()=> { renderMyBuilds(); showScreen('builds'); });
 
-/* ===================== БИЛДЫ ===================== */
+// ===================== БИЛДЫ =====================
 const LS_KEY_BUILDS = 'tsu_builds_v1';
 const CLASS_VALUES = ['Самурай','Охотник','Убийца','Ронин'];
 const TAG_VALUES   = ['HellMode','Спидран','Соло','Сюжет','Соперники'];
@@ -789,7 +748,6 @@ lightbox?.addEventListener('click', closeLightbox);
 
 // ===================== Старт =====================
 (async function start(){
-  applyTopSafeOffset();
   showScreen('home');
   const data = await loadTrophies();
   renderTrophyList(data);

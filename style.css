@@ -24,7 +24,6 @@ body{
   padding:16px;
   max-width:920px;
   margin:auto;
-  /* немного воздуха под нижние кнопки */
   padding-bottom: calc(36px + var(--safe-bottom));
 }
 
@@ -54,7 +53,13 @@ body{
   background:transparent;color:var(--tg-tx);font-size:16px;line-height:1.35;outline:none;
   transition:border-color .2s, box-shadow .2s;
 }
-.input textarea{resize:none;min-height:60px;max-height:200px;overflow-y:auto}
+/* 1 строка по умолчанию, дальше растёт JS-ом */
+.input textarea{
+  resize:none;
+  min-height: calc(1em + 24px); /* 1 строка + вертикальные паддинги */
+  max-height: 200px;
+  overflow-y:auto;
+}
 .input input:focus,.input textarea:focus{border-color:var(--accent)}
 
 /* Chips */
@@ -88,7 +93,7 @@ body{
 .big-btn.primary{background:var(--accent);border-color:transparent;color:#00131f;font-weight:700}
 .big-btn.ghost{opacity:.95}
 
-/* Нижние кнопки: единый зазор до нижней границы */
+/* Нижние кнопки — одинаковый зазор до низа */
 .footer-actions{margin:8px 0 calc(28px + var(--safe-bottom));}
 #backToListBtn,
 #trophiesHomeBtn,
@@ -111,10 +116,8 @@ body{
 /* Trophies spacing fix */
 #trophiesScreen .value{white-space:pre-line;line-height:1.15}
 
-/* --- Превью файлов --- */
-#filePreview{
-  display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;
-}
+/* Превью файлов */
+#filePreview{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
 .preview-item{
   width:64px;height:64px;border-radius:8px;background:rgba(255,255,255,0.06);
   border:1px solid var(--stroke);display:flex;align-items:center;justify-content:center;
@@ -126,7 +129,7 @@ body{
   color:var(--tg-hint);display:flex;align-items:center;justify-content:center;font-size:13px;
 }
 
-/* --- Ошибки и shake --- */
+/* Ошибки и shake */
 .error{border-color:#ff4444!important;}
 .error-text{color:#ff4444;font-size:12px;margin-top:4px}
 @keyframes shake{
@@ -137,7 +140,7 @@ body{
 }
 .shake{animation:shake .3s}
 
-/* --- Экран успеха --- */
+/* Экран успеха (если когда-нибудь вернём) */
 .success-message{
   text-align:center;font-size:16px;font-weight:500;margin-top:40px;color:var(--tg-tx);
 }

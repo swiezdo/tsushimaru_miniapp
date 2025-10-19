@@ -36,30 +36,33 @@
     Object.assign(t.style,{
       position:'fixed',top:'12px',left:'50%',transform:'translateX(-50%)',
       padding:'10px 14px',borderRadius:'12px',border:'1px solid var(--stroke)',
-      background:'var(--card)',color:'var(--fg)',zIndex:'9999',
+      background:'var(--secondary)',color:'var(--fg)',zIndex:'9999',
       boxShadow:'0 4px 16px rgba(0,0,0,.25)'
     });
     document.body.appendChild(t);
     setTimeout(()=>t.remove(),1600);
   }
 
+  function applyTheme(){
+    if(!tg) return;
+    const root = document.documentElement;
+    // CSS уже читает Telegram CSS variables, обновлять ничего не нужно
+    document.body.classList.toggle('tg-dark', tg.colorScheme === 'dark');
+  }
+
   onReady(function(){
-    const userChip=document.getElementById('userChip');
     try{
-      if(tg&&tg.themeParams){
-        const tp=tg.themeParams;
-        if(tp.bg_color)document.documentElement.style.setProperty('--bg',tp.bg_color);
-        if(tp.text_color)document.documentElement.style.setProperty('--fg',tp.text_color);
-        if(tp.hint_color)document.documentElement.style.setProperty('--muted',tp.hint_color);
-        if(tp.button_color)document.documentElement.style.setProperty('--accent',tp.button_color);
-        if(tg.ready)tg.ready();
-        if(tg.expand)tg.expand();
-        const me=tg.initDataUnsafe?tg.initDataUnsafe.user:null;
-        userChip.textContent=me?.first_name||'Пользователь';
-      } else userChip.textContent='Демо';
+      if(tg){
+        applyTheme();
+        tg.onEvent('themeChanged', applyTheme);
+        if(tg.ready) tg.ready();
+        if(tg.expand) tg.expand();
+        const me = tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
+        const userChip = document.getElementById('userChip');
+        userChip.textContent = (me && me.first_name) ? me.first_name : 'Пользователь';
+      }
     }catch(e){}
 
-    // Делегирование навигации
     document.addEventListener('click',e=>{
       const t=e.target.closest('button, a.big-btn');
       if(!t)return;
@@ -70,7 +73,7 @@
       if(t.classList.contains('list-btn')&&t.dataset.id){openTrophyDetail(t.dataset.id);return;}
     });
 
-    // Профиль (минимализовано)
+    // Профиль
     const form=document.getElementById('profileForm');
     const resetBtn=document.getElementById('resetBtn');
 
@@ -116,12 +119,12 @@
     renderChips(difficultyChips,DIFFICULTY);
 
     function toggleChip(e){ if(e.target.classList.contains('chip-btn')) e.target.classList.toggle('active'); }
-    platformChips.addEventListener('click',toggleChip);
-    modesChips.addEventListener('click',toggleChip);
-    goalsChips.addEventListener('click',toggleChip);
-    difficultyChips.addEventListener('click',toggleChip);
+    platformChips.addEventListener('click',toggleChip,{passive:true});
+    modesChips.addEventListener('click',toggleChip,{passive:true});
+    goalsChips.addEventListener('click',toggleChip,{passive:true});
+    difficultyChips.addEventListener('click',toggleChip,{passive:true});
 
-    const STORAGE_KEY='demo_profile_v10'; let mem=null;
+    const STORAGE_KEY='demo_profile_v12'; let mem=null;
     const load=()=>{try{const r=localStorage.getItem(STORAGE_KEY);return r?JSON.parse(r):(mem||{});}catch{return mem||{}}};
     const save=(p)=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(p));}catch{mem=p;}};
 
@@ -178,7 +181,7 @@
       showFeedback('Профиль очищен');
     });
 
-    // Трофеи: список/детали
+    // Трофеи
     const trophyList=document.getElementById('trophyList');
     const trophyTitle=document.getElementById('trophyTitle');
     const trophyDesc=document.getElementById('trophyDesc');
@@ -186,6 +189,7 @@
 
     function populateTrophyList(){
       fetchTrophies().then(data=>{
+        trophiesCache=data;
         trophyList.innerHTML='';
         Object.entries(data).forEach(([key,t])=>{
           const b=document.createElement('button');
@@ -197,15 +201,15 @@
     }
 
     function openTrophyDetail(id){
-      fetchTrophies().then(data=>{
-        const t=data[id]||{};
-        trophyTitle.textContent=`${t.name||'Трофей'} ${t.emoji||''}`;
-        trophyDesc.innerHTML='';
-        (t.description||['Описание скоро будет.']).forEach(line=>{
-          const li=document.createElement('li');li.textContent=line;trophyDesc.appendChild(li);
-        });
-        showScreen('trophyDetail');
+      const data=trophiesCache;
+      const t=(data && data[id])?data[id]:{};
+      if(!t){ showFeedback('Трофей не найден'); return; }
+      trophyTitle.textContent=`${t.name||'Трофей'} ${t.emoji||''}`;
+      trophyDesc.innerHTML='';
+      (t.description||['Описание скоро будет.']).forEach(line=>{
+        const li=document.createElement('li');li.textContent=line;trophyDesc.appendChild(li);
       });
+      showScreen('trophyDetail');
     }
 
     proofForm.addEventListener('submit',e=>{
@@ -216,7 +220,6 @@
       showScreen('trophies');
     });
 
-    // делегирование клика по кнопкам списка трофеев
     document.addEventListener('click',e=>{
       const b=e.target.closest('.list-btn');
       if(b && b.dataset.id){ openTrophyDetail(b.dataset.id); }

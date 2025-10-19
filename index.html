@@ -19,7 +19,7 @@
       <section id="homeScreen" class="card home">
         <div class="brand">
           <img class="logo" src="./-1.png" alt="Tsushima.Ru" />
-          <h1 class="brand-title">Tsushima.Ru</h1>
+        <h1 class="brand-title">Tsushima.Ru</h1>
         </div>
 
         <div class="home-buttons">
@@ -87,7 +87,6 @@
         <div class="actions-bar">
           <button type="button" id="profileSaveBtn" class="btn primary wide">Сохранить</button>
         </div>
-        <!-- Было больше: уменьшил до компактного спейсера -->
         <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
       </section>
 
@@ -108,7 +107,6 @@
           <h2 class="card-title">Список трофеев</h2>
           <div id="trophyList" class="list-buttons"></div>
         </section>
-        <!-- Небольшой отступ под списком трофеев -->
         <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
       </section>
 
@@ -132,11 +130,15 @@
               <textarea id="commentText" rows="1" placeholder="Добавьте комментарий"></textarea>
             </div>
 
-            <div class="actions only-browser">
-              <button type="submit" class="btn primary" id="sendProofBtn">Отправить заявку</button>
-            </div>
+            <!-- УДАЛЕНО: внутренняя actions с кнопкой отправки -->
           </form>
         </section>
+
+        <!-- ВНЕ КАРТОЧКИ: КНОПКА ОТПРАВКИ ЗАЯВКИ + отступы как в проекте -->
+        <div class="actions-bar">
+          <button type="button" id="sendProofBtn" class="btn primary wide">Отправить заявку</button>
+        </div>
+        <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
       </section>
 
       <!-- ====== БИЛДЫ: СПИСОК ====== -->
@@ -203,7 +205,6 @@
         <div class="actions-bar">
           <button type="button" id="buildSubmitBtn" class="btn primary wide">Создать</button>
         </div>
-        <!-- Небольшой отступ под кнопкой «Создать» -->
         <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
       </section>
 
@@ -222,7 +223,6 @@
           <h3 class="card-title">Скриншоты</h3>
           <div id="buildDetailShots" class="shots-grid"></div>
         </section>
-        <!-- Небольшой отступ под блоком «Скриншоты» -->
         <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
       </section>
     </main>

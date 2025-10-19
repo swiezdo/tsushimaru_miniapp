@@ -7,7 +7,7 @@
   }
 
   // ==== Storage (с fallback в память) ====
-  var STORAGE_KEY = 'demo_profile_v7';
+  var STORAGE_KEY = 'demo_profile_v8';
   var memStore = null;
 
   function loadProfile(){
@@ -36,7 +36,7 @@
   var DIFFICULTY = ['🥉 Бронза','🥈 Серебро','🥇 Золото','🏅 Платина','👻 Кошмар','🔥 HellMode'];
 
   // ==== Источник трофеев ====
-  // Поменяй на свой RAW-URL GitHub, например:
+  // Для GitHub Pages подставь RAW-URL:
   // const TROPHIES_JSON_URL = 'https://raw.githubusercontent.com/USERNAME/REPO/BRANCH/trophies.json';
   const TROPHIES_JSON_URL = './trophies.json';
   var trophiesCache = null;
@@ -94,20 +94,20 @@
     if(title) document.getElementById('appTitle').textContent = title;
   }
 
-  function showScreen(name) {
-    ['homeScreen', 'profileScreen', 'trophiesScreen', 'trophyDetailScreen']
-      .forEach(id => document.getElementById(id).classList.add('hidden'));
+  function showScreen(name){
+    var screens = ['homeScreen','profileScreen','trophiesScreen','trophyDetailScreen'];
+    screens.forEach(function(id){ document.getElementById(id).classList.add('hidden'); });
 
-    if (name === 'home') {
+    if(name === 'home'){
       document.getElementById('homeScreen').classList.remove('hidden');
       showTopbar(false);
-    } else if (name === 'profile') {
+    } else if(name === 'profile'){
       document.getElementById('profileScreen').classList.remove('hidden');
       showTopbar(true, 'Профиль');
-    } else if (name === 'trophies') {
+    } else if(name === 'trophies'){
       document.getElementById('trophiesScreen').classList.remove('hidden');
       showTopbar(true, 'Трофеи');
-    } else if (name === 'trophyDetail') {
+    } else if(name === 'trophyDetail'){
       document.getElementById('trophyDetailScreen').classList.remove('hidden');
       showTopbar(true, 'Трофеи');
     }
@@ -125,45 +125,8 @@
 
   // ===== Инициализация =====
   onReady(function(){
-    // UI refs
+    // Тема Telegram
     var userChip = document.getElementById('userChip');
-
-    // Home
-    var openProfileBtn = document.getElementById('openProfileBtn');
-    var trophiesBtn    = document.getElementById('trophiesBtn');
-    var builderBtn     = document.getElementById('builderBtn');
-
-    // Profile
-    var form = document.getElementById('profileForm');
-    var resetBtn = document.getElementById('resetBtn');
-    var homeBtn = document.getElementById('homeBtn');
-
-    var out = {
-      real_name:  document.getElementById('v_real_name'),
-      psn:        document.getElementById('v_psn'),
-      platform:   document.getElementById('v_platform'),
-      modes:      document.getElementById('v_modes'),
-      goals:      document.getElementById('v_goals'),
-      difficulty: document.getElementById('v_difficulty'),
-      trophies:   document.getElementById('v_trophies')
-    };
-
-    var platformChips   = document.getElementById('platformChips');
-    var modesChips      = document.getElementById('modesChips');
-    var goalsChips      = document.getElementById('goalsChips');
-    var difficultyChips = document.getElementById('difficultyChips');
-
-    // Trophies
-    var trophyList     = document.getElementById('trophyList');
-    var trophiesHomeBtn= document.getElementById('trophiesHomeBtn');
-
-    // Trophy detail
-    var trophyTitle = document.getElementById('trophyTitle');
-    var trophyDesc  = document.getElementById('trophyDesc');
-    var proofForm   = document.getElementById('proofForm');
-    var backToListBtn = document.getElementById('backToListBtn');
-
-    // Тема Telegram (минимально)
     try{
       if(tg && tg.themeParams){
         var tp = tg.themeParams;
@@ -181,13 +144,29 @@
       }
     }catch(e){}
 
-    // Рисуем чипы
+    // ==== Профиль ====
+    var form = document.getElementById('profileForm');
+    var resetBtn = document.getElementById('resetBtn');
+
+    var out = {
+      real_name:  document.getElementById('v_real_name'),
+      psn:        document.getElementById('v_psn'),
+      platform:   document.getElementById('v_platform'),
+      modes:      document.getElementById('v_modes'),
+      goals:      document.getElementById('v_goals'),
+      difficulty: document.getElementById('v_difficulty'),
+    };
+
+    var platformChips   = document.getElementById('platformChips');
+    var modesChips      = document.getElementById('modesChips');
+    var goalsChips      = document.getElementById('goalsChips');
+    var difficultyChips = document.getElementById('difficultyChips');
+
     renderChips(platformChips, PLATFORM);
     renderChips(modesChips, MODES);
     renderChips(goalsChips, GOALS);
     renderChips(difficultyChips, DIFFICULTY);
 
-    // Профиль -> форма
     var p = loadProfile();
     renderProfile(p);
     fillForm(p);
@@ -196,7 +175,6 @@
     setChipsActive(goalsChips,      p.goals || []);
     setChipsActive(difficultyChips, p.difficulty || []);
 
-    // Тоггл по клику (чипы)
     function toggleHandler(e){
       if(e.target && e.target.classList.contains('chip-btn')){
         e.target.classList.toggle('active');
@@ -207,7 +185,6 @@
     goalsChips.addEventListener('click', toggleHandler);
     difficultyChips.addEventListener('click', toggleHandler);
 
-    // Сохранить профиль
     form.addEventListener('submit', function(e){
       e.preventDefault();
       var updated = {
@@ -225,7 +202,6 @@
       scrollTopSmooth();
     });
 
-    // Сброс профиля
     resetBtn.addEventListener('click', function(){
       var empty = { real_name:'', psn:'', platform:[], modes:[], goals:[], difficulty:[] };
       saveProfile(empty);
@@ -240,59 +216,6 @@
       scrollTopSmooth();
     });
 
-    // Делегирование кликов — работает даже если что-то рендерится позже
-    document.addEventListener('click', function (e) {
-      const t = e.target.closest('button, a.big-btn'); // ловим и <button>, и нашу большую <a>
-      if (!t) return;
-
-      // Не даём тексту выделяться/перетаскиваться при длинном тапе
-      t.blur();
-
-      // Домой (из профиля / трофеев)
-      if (t.id === 'homeBtn' || t.id === 'trophiesHomeBtn') {
-        showScreen('home');
-        e.preventDefault();
-        return;
-      }
-
-      // Открыть профиль
-      if (t.id === 'openProfileBtn') {
-        showScreen('profile');
-        e.preventDefault();
-        return;
-      }
-
-      // Открыть список трофеев
-      if (t.id === 'trophiesBtn') {
-        populateTrophyList();
-        showScreen('trophies');
-        e.preventDefault();
-        return;
-      }
-
-      // Назад к списку трофеев
-      if (t.id === 'backToListBtn') {
-        showScreen('trophies');
-        e.preventDefault();
-        return;
-      }
-
-      // Кнопка «трофей в списке»
-      if (t.classList.contains('list-btn') && t.dataset.id) {
-        openTrophyDetail(t.dataset.id);
-        e.preventDefault();
-        return;
-      }
-    }, { passive: true });
-
-
-    // Заглушка билдера
-    function soon(){ showFeedback('Скоро! В разработке.'); }
-    builderBtn.addEventListener('click', soon);
-
-    // По умолчанию — Домой
-    showScreen('home');
-
     function renderProfile(p){
       out.real_name.textContent   = p.real_name || '—';
       out.psn.textContent         = p.psn || '—';
@@ -300,14 +223,18 @@
       out.modes.textContent       = joinLines(p.modes);
       out.goals.textContent       = joinLines(p.goals);
       out.difficulty.textContent  = joinLines(p.difficulty);
-      out.trophies.innerHTML      = 'Легенда Цусимы 🗡<br>Легенда Эдзо 🏔';
     }
     function fillForm(p){
       form.real_name.value = p.real_name || '';
       form.psn.value       = p.psn || '';
     }
 
-    // ====== ТРОФЕИ: список + детали ======
+    // ==== Трофеи: список + детали ====
+    var trophyList      = document.getElementById('trophyList');
+    var trophyTitle     = document.getElementById('trophyTitle');
+    var trophyDesc      = document.getElementById('trophyDesc');
+    var proofForm       = document.getElementById('proofForm');
+
     function populateTrophyList(){
       fetchTrophies().then(function(data){
         trophyList.innerHTML = '';
@@ -318,7 +245,6 @@
           btn.type = 'button';
           btn.setAttribute('data-id', key);
           btn.innerHTML = '<span>' + (t.name || key) + ' ' + (t.emoji || '') + '</span><span class="right">›</span>';
-          btn.addEventListener('click', function(){ openTrophyDetail(key); });
           trophyList.appendChild(btn);
         });
       });
@@ -339,15 +265,59 @@
       });
     }
 
-    // Отправка заявки (тест)
     proofForm.addEventListener('submit', function(e){
       e.preventDefault();
       var files = document.getElementById('proofFiles').files;
       var count = files ? files.length : 0;
-      // тут в будущем: отправка в админ-группу
       showFeedback('Заявка отправлена (тест). Файлов: ' + count);
       try{ if(tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred) tg.HapticFeedback.notificationOccurred('success'); }catch(e){}
       showScreen('trophies');
     });
+
+    // ==== Делегирование кликов (надёжная навигация) ====
+    document.addEventListener('click', function(e){
+      var t = e.target.closest('button, a.big-btn');
+      if(!t) return;
+
+      // Домой
+      if(t.id === 'homeBtn' || t.id === 'trophiesHomeBtn'){
+        showScreen('home');
+        e.preventDefault();
+        return;
+      }
+
+      // Открыть профиль
+      if(t.id === 'openProfileBtn'){
+        showScreen('profile');
+        e.preventDefault();
+        return;
+      }
+
+      // Открыть трофеи
+      if(t.id === 'trophiesBtn'){
+        populateTrophyList();
+        showScreen('trophies');
+        e.preventDefault();
+        return;
+      }
+
+      // Назад к списку трофеев
+      if(t.id === 'backToListBtn'){
+        showScreen('trophies');
+        e.preventDefault();
+        return;
+      }
+
+      // Кнопка конкретного трофея
+      if(t.classList.contains('list-btn') && t.dataset.id){
+        openTrophyDetail(t.dataset.id);
+        e.preventDefault();
+        return;
+      }
+      // Ссылку на группу (a.big-btn без id) не перехватываем — пусть открывается.
+    }, {passive:true});
+
+    // Старт: Домой
+    showScreen('home');
   });
 })();

@@ -9,6 +9,7 @@
   </head>
   <body>
     <main class="container">
+      <!-- Шапка: скрываем на Home, показываем на остальных -->
       <header class="topbar">
         <div class="title" id="appTitle">Tsushima.Ru</div>
         <div id="userChip" class="chip">Гость</div>
@@ -112,18 +113,23 @@
           <button id="homeBtn" class="btn wide">🏠 Домой</button>
         </div>
       </section>
-      <section class="card">
-        <h2 class="card-title">Ваши трофеи</h2>
-        <div class="profile-grid">
-          <div class="field span-2">
-            <label>Полученные трофеи</label>
-            <div class="value lines">
-              Легенда Цусимы 🗡<br>
-              Легенда Эдзо 🏔
+
+      <!-- ====== ЭКРАН 3: ТРОФЕИ (СПИСОК) ====== -->
+      <section id="trophiesScreen" class="hidden">
+        <section class="card">
+          <h2 class="card-title">Ваши трофеи</h2>
+          <!-- Точно такой же стиль, как поля профиля -->
+          <div class="profile-grid">
+            <div class="field span-2">
+              <label>Полученные трофеи</label>
+              <div class="value lines">
+                Легенда Цусимы 🗡<br>
+                Легенда Эдзо 🏔
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+
         <section class="card">
           <h2 class="card-title">Список трофеев</h2>
           <div id="trophyList" class="list-buttons">

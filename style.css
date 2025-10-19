@@ -16,10 +16,13 @@ body{
 .title{font-size:20px;font-weight:600}
 .chip{border:1px solid var(--stroke);border-radius:999px;padding:6px 10px;color:var(--muted)}
 
-.card{background:var(--card);border:1px solid var(--stroke);
-      border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.card{
+  background:var(--card);border:1px solid var(--stroke);
+  border-radius:var(--radius);padding:16px;margin-bottom:16px
+}
 .card-title{font-weight:600;margin-bottom:12px}
 
+/* Сетка и поля — базовый стиль профиля */
 .profile-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .field label{font-size:12px;color:var(--muted);margin-bottom:4px;display:block}
 .value{font-size:15px;word-break:break-word}
@@ -42,9 +45,12 @@ body{
 }
 .chip-btn.active{background:var(--accent);border-color:transparent;color:#00131f;font-weight:600}
 
+/* Кнопки */
 .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
-.btn{border:1px solid var(--stroke);border-radius:12px;padding:10px 14px;
-     background:transparent;color:var(--fg);cursor:pointer}
+.btn{
+  border:1px solid var(--stroke);border-radius:12px;padding:10px 14px;
+  background:transparent;color:var(--fg);cursor:pointer
+}
 .btn.primary{background:var(--accent);border-color:transparent;color:#00131f;font-weight:600}
 .btn.ghost{opacity:.9}
 .btn.wide{width:100%}
@@ -65,22 +71,7 @@ body{
 
 .footer-actions{margin:8px 0 16px}
 
-/* Список моих трофеев — просто текст без карточек */
-.list {
-  display: grid;
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
-.list-item {
-  border: none;
-  background: none;
-  padding: 2px 0;
-  font-size: 14px;
-  line-height: 1.4;
-  color: var(--muted);
-}
-
+/* СПИСКИ */
 .list-buttons{display:grid;gap:8px}
 .list-btn{
   display:flex;justify-content:space-between;align-items:center;
@@ -94,44 +85,30 @@ body{
 .desc-list{margin-left:18px;display:grid;gap:6px}
 .desc-list li{line-height:1.35}
 
+/* Адаптив */
 @media(max-width:640px){
   .profile-grid{grid-template-columns:1fr}
 }
 
-/* Кнопки и чипы: без выделения текста и без "синего" тап-хайлайта */
+/* --- UX: отключаем выделение текста в интерактиве, улучшаем тапы --- */
 button, .btn, .big-btn, .list-btn, .chip-btn {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation; /* улучшает отклик на тапы */
+  touch-action: manipulation;
 }
-
-/* Чтобы <a.big-btn> вела себя как настоящая кнопка при тапе */
 a.big-btn { cursor: pointer; }
-
-/* На случай перекрытий — гарантируем кликабельность слоёв */
 .big-btn, .list-btn, .btn, .chip-btn { pointer-events: auto; }
 
-#trophiesScreen .profile-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+/* Трофеи: сетка/поля такие же, как в профиле (на всякий случай уточняем) */
+#trophiesScreen .profile-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:12px
 }
-
-#trophiesScreen .field label {
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 4px;
-  display: block;
+#trophiesScreen .field label{
+  font-size:12px;color:var(--muted);margin-bottom:4px;display:block
 }
-
-#trophiesScreen .value {
-  font-size: 15px;
-  word-break: break-word;
-  white-space: pre-line;
+#trophiesScreen .value{
+  font-size:15px;word-break:break-word;white-space:pre-line
 }
-
-#trophiesScreen .span-2 {
-  grid-column: 1 / -1;
-}
+#trophiesScreen .span-2{grid-column:1/-1}

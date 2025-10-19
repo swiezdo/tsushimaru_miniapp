@@ -75,7 +75,6 @@
     try{
       if(tg && tg.showPopup){ tg.showPopup({title:'Готово', message: message}); return; }
     }catch(e){}
-    // Фоллбэк-тост
     var t = document.createElement('div');
     t.textContent = message;
     t.style.position = 'fixed';
@@ -93,11 +92,35 @@
     setTimeout(function(){ if(t && t.parentNode) t.parentNode.removeChild(t); }, 1600);
   }
 
+  // ===== Навигация между экранами =====
+  function showScreen(name){
+    var home = document.getElementById('homeScreen');
+    var prof = document.getElementById('profileScreen');
+    var title = document.getElementById('appTitle');
+
+    if(name === 'profile'){
+      home.classList.add('hidden');
+      prof.classList.remove('hidden');
+      title.textContent = 'Профиль';
+      scrollTopSmooth();
+    } else {
+      prof.classList.add('hidden');
+      home.classList.remove('hidden');
+      title.textContent = 'Tsushima.Ru';
+      scrollTopSmooth();
+    }
+  }
+
   onReady(function(){
     // UI refs
     var userChip = document.getElementById('userChip');
     var form = document.getElementById('profileForm');
     var resetBtn = document.getElementById('resetBtn');
+
+    var openProfileBtn = document.getElementById('openProfileBtn');
+    var homeBtn = document.getElementById('homeBtn');
+    var trophiesBtn = document.getElementById('trophiesBtn');
+    var builderBtn = document.getElementById('builderBtn');
 
     var out = {
       real_name:  document.getElementById('v_real_name'),
@@ -174,18 +197,12 @@
       try{ if(tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred) tg.HapticFeedback.notificationOccurred('success'); }catch(e){}
       scrollTopSmooth();
       showFeedback('Профиль обновлён');
-      // В форме остаётся то, что ввёл пользователь — как просил
     });
 
     // Сброс (полностью пусто)
     resetBtn.addEventListener('click', function(){
       var empty = {
-        real_name:'',
-        psn:'',
-        platform:[],
-        modes:[],
-        goals:[],
-        difficulty:[]
+        real_name:'', psn:'', platform:[], modes:[], goals:[], difficulty:[]
       };
       saveProfile(empty);
       renderProfile(empty);
@@ -198,6 +215,18 @@
       scrollTopSmooth();
       showFeedback('Профиль очищен');
     });
+
+    // Навигация
+    openProfileBtn.addEventListener('click', function(){ showScreen('profile'); });
+    homeBtn.addEventListener('click', function(){ showScreen('home'); });
+
+    // Пока заглушки
+    function soon(){ showFeedback('Скоро! В разработке.'); }
+    trophiesBtn.addEventListener('click', soon);
+    builderBtn.addEventListener('click', soon);
+
+    // По умолчанию показываем Home
+    showScreen('home');
 
     function renderProfile(p){
       out.real_name.textContent   = p.real_name || '—';

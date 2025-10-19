@@ -59,10 +59,11 @@
       } else userChip.textContent='Демо';
     }catch(e){}
 
-    // Делегирование навигации
+    // Навигация через делегирование
     document.addEventListener('click',e=>{
       const t=e.target.closest('button, a.big-btn');
       if(!t)return;
+
       if(t.id==='homeBtn'||t.id==='trophiesHomeBtn'){showScreen('home');return;}
       if(t.id==='openProfileBtn'){showScreen('profile');return;}
       if(t.id==='trophiesBtn'){populateTrophyList();showScreen('trophies');return;}
@@ -70,115 +71,7 @@
       if(t.classList.contains('list-btn')&&t.dataset.id){openTrophyDetail(t.dataset.id);return;}
     });
 
-    // Профиль (минимализовано)
-    const form=document.getElementById('profileForm');
-    const resetBtn=document.getElementById('resetBtn');
-
-    const out={
-      real_name:document.getElementById('v_real_name'),
-      psn:document.getElementById('v_psn'),
-      platform:document.getElementById('v_platform'),
-      modes:document.getElementById('v_modes'),
-      goals:document.getElementById('v_goals'),
-      difficulty:document.getElementById('v_difficulty')
-    };
-
-    const PLATFORM=['🎮 PlayStation','💻 ПК'];
-    const MODES=['📖 Сюжет','🏹 Выживание','🗻 Испытания Иё','⚔️ Соперники','📜 Главы'];
-    const GOALS=['🏆 Получение трофеев','🔎 Узнать что-то новое','👥 Поиск тиммейтов'];
-    const DIFFICULTY=['🥉 Бронза','🥈 Серебро','🥇 Золото','🏅 Платина','👻 Кошмар','🔥 HellMode'];
-
-    function renderChips(container,values){
-      container.innerHTML='';
-      values.forEach(v=>{
-        const b=document.createElement('button');
-        b.type='button';b.className='chip-btn';b.textContent=v;b.dataset.value=v;
-        container.appendChild(b);
-      });
-    }
-    function setChipsActive(container,selected){
-      const set=new Set(selected||[]);
-      container.querySelectorAll('.chip-btn').forEach(btn=>btn.classList.toggle('active',set.has(btn.dataset.value)));
-    }
-    function getSelected(container){
-      return Array.from(container.querySelectorAll('.chip-btn.active')).map(b=>b.dataset.value);
-    }
-    function joinLines(arr){return (arr&&arr.length)?arr.join('\n'):'—';}
-
-    const platformChips=document.getElementById('platformChips');
-    const modesChips=document.getElementById('modesChips');
-    const goalsChips=document.getElementById('goalsChips');
-    const difficultyChips=document.getElementById('difficultyChips');
-
-    renderChips(platformChips,PLATFORM);
-    renderChips(modesChips,MODES);
-    renderChips(goalsChips,GOALS);
-    renderChips(difficultyChips,DIFFICULTY);
-
-    function toggleChip(e){ if(e.target.classList.contains('chip-btn')) e.target.classList.toggle('active'); }
-    platformChips.addEventListener('click',toggleChip);
-    modesChips.addEventListener('click',toggleChip);
-    goalsChips.addEventListener('click',toggleChip);
-    difficultyChips.addEventListener('click',toggleChip);
-
-    const STORAGE_KEY='demo_profile_v10'; let mem=null;
-    const load=()=>{try{const r=localStorage.getItem(STORAGE_KEY);return r?JSON.parse(r):(mem||{});}catch{return mem||{}}};
-    const save=(p)=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(p));}catch{mem=p;}};
-
-    const p=load();
-    out.real_name.textContent=p.real_name||'—';
-    out.psn.textContent=p.psn||'—';
-    out.platform.textContent=joinLines(p.platform||[]);
-    out.modes.textContent=joinLines(p.modes||[]);
-    out.goals.textContent=joinLines(p.goals||[]);
-    out.difficulty.textContent=joinLines(p.difficulty||[]);
-
-    form.real_name.value=p.real_name||'';
-    form.psn.value=p.psn||'';
-    setChipsActive(platformChips,p.platform||[]);
-    setChipsActive(modesChips,p.modes||[]);
-    setChipsActive(goalsChips,p.goals||[]);
-    setChipsActive(difficultyChips,p.difficulty||[]);
-
-    form.addEventListener('submit',e=>{
-      e.preventDefault();
-      const updated={
-        real_name:(form.real_name.value||'').trim(),
-        psn:(form.psn.value||'').trim(),
-        platform:getSelected(platformChips),
-        modes:getSelected(modesChips),
-        goals:getSelected(goalsChips),
-        difficulty:getSelected(difficultyChips)
-      };
-      save(updated);
-      out.real_name.textContent=updated.real_name||'—';
-      out.psn.textContent=updated.psn||'—';
-      out.platform.textContent=joinLines(updated.platform);
-      out.modes.textContent=joinLines(updated.modes);
-      out.goals.textContent=joinLines(updated.goals);
-      out.difficulty.textContent=joinLines(updated.difficulty);
-      showFeedback('Профиль обновлён');
-      window.scrollTo({top:0,behavior:'smooth'});
-    });
-
-    resetBtn.addEventListener('click',()=>{
-      const empty={real_name:'',psn:'',platform:[],modes:[],goals:[],difficulty:[]};
-      save(empty);
-      out.real_name.textContent='—';
-      out.psn.textContent='—';
-      out.platform.textContent='—';
-      out.modes.textContent='—';
-      out.goals.textContent='—';
-      out.difficulty.textContent='—';
-      form.reset();
-      setChipsActive(platformChips,[]);
-      setChipsActive(modesChips,[]);
-      setChipsActive(goalsChips,[]);
-      setChipsActive(difficultyChips,[]);
-      showFeedback('Профиль очищен');
-    });
-
-    // Трофеи: список/детали
+    // Трофеи
     const trophyList=document.getElementById('trophyList');
     const trophyTitle=document.getElementById('trophyTitle');
     const trophyDesc=document.getElementById('trophyDesc');
@@ -211,15 +104,8 @@
     proofForm.addEventListener('submit',e=>{
       e.preventDefault();
       const files=document.getElementById('proofFiles').files;
-      const note=(document.getElementById('proofNote').value||'').trim();
-      showFeedback(`Заявка отправлена (тест). Файлов: ${files.length}${note?`, текст: ${Math.min(note.length,120)} симв.`:''}`);
+      showFeedback(`Заявка отправлена (тест). Файлов: ${files.length}`);
       showScreen('trophies');
-    });
-
-    // делегирование клика по кнопкам списка трофеев
-    document.addEventListener('click',e=>{
-      const b=e.target.closest('.list-btn');
-      if(b && b.dataset.id){ openTrophyDetail(b.dataset.id); }
     });
 
     showScreen('home');

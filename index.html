@@ -67,10 +67,25 @@
               <input id="psn" name="psn" type="text" inputmode="latin" maxlength="32" placeholder="например, swiezdo" />
             </div>
 
-            <div class="input"><label>Платформа</label><div id="platformChips" class="chips"></div></div>
-            <div class="input"><label>Режимы</label><div id="modesChips" class="chips"></div></div>
-            <div class="input"><label>Цели</label><div id="goalsChips" class="chips"></div></div>
-            <div class="input"><label>Сложность</label><div id="difficultyChips" class="chips"></div></div>
+            <div class="input">
+              <label>Платформа</label>
+              <div id="platformChips" class="chips"></div>
+            </div>
+
+            <div class="input">
+              <label>Режимы</label>
+              <div id="modesChips" class="chips"></div>
+            </div>
+
+            <div class="input">
+              <label>Цели</label>
+              <div id="goalsChips" class="chips"></div>
+            </div>
+
+            <div class="input">
+              <label>Сложность</label>
+              <div id="difficultyChips" class="chips"></div>
+            </div>
 
             <div class="actions">
               <button type="submit" class="btn primary">Сохранить</button>
@@ -114,18 +129,14 @@
         </section>
 
         <section class="card">
-          <h3 class="card-title">Подать заявку</h3>
+          <h3 class="card-title">Подтверждение</h3>
           <form id="proofForm" class="form">
             <div class="input">
               <label for="proofFiles">Прикрепите скриншоты/видео (доказательство)</label>
               <input id="proofFiles" type="file" multiple accept="image/*,video/*" />
             </div>
-            <div class="input">
-              <label for="proofNote">Комментарий к заявке (необязательно)</label>
-              <textarea id="proofNote" rows="3" placeholder="Напишите сопроводительный текст…"></textarea>
-            </div>
             <div class="actions">
-              <button type="submit" class="btn primary">Отправить</button>
+              <button type="submit" class="btn primary">Отправить заявку (тест)</button>
             </div>
           </form>
         </section>

@@ -39,7 +39,7 @@ body{
 .card-title{font-weight:600;margin-bottom:12px}
 
 /* Кнопка под заголовком «Билды» */
-.top-action{margin:-4px 0 12px}
+.top-action{margin:16px 0} /* было: margin:-4px 0 12px */
 
 /* Доп. пустое пространство */
 .space-md{height:12px}
@@ -72,7 +72,7 @@ body{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px;
-  margin: -4px 0 calc(28px + var(--safe-bottom));
+  margin:16px 0; /* было: -4px 0 calc(28px + var(--safe-bottom)) */
 }
 
 /* Upload boxes (два квадрата в ряд) */

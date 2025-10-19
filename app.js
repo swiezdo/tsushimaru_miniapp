@@ -255,30 +255,8 @@ function renderProofPreviews(){
   previewEl.innerHTML = '';
   if(!proofFilesBuffer.length) return;
 
-  const MAX_TILES = 4;
-
-  if(proofFilesBuffer.length <= MAX_TILES){
-    // Показываем все, но не больше 4 (на всякий)
-    proofFilesBuffer.slice(0, MAX_TILES).forEach(file=>{
-      const div = document.createElement('div');
-      div.className = 'preview-item';
-      if(file.type.startsWith('image/')){
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(file);
-        img.onload = ()=> URL.revokeObjectURL(img.src);
-        div.appendChild(img);
-      }else if(file.type.startsWith('video/')){
-        div.textContent = '🎥';
-      }else{
-        div.textContent = '📄';
-      }
-      previewEl.appendChild(div);
-    });
-    return;
-  }
-
-  // Больше 4: первые 3 миниатюры + четвёртая «+N»
-  proofFilesBuffer.slice(0, 3).forEach(file=>{
+  const limit = 8;
+  proofFilesBuffer.slice(0, limit).forEach(file=>{
     const div = document.createElement('div');
     div.className = 'preview-item';
     if(file.type.startsWith('image/')){
@@ -293,12 +271,12 @@ function renderProofPreviews(){
     }
     previewEl.appendChild(div);
   });
-
-  const moreCount = proofFilesBuffer.length - 3;
-  const more = document.createElement('div');
-  more.className = 'preview-more';
-  more.textContent = `+${moreCount}`;
-  previewEl.appendChild(more);
+  if(proofFilesBuffer.length > limit){
+    const more = document.createElement('div');
+    more.className = 'preview-more';
+    more.textContent = `+${proofFilesBuffer.length - limit}`;
+    previewEl.appendChild(more);
+  }
 }
 
 // Триггер выбора медиа

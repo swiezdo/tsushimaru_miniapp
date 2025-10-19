@@ -83,8 +83,14 @@ body{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px;
-  margin: -4px 0 calc(28px + var(--safe-bottom));
+  margin: -4px 0 0; /* сам блок без большого нижнего margin */
 }
+
+/* Гарантированный отступ как у нижних кнопок */
+.footer-actions{margin:8px 0 calc(28px + var(--safe-bottom));}
+
+/* Для экрана подачи заявки — чуть меньше, чтобы не было «пропасти» */
+#trophyDetailScreen .footer-actions{margin:8px 0 calc(16px + var(--safe-bottom));}
 
 /* Upload boxes (два квадрата в ряд) */
 .shots-two{
@@ -159,12 +165,6 @@ body{
 }
 .big-btn.primary{background:var(--accent);border-color:transparent;color:#00131f;font-weight:700}
 .big-btn.ghost{opacity:.95}
-
-/* Нижние кнопки — единый зазор до низа */
-.footer-actions{margin:8px 0 calc(28px + var(--safe-bottom));}
-
-/* Убрали индивидуальные margin-bottom у кнопок, чтобы не было двойного отступа */
-/* (раньше здесь был блок с #backToListBtn, #trophiesHomeBtn, #homeBtn, #buildsHomeBtn, #backToBuildsBtn) */
 
 /* List */
 .list-buttons{display:grid;gap:8px}

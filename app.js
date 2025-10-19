@@ -20,6 +20,16 @@ function hapticTap(){ try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{}
 function $(id){ return document.getElementById(id); }
 function scrollTopSmooth(){ window.scrollTo({top:0, behavior:'smooth'}); }
 
+// ===== ВАЖНО: отступ сверху под системные элементы Telegram =====
+const TOP_OFFSET_PX = 64; // ≈ 4 строки
+function applyTopInset(){
+  const root = document.querySelector('main.container');
+  if(!root) return;
+  // учитываем вырез/статус-бар через env(safe-area-inset-top)
+  root.style.paddingTop = `calc(env(safe-area-inset-top, 0px) + ${TOP_OFFSET_PX}px)`;
+}
+window.addEventListener('resize', applyTopInset);
+
 // --- Screens ---
 const screens = {
   home: $('homeScreen'),
@@ -46,10 +56,9 @@ function showScreen(name){
   if(el) el.classList.remove('hidden');
 
   if(tg){
-    // ПРАВКА: показываем системную кнопку «Назад» на нужных экранах
+    // показываем системную кнопку «Назад» там, где нужна
     if (['profile','trophies','builds','buildCreate','buildDetail','trophyDetail'].includes(name)){
       tg.BackButton.show();
-      // Для трофея — гарантируем инлайн-кнопку «Отправить»
       if(name === 'trophyDetail') ensureInlineSubmitButton();
     } else {
       tg.BackButton.hide();
@@ -72,7 +81,6 @@ function ensureInlineSubmitButton(){
   const backBtn = $('backToListBtn'); // кнопки больше нет — будет undefined
   const form = $('proofForm');
 
-  // если кнопка ещё существует — оставим прежнюю логику размещения
   if(backBtn && backBtn.parentNode){
     let submitInline = $('submitInlineBtn');
     if(!submitInline){
@@ -89,7 +97,6 @@ function ensureInlineSubmitButton(){
     return;
   }
 
-  // НОВОЕ: если «назад к списку» отсутствует — добавляем кнопку в форму
   if(form){
     let submitInline = $('submitInlineBtn');
     if(!submitInline){
@@ -98,7 +105,6 @@ function ensureInlineSubmitButton(){
       submitInline.type = 'button';
       submitInline.className = 'btn primary wide';
       submitInline.textContent = 'Отправить';
-      // Добавим в конец формы (до возможных браузерных кнопок)
       form.appendChild(submitInline);
     }
     submitInline.onclick = (e)=>{ e.preventDefault(); submitProof(); };
@@ -370,27 +376,14 @@ $('backToListBtn')?.addEventListener('click', ()=>{
   showScreen('trophies');
 });
 
-// ПРАВКА: системная назад-кнопка Telegram — новая маршрутизация
+// Системная назад-кнопка Telegram — маршрутизация
 if(tg){
   tg.onEvent('backButtonClicked', ()=>{
-    if (isVisible('buildCreate')) {                 // со «Создать билд» → «Билды»
-      showScreen('builds');
-      return;
-    }
-    if (isVisible('buildDetail')) {                 // с деталей билда → «Билды»
-      showScreen('builds');
-      return;
-    }
-    if (isVisible('trophyDetail')) {                // с деталей трофея → «Трофеи»
-      resetProofForm();
-      showScreen('trophies');
-      return;
-    }
-    if (isVisible('profile') || isVisible('trophies') || isVisible('builds')) {
-      showScreen('home');                           // с разделов верхнего уровня → «Главная»
-      return;
-    }
-    showScreen('home');                             // дефолт
+    if (isVisible('buildCreate')) { showScreen('builds'); return; }
+    if (isVisible('buildDetail')) { showScreen('builds'); return; }
+    if (isVisible('trophyDetail')) { resetProofForm(); showScreen('trophies'); return; }
+    if (isVisible('profile') || isVisible('trophies') || isVisible('builds')) { showScreen('home'); return; }
+    showScreen('home');
   });
 }
 
@@ -510,7 +503,6 @@ function bindShotInput(input, idx){
     try{
       const data = await fileToDataURL(file);
 
-      // Найти квадрат или уже существующую миниатюру для этого индекса
       const targetEl =
         shotsTwo?.querySelector(`.upload-box[data-idx="${idx}"]`) ||
         shotsTwo?.querySelector(`.shot-thumb[data-idx="${idx}"]`);
@@ -520,7 +512,6 @@ function bindShotInput(input, idx){
       if(targetEl && targetEl.parentNode){
         targetEl.parentNode.replaceChild(thumb, targetEl);
       } else if (shotsTwo){
-        // На всякий случай, если контейнер пуст — просто вставим
         shotsTwo.appendChild(thumb);
       }
 
@@ -597,7 +588,6 @@ function resetBuildForm(){
   if(shotInput2) shotInput2.value = '';
   shot1Data = null; shot2Data = null;
 
-  // Восстановить квадраты (если были заменены превью)
   if(shotsTwo){
     shotsTwo.innerHTML = `
       <button type="button" class="upload-box" data-idx="1" aria-label="Загрузить первое изображение">＋</button>
@@ -608,7 +598,6 @@ function resetBuildForm(){
 }
 
 // Кнопки под карточкой
-// buildCancelBtn удалён в HTML; обработчик оставляем на всякий случай (элемент отсутствует)
 buildCancelBtn?.addEventListener('click', ()=> showScreen('builds'));
 buildSubmitBtn?.addEventListener('click', ()=> buildForm?.requestSubmit());
 
@@ -698,6 +687,7 @@ lightbox?.addEventListener('click', closeLightbox);
 
 // ===================== Старт =====================
 (async function start(){
+  applyTopInset();              // ← добавил вызов
   showScreen('home');
   const data = await loadTrophies();
   renderTrophyList(data);

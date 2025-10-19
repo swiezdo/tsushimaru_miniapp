@@ -149,14 +149,12 @@
 
       <!-- ====== БИЛДЫ: СПИСОК ====== -->
       <section id="buildsScreen" class="hidden">
-        <!-- Отдельная широкая кнопка (карточку «Билды» удалили) -->
         <div class="top-action">
           <button id="createBuildBtn" class="btn primary wide" type="button" aria-label="Создать билд">
             ＋ Создать билд
           </button>
         </div>
 
-        <!-- Небольшое пустое пространство перед «Мои билды» -->
         <div class="space-md"></div>
 
         <section class="card">
@@ -198,17 +196,17 @@
             </div>
 
             <div class="input">
-              <label for="build_shots">Скриншот (2 изображения: «Техники» и «Снаряжение»)</label>
+              <label>Скриншоты (2 изображения: «Техники» и «Снаряжение»)</label>
 
-              <!-- Скрытый инпут -->
-              <input id="build_shots" type="file" accept="image/*" multiple style="display:none" />
+              <!-- Скрытые инпуты (по одному на каждый квадрат) -->
+              <input id="build_shot1" type="file" accept="image/*" style="display:none" />
+              <input id="build_shot2" type="file" accept="image/*" style="display:none" />
 
-              <!-- Квадрат с плюсиком -->
-              <button type="button" id="uploadBox" class="upload-box" aria-label="Загрузить изображения">
-                ＋
-              </button>
-
-              <div id="buildShotsPreview" class="shots-preview"></div>
+              <!-- Два квадрата в ряд -->
+              <div class="shots-two">
+                <button type="button" id="uploadBox1" class="upload-box" aria-label="Загрузить первое изображение">＋</button>
+                <button type="button" id="uploadBox2" class="upload-box" aria-label="Загрузить второе изображение">＋</button>
+              </div>
             </div>
 
             <div class="actions">

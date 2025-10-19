@@ -57,7 +57,7 @@ function showScreen(name){
   else if(name === 'trophies') setTopbar(true, 'Трофеи');
   else if(name === 'trophyDetail') setTopbar(true, 'Трофеи');
   else if(name === 'builds') setTopbar(true, 'Билды');
-  else if(name === 'buildCreate') setTopbar(true, 'Создать билд'); // ← обновлено
+  else if(name === 'buildCreate') setTopbar(true, 'Создать билд');
   else if(name === 'buildDetail') setTopbar(true, 'Билд');
 
   scrollTopSmooth();
@@ -393,9 +393,12 @@ const buildNameEl    = $('build_name');
 const buildDescEl    = $('build_desc');
 const classChipsEl   = $('classChips');
 const tagsChipsEl    = $('tagsChips');
-const buildShotsEl   = $('build_shots');
-const uploadBoxBtn   = $('uploadBox');
-const buildShotsPrev = $('buildShotsPreview');
+
+const shotInput1     = $('build_shot1');
+const shotInput2     = $('build_shot2');
+const uploadBox1     = $('uploadBox1');
+const uploadBox2     = $('uploadBox2');
+
 const buildCancelBtn = $('buildCancelBtn');
 
 const buildDetailTitle = $('buildDetailTitle');
@@ -418,36 +421,58 @@ if(buildDescEl){
   setTimeout(autoResize, 0);
 }
 
-// Клик по квадрату с плюсом -> открыть выбор файлов
-if(uploadBoxBtn && buildShotsEl){
-  uploadBoxBtn.addEventListener('click', ()=>{
-    buildShotsEl.click();
+// Helpers
+function fileToDataURL(file){
+  return new Promise((resolve, reject)=>{
+    const r = new FileReader();
+    r.onload = ()=> resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
   });
 }
+function makeThumb(src){
+  const wrap = document.createElement('div');
+  wrap.className = 'shot-thumb';
+  const img = document.createElement('img');
+  img.src = src;
+  wrap.appendChild(img);
+  return wrap;
+}
 
-// Превью выбранных скринов (ровно 2)
-if(buildShotsEl && buildShotsPrev){
-  buildShotsEl.addEventListener('change', ()=>{
-    buildShotsPrev.innerHTML = '';
-    const files = Array.from(buildShotsEl.files || []);
-    if(!files.length) return;
+// Два отдельных квадрата: каждый — один файл
+let shot1Data = null;
+let shot2Data = null;
 
-    files.slice(0,2).forEach(f=>{
-      const wrap = document.createElement('div');
-      wrap.className = 'shot-thumb';
-      const img = document.createElement('img');
-      img.src = URL.createObjectURL(f);
-      img.onload = ()=> URL.revokeObjectURL(img.src);
-      wrap.appendChild(img);
-      buildShotsPrev.appendChild(wrap);
-    });
+function handleShotPick(which){
+  const input = which === 1 ? shotInput1 : shotInput2;
+  const box   = which === 1 ? uploadBox1 : uploadBox2;
+  if(!input || !box) return;
 
-    if(files.length !== 2){
-      buildShotsPrev.classList.add('shake');
-      setTimeout(()=>buildShotsPrev.classList.remove('shake'), 300);
+  // открыть файловый диалог
+  box.addEventListener('click', ()=>{
+    input.click();
+  });
+
+  input.addEventListener('change', async ()=>{
+    const file = input.files && input.files[0];
+    if(!file){ return; }
+
+    try{
+      const data = await fileToDataURL(file);
+      const thumb = makeThumb(data);
+
+      // заменить квадрат на миниатюру
+      box.replaceWith(thumb);
+
+      if(which === 1) shot1Data = data;
+      else            shot2Data = data;
+    }catch(_){
+      shake(box);
     }
   });
 }
+handleShotPick(1);
+handleShotPick(2);
 
 // Storage
 function loadBuilds(){
@@ -458,16 +483,6 @@ function loadBuilds(){
 }
 function saveBuilds(arr){
   try{ localStorage.setItem(LS_KEY_BUILDS, JSON.stringify(arr||[])); }catch(_){}
-}
-
-// File -> DataURL
-function fileToDataURL(file){
-  return new Promise((resolve, reject)=>{
-    const r = new FileReader();
-    r.onload = ()=> resolve(r.result);
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
 }
 
 // Рендер «Мои билды»
@@ -495,18 +510,13 @@ function renderMyBuilds(){
 
     const title = document.createElement('div');
     title.className = 'build-title';
-
-    // Безопасное ограничение длины на случай старых кэшей
     const name = (b.name || 'Без названия').toString();
     const safeName = name.length > 40 ? (name.slice(0,40) + '…') : name;
     title.textContent = safeName;
 
     row.appendChild(icon);
     row.appendChild(title);
-
-    row.addEventListener('click', ()=>{
-      openBuildDetail(b.id);
-    });
+    row.addEventListener('click', ()=> openBuildDetail(b.id));
 
     myBuildsList.appendChild(row);
   });
@@ -523,9 +533,43 @@ function resetBuildForm(){
   try{ buildForm?.reset(); }catch{}
   setActive(classChipsEl, []);
   setActive(tagsChipsEl,  []);
-  buildShotsPrev.innerHTML = '';
-  if(buildShotsEl) buildShotsEl.value = '';
-  buildDescEl.style.height = 'auto';
+
+  // восстановить квадраты загрузки
+  shot1Data = null; shot2Data = null;
+
+  if(shotInput1) shotInput1.value = '';
+  if(shotInput2) shotInput2.value = '';
+
+  // Перерисуем контейнер с квадратами (на случай, если их заменили миниатюры)
+  const shotsContainer = document.querySelector('.shots-two');
+  if(shotsContainer){
+    shotsContainer.innerHTML = '';
+    const b1 = document.createElement('button');
+    b1.type = 'button';
+    b1.id = 'uploadBox1';
+    b1.className = 'upload-box';
+    b1.setAttribute('aria-label','Загрузить первое изображение');
+    b1.textContent = '＋';
+
+    const b2 = document.createElement('button');
+    b2.type = 'button';
+    b2.id = 'uploadBox2';
+    b2.className = 'upload-box';
+    b2.setAttribute('aria-label','Загрузить второе изображение');
+    b2.textContent = '＋';
+
+    shotsContainer.appendChild(b1);
+    shotsContainer.appendChild(b2);
+
+    // пересвяжем элементы и обработчики
+    window.uploadBox1 = $('uploadBox1');
+    window.uploadBox2 = $('uploadBox2');
+    handleShotPick(1);
+    handleShotPick(2);
+  }
+
+  // высоту описания — по умолчанию
+  if(buildDescEl) buildDescEl.style.height = 'auto';
 }
 
 // Отмена — назад к списку
@@ -538,26 +582,21 @@ if(buildForm){
   buildForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
 
-    // Жёсткое ограничение имени
     let name = (buildNameEl?.value || '').trim();
     if(name.length > 40) name = name.slice(0,40);
 
     const klass = activeValues(classChipsEl)[0] || '';
     const tags  = activeValues(tagsChipsEl);
     const desc  = (buildDescEl?.value || '').trim();
-    const files = Array.from(buildShotsEl?.files || []);
 
+    // Требуем строго 2 изображения (по одному в каждый квадрат)
     if(!name){ shake(buildNameEl); buildNameEl?.focus(); return; }
     if(!klass){ shake(classChipsEl); return; }
-    if(files.length !== 2){ shake(buildShotsPrev || buildShotsEl); return; }
-
-    let shots = [];
-    try{
-      shots = [
-        await fileToDataURL(files[0]),
-        await fileToDataURL(files[1]),
-      ];
-    }catch(_){ shake(buildShotsPrev || buildShotsEl); return; }
+    if(!shot1Data || !shot2Data){
+      const container = document.querySelector('.shots-two');
+      shake(container);
+      return;
+    }
 
     const item = {
       id: Date.now(),
@@ -565,7 +604,7 @@ if(buildForm){
       class: klass,
       tags,
       desc,
-      shots,
+      shots: [shot1Data, shot2Data],
       createdAt: new Date().toISOString()
     };
 
@@ -602,9 +641,7 @@ function openBuildDetail(id){
     const img = document.createElement('img');
     img.src = src;
     wrap.appendChild(img);
-    wrap.addEventListener('click', ()=>{
-      openLightbox(src);
-    });
+    wrap.addEventListener('click', ()=> openLightbox(src) );
     buildDetailShots.appendChild(wrap);
   });
 

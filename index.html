@@ -80,15 +80,13 @@
               <label>Сложность</label>
               <div id="difficultyChips" class="chips"></div>
             </div>
+
+            <div class="actions">
+              <button type="submit" class="btn primary">Сохранить</button>
+              <button type="button" id="resetBtn" class="btn ghost">Сбросить</button>
+            </div>
           </form>
         </section>
-
-        <!-- КНОПКА ВНЕ КАРТОЧКИ + НИЖНИЙ ОТСТУП -->
-        <div class="actions-bar">
-          <button type="button" id="profileSaveBtn" class="btn primary wide">Сохранить</button>
-        </div>
-        <div class="space-md"></div>
-        <div style="height: calc(env(safe-area-inset-bottom, 0px) + 24px)"></div>
       </section>
 
       <!-- ====== ТРОФЕИ (СПИСОК) ====== -->
@@ -199,6 +197,7 @@
 
         <!-- КНОПКА ПОД КАРТОЧКОЙ ФОРМЫ -->
         <div class="actions-bar">
+          <!-- Отмена удалена -->
           <button type="button" id="buildSubmitBtn" class="btn primary wide">Создать</button>
         </div>
       </section>

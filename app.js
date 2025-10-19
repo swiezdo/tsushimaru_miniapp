@@ -20,82 +20,35 @@ function hapticTap(){ try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{}
 function $(id){ return document.getElementById(id); }
 function scrollTopSmooth(){ window.scrollTo({top:0, behavior:'smooth'}); }
 
-// ===== Tap highlight with anti-scroll guard =====
-(function(){
-  const MOVE_THR = 8;      // px movement threshold to treat as scroll
-  const SHOW_DELAY = 80;   // ms delay before showing highlight + haptic
+// ===== Отступ сверху под системные элементы Telegram =====
+const TOP_OFFSET_PX = 64; // ≈ 4 строки
+function applyTopInset(){
+  const root = document.querySelector('main.container');
+  if(!root) return;
+  root.style.paddingTop = `calc(env(safe-area-inset-top, 0px) + ${TOP_OFFSET_PX}px)`;
+}
+window.addEventListener('resize', applyTopInset);
 
-  function getPoint(e){
-    if (e.touches && e.touches[0]) return {x:e.touches[0].clientX, y:e.touches[0].clientY};
-    return {x:e.clientX, y:e.clientY};
-  }
+// ===== Подсветка при тапе + тактильная отдача =====
+function addTapHighlight(selector){
+  const els = document.querySelectorAll(selector);
+  els.forEach(el=>{
+    if(el.dataset.tapbound) return;         // чтобы не двойнить слушатели
+    el.dataset.tapbound = '1';
 
-  function installTapFeedback(selector){
-    let pressed = false;
-    let startX=0, startY=0, timer=null, activeEl=null;
-
-    const onDown = (e)=>{
-      const el = e.target.closest(selector);
-      if(!el) return;
-      const p = getPoint(e);
-      startX = p.x; startY = p.y;
-      pressed = true;
-      activeEl = el;
-
-      // schedule highlight + haptic a bit later to filter scrolls
-      timer = setTimeout(()=>{
-        if(!pressed) return;
-        activeEl.classList.add('tap-hi');
-        try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{}
-      }, SHOW_DELAY);
+    const onDown = () => {
+      el.classList.add('tap-hi');
+      hapticTap();
     };
+    const clear = () => el.classList.remove('tap-hi');
 
-    const onMove = (e)=>{
-      if(!pressed) return;
-      const p = getPoint(e);
-      const dx = Math.abs(p.x - startX);
-      const dy = Math.abs(p.y - startY);
-      if(dx>MOVE_THR || dy>MOVE_THR){
-        pressed = false;
-        clearTimeout(timer);
-        timer = null;
-        activeEl?.classList.remove('tap-hi');
-        activeEl = null;
-      }
-    };
-
-    const onUp = ()=>{
-      if(!pressed){ return; }
-      pressed = false;
-      clearTimeout(timer);
-      timer = null;
-      // keep highlight a touch longer if it showed
-      if(activeEl){
-        setTimeout(()=> activeEl && activeEl.classList.remove('tap-hi'), 120);
-      }
-      activeEl = null;
-    };
-
-    // Pointer events (Chrome/Android, iOS modern)
-    document.addEventListener('pointerdown', onDown, {passive:true, capture:true});
-    document.addEventListener('pointermove',  onMove, {passive:true, capture:true});
-    document.addEventListener('pointerup',    onUp,   {passive:true, capture:true});
-    document.addEventListener('pointercancel',onUp,   {passive:true, capture:true});
-
-    // Touch fallback (older webviews)
-    document.addEventListener('touchstart', onDown, {passive:true, capture:true});
-    document.addEventListener('touchmove',  onMove, {passive:true, capture:true});
-    document.addEventListener('touchend',   onUp,   {passive:true, capture:true});
-    document.addEventListener('touchcancel',onUp,   {passive:true, capture:true});
-  }
-
-  // Home big buttons
-  installTapFeedback('.big-btn');
-  // Trophy list items
-  installTapFeedback('#trophyList .list-btn');
-  // Build list items
-  installTapFeedback('#myBuildsList .build-item');
-})();
+    el.addEventListener('pointerdown', onDown);
+    el.addEventListener('pointerup', clear);
+    el.addEventListener('pointerleave', clear);
+    el.addEventListener('pointercancel', clear);
+    el.addEventListener('blur', clear);
+  });
+}
 
 // --- Screens ---
 const screens = {
@@ -241,8 +194,8 @@ function refreshProfileView(){
 }
 
 // Профиль: форма
-const profileForm = $('profileForm');
-const resetBtn    = $('resetBtn');
+const profileForm     = $('profileForm');
+const profileSaveBtn  = $('profileSaveBtn');
 
 if(profileForm){
   renderChips($('platformChips'),   PLATFORM,   {onChange:refreshProfileView});
@@ -285,17 +238,7 @@ if(profileForm){
     scrollTopSmooth();
   });
 
-  if(resetBtn){
-    resetBtn.addEventListener('click', ()=>{
-      try{ profileForm.reset(); }catch{}
-      setActive($('platformChips'), []);
-      setActive($('modesChips'), []);
-      setActive($('goalsChips'), []);
-      setActive($('difficultyChips'), []);
-      refreshProfileView();
-      if(tg?.showPopup){ tg.showPopup({ title:'Сброс', message:'Все поля очищены.', buttons:[{type:'ok'}] }); }
-    });
-  }
+  profileSaveBtn?.addEventListener('click', ()=> profileForm.requestSubmit());
 }
 
 // --- Трофеи ---
@@ -327,6 +270,9 @@ function renderTrophyList(data){
     btn.addEventListener('click', ()=> openTrophyDetail(key));
     trophyListEl.appendChild(btn);
   });
+
+  // подсветка и тактильная отдача для списка трофеев
+  addTapHighlight('#trophyList .list-btn');
 }
 
 const proofFormEl  = $('proofForm');
@@ -458,6 +404,9 @@ $('openProfileBtn')?.addEventListener('click', ()=> showScreen('profile'));
 $('trophiesBtn')?.addEventListener('click', ()=> showScreen('trophies'));
 $('buildsBtn')?.addEventListener('click', ()=> { renderMyBuilds(); showScreen('builds'); });
 
+// Подсветка для кнопок на главном экране
+addTapHighlight('.big-btn');
+
 // ===================== БИЛДЫ =====================
 const LS_KEY_BUILDS = 'tsu_builds_v1';
 const CLASS_VALUES = ['Самурай','Охотник','Убийца','Ронин'];
@@ -484,7 +433,6 @@ const shotInput1     = $('build_shot1');
 const shotInput2     = $('build_shot2');
 const shotsTwo       = $('shotsTwo');
 
-const buildCancelBtn = $('buildCancelBtn');
 const buildSubmitBtn = $('buildSubmitBtn');
 
 const buildDetailTitle = $('buildDetailTitle');
@@ -527,15 +475,12 @@ function renderShotThumb(idx, src){
   const img = document.createElement('img');
   img.src = src;
   btn.appendChild(img);
-
-  // По тапу — снова открыть тот же input для замены файла
   btn.addEventListener('click', ()=>{
     const input = getShotInputByIdx(String(idx));
     if(!input) return;
     try{ input.value = ''; }catch{}
     input.click();
   });
-
   return btn;
 }
 
@@ -543,7 +488,7 @@ function renderShotThumb(idx, src){
 let shot1Data = null;
 let shot2Data = null;
 
-// Делегирование клика по квадратам — надёжно в WebView
+// Делегирование клика по квадратам
 if(shotsTwo){
   shotsTwo.addEventListener('click', (e)=>{
     const box = e.target.closest('.upload-box');
@@ -563,18 +508,14 @@ function bindShotInput(input, idx){
     if(!file) return;
     try{
       const data = await fileToDataURL(file);
-
-      // Найти квадрат или уже существующую миниатюру для этого индекса
       const targetEl =
         shotsTwo?.querySelector(`.upload-box[data-idx="${idx}"]`) ||
         shotsTwo?.querySelector(`.shot-thumb[data-idx="${idx}"]`);
-
       const thumb = renderShotThumb(idx, data);
 
       if(targetEl && targetEl.parentNode){
         targetEl.parentNode.replaceChild(thumb, targetEl);
       } else if (shotsTwo){
-        // На всякий случай, если контейнер пуст — просто вставим
         shotsTwo.appendChild(thumb);
       }
 
@@ -636,7 +577,7 @@ function renderMyBuilds(){
   });
 
   // подсветка и тактильная отдача для «Моих билдов»
-  // (делегирование уже установлено выше)
+  addTapHighlight('#myBuildsList .build-item');
 }
 
 // Открыть экран «Создать билд»
@@ -654,7 +595,6 @@ function resetBuildForm(){
   if(shotInput2) shotInput2.value = '';
   shot1Data = null; shot2Data = null;
 
-  // Восстановить квадраты (если были заменены превью)
   if(shotsTwo){
     shotsTwo.innerHTML = `
       <button type="button" class="upload-box" data-idx="1" aria-label="Загрузить первое изображение">＋</button>
@@ -664,9 +604,7 @@ function resetBuildForm(){
   if(buildDescEl) buildDescEl.style.height = 'auto';
 }
 
-// Кнопки под карточкой
-// buildCancelBtn удалён в HTML; обработчик оставляем на всякий случай (элемент отсутствует)
-buildCancelBtn?.addEventListener('click', ()=> showScreen('builds'));
+// Кнопка «Создать»
 buildSubmitBtn?.addEventListener('click', ()=> buildForm?.requestSubmit());
 
 // Создание билда
@@ -755,9 +693,12 @@ lightbox?.addEventListener('click', closeLightbox);
 
 // ===================== Старт =====================
 (async function start(){
+  applyTopInset();
   showScreen('home');
   const data = await loadTrophies();
   renderTrophyList(data);
   refreshProfileView();
   renderMyBuilds();
+
+  // подсветка для кнопок на главной уже подключена выше
 })();

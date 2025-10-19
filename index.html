@@ -118,7 +118,7 @@
           <h2 id="trophyTitle" class="card-title">Трофей</h2>
           <ul id="trophyDesc" class="desc-list"></ul>
         </section>
-      
+
         <section class="card">
           <h3 class="card-title">Отправить заявку</h3>
           <form id="proofForm" class="form">
@@ -126,20 +126,17 @@
               <label for="proofFiles">Прикрепите скриншоты/видео</label>
               <input id="proofFiles" type="file" multiple accept="image/*,video/*" />
             </div>
-      
+
             <div class="input">
               <label for="commentText">Комментарий (необязательно)</label>
               <textarea id="commentText" rows="1" placeholder="Добавьте комментарий"></textarea>
             </div>
+
+            <div class="actions only-browser">
+              <button type="submit" class="btn primary" id="sendProofBtn">Отправить заявку</button>
+            </div>
           </form>
         </section>
-      
-        <!-- КНОПКА ВНЕ КАРТОЧКИ -->
-        <div class="actions-bar">
-          <button type="submit" form="proofForm" class="btn primary wide" id="sendProofBtn">Отправить заявку</button>
-        </div>
-        <!-- Отступ под кнопкой -->
-        <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
       </section>
 
       <!-- ====== БИЛДЫ: СПИСОК ====== -->

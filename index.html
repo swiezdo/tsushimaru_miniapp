@@ -27,14 +27,8 @@
             🏯 Группа Tsushima.Ru
           </a>
 
-          <button id="openProfileBtn" class="big-btn">
-            👤 Мой профиль
-          </button>
-
-          <button id="trophiesBtn" class="big-btn">
-            🏆 Трофеи
-          </button>
-
+          <button id="openProfileBtn" class="big-btn">👤 Мой профиль</button>
+          <button id="trophiesBtn" class="big-btn">🏆 Трофеи</button>
           <button id="builderBtn" class="big-btn ghost" disabled title="Скоро">
             🛠️ Конструктор билдов (скоро)
           </button>
@@ -49,21 +43,10 @@
             <div class="field"><label>Имя</label><div id="v_real_name" class="value">—</div></div>
             <div class="field"><label>Ник в PlayStation Network</label><div id="v_psn" class="value">—</div></div>
 
-            <div class="field"><label>Платформа</label>
-              <div id="v_platform" class="value lines">—</div>
-            </div>
-
-            <div class="field"><label>Режимы</label>
-              <div id="v_modes" class="value lines">—</div>
-            </div>
-
-            <div class="field"><label>Цели</label>
-              <div id="v_goals" class="value lines">—</div>
-            </div>
-
-            <div class="field"><label>Сложность</label>
-              <div id="v_difficulty" class="value lines">—</div>
-            </div>
+            <div class="field"><label>Платформа</label><div id="v_platform" class="value lines">—</div></div>
+            <div class="field"><label>Режимы</label><div id="v_modes" class="value lines">—</div></div>
+            <div class="field"><label>Цели</label><div id="v_goals" class="value lines">—</div></div>
+            <div class="field"><label>Сложность</label><div id="v_difficulty" class="value lines">—</div></div>
           </div>
         </section>
 
@@ -119,6 +102,7 @@
           <div class="profile-grid">
             <div class="field span-2">
               <label>Полученные трофеи</label>
+              <!-- без <br>, чтобы не надувать отступы -->
               <div class="value lines">Легенда Цусимы 🗡
 Легенда Эдзо 🏔</div>
             </div>
@@ -155,7 +139,7 @@
               <textarea id="commentText" rows="4" placeholder="Опишите детали прохождения, тайм-коды, особенности..."></textarea>
             </div>
 
-            <!-- Кнопка остаётся для браузера; в Telegram используем MainButton -->
+            <!-- Кнопка для браузера; в Telegram будет системная MainButton -->
             <div class="actions only-browser">
               <button type="submit" class="btn primary" id="sendProofBtn">Отправить</button>
             </div>

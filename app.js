@@ -57,7 +57,7 @@ function showScreen(name){
   else if(name === 'trophies') setTopbar(true, 'Трофеи');
   else if(name === 'trophyDetail') setTopbar(true, 'Трофеи');
   else if(name === 'builds') setTopbar(true, 'Билды');
-  else if(name === 'buildCreate') setTopbar(true, 'Создать билд'); // ←
+  else if(name === 'buildCreate') setTopbar(true, 'Создать билд');
   else if(name === 'buildDetail') setTopbar(true, 'Билд');
 
   scrollTopSmooth();
@@ -65,21 +65,40 @@ function showScreen(name){
 
 // inline «Отправить» на экране трофея
 function ensureInlineSubmitButton(){
-  const backBtn = $('backToListBtn');
-  if(!backBtn) return;
+  const backBtn = $('backToListBtn'); // кнопки больше нет — будет undefined
+  const form = $('proofForm');
 
-  let submitInline = $('submitInlineBtn');
-  if(!submitInline){
-    submitInline = document.createElement('button');
-    submitInline.id = 'submitInlineBtn';
-    submitInline.className = backBtn.className || 'btn';
-    submitInline.textContent = 'Отправить';
-    backBtn.parentNode.insertBefore(submitInline, backBtn);
-    submitInline.style.marginBottom = '8px';
-  }else{
-    submitInline.textContent = 'Отправить';
+  // если кнопка ещё существует — оставим прежнюю логику размещения
+  if(backBtn && backBtn.parentNode){
+    let submitInline = $('submitInlineBtn');
+    if(!submitInline){
+      submitInline = document.createElement('button');
+      submitInline.id = 'submitInlineBtn';
+      submitInline.className = backBtn.className || 'btn';
+      submitInline.textContent = 'Отправить';
+      backBtn.parentNode.insertBefore(submitInline, backBtn);
+      submitInline.style.marginBottom = '8px';
+    }else{
+      submitInline.textContent = 'Отправить';
+    }
+    submitInline.onclick = (e)=>{ e.preventDefault(); submitProof(); };
+    return;
   }
-  submitInline.onclick = (e)=>{ e.preventDefault(); submitProof(); };
+
+  // НОВОЕ: если «назад к списку» отсутствует — добавляем кнопку в форму
+  if(form){
+    let submitInline = $('submitInlineBtn');
+    if(!submitInline){
+      submitInline = document.createElement('button');
+      submitInline.id = 'submitInlineBtn';
+      submitInline.type = 'button';
+      submitInline.className = 'btn primary wide';
+      submitInline.textContent = 'Отправить';
+      // Добавим в конец формы (до возможных браузерных кнопок)
+      form.appendChild(submitInline);
+    }
+    submitInline.onclick = (e)=>{ e.preventDefault(); submitProof(); };
+  }
 }
 
 // Header user chip
@@ -368,6 +387,7 @@ $('openProfileBtn')?.addEventListener('click', ()=> showScreen('profile'));
 $('trophiesBtn')?.addEventListener('click', ()=> showScreen('trophies'));
 $('buildsBtn')?.addEventListener('click', ()=> { renderMyBuilds(); showScreen('builds'); });
 
+// Домой-кнопки удалены, обработчики оставлены безопасно (не сработают)
 $('homeBtn')?.addEventListener('click', ()=> showScreen('home'));
 $('trophiesHomeBtn')?.addEventListener('click', ()=> showScreen('home'));
 $('buildsHomeBtn')?.addEventListener('click', ()=> showScreen('home'));
@@ -576,6 +596,7 @@ function resetBuildForm(){
 }
 
 // Кнопки под карточкой
+// buildCancelBtn удалён в HTML; обработчик оставляем на всякий случай (элемент отсутствует)
 buildCancelBtn?.addEventListener('click', ()=> showScreen('builds'));
 buildSubmitBtn?.addEventListener('click', ()=> buildForm?.requestSubmit());
 

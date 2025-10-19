@@ -31,9 +31,6 @@
           <button id="trophiesBtn" class="big-btn">🏆 Трофеи</button>
           <button id="buildsBtn" class="big-btn ghost">🛠️ Билды</button>
         </div>
-
-        <!-- Пустой отступ снизу экрана -->
-        <div class="footer-actions"></div>
       </section>
 
       <!-- ====== ПРОФИЛЬ ====== -->
@@ -91,8 +88,9 @@
           </form>
         </section>
 
-        <!-- Пустой отступ снизу экрана -->
-        <div class="footer-actions"></div>
+        <div class="footer-actions">
+          <button id="homeBtn" class="btn wide">🏠 Домой</button>
+        </div>
       </section>
 
       <!-- ====== ТРОФЕИ (СПИСОК) ====== -->
@@ -113,8 +111,9 @@
           <div id="trophyList" class="list-buttons"></div>
         </section>
 
-        <!-- Пустой отступ снизу экрана -->
-        <div class="footer-actions"></div>
+        <div class="footer-actions">
+          <button id="trophiesHomeBtn" class="btn wide">🏠 Домой</button>
+        </div>
       </section>
 
       <!-- ====== КОНКРЕТНЫЙ ТРОФЕЙ ====== -->
@@ -128,7 +127,7 @@
           <h3 class="card-title">Отправить заявку</h3>
           <form id="proofForm" class="form">
             <div class="input">
-              <label for="proofFiles">Прикрепите фото/видео</label>
+              <label for="proofFiles">Прикрепите скриншоты/видео</label>
 
               <!-- Скрытый input (визуально скрыт) -->
               <input id="proofFiles" type="file" multiple accept="image/*,video/*" class="visually-hidden" />
@@ -153,8 +152,9 @@
           </form>
         </section>
 
-        <!-- Пустой отступ снизу экрана -->
-        <div class="footer-actions"></div>
+        <div class="footer-actions">
+          <button id="backToListBtn" class="btn wide">⬅️ К списку трофеев</button>
+        </div>
       </section>
 
       <!-- ====== БИЛДЫ: СПИСОК ====== -->
@@ -175,8 +175,9 @@
           </div>
         </section>
 
-        <!-- Пустой отступ снизу экрана -->
-        <div class="footer-actions"></div>
+        <div class="footer-actions">
+          <button id="buildsHomeBtn" class="btn wide">🏠 Домой</button>
+        </div>
       </section>
 
       <!-- ====== СОЗДАТЬ БИЛД ====== -->
@@ -220,12 +221,13 @@
           </form>
         </section>
 
-        <!-- Кнопка только «Создать» (Отмену убрали — назад через BackButton) -->
+        <!-- КНОПКИ ПОД КАРТОЧКОЙ ФОРМЫ -->
         <div class="actions-bar">
+          <button type="button" id="buildCancelBtn" class="btn ghost wide">Отмена</button>
           <button type="button" id="buildSubmitBtn" class="btn primary wide">Создать</button>
         </div>
 
-        <!-- Гарантированный нижний отступ -->
+        <!-- ГАРАНТИРОВАННЫЙ НИЖНИЙ ОТСТУП КАК У ОСТАЛЬНЫХ ЭКРАНОВ -->
         <div class="footer-actions"></div>
       </section>
 
@@ -245,8 +247,9 @@
           <div id="buildDetailShots" class="shots-grid"></div>
         </section>
 
-        <!-- Пустой отступ снизу экрана -->
-        <div class="footer-actions"></div>
+        <div class="footer-actions">
+          <button id="backToBuildsBtn" class="btn wide">⬅️ К списку билдов</button>
+        </div>
       </section>
     </main>
 

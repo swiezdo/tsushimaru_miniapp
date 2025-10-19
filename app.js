@@ -56,14 +56,14 @@ function showScreen(name){
   scrollTopSmooth();
 }
 
-// --- Header user chip (если есть username из Telegram) ---
+// --- Header user chip ---
 (function(){
   const chip = $('userChip');
   const uname = tg?.initDataUnsafe?.user?.username;
   if(chip && uname) chip.textContent = '@' + uname;
 })();
 
-// --- ЧИПЫ (ровно как в проекте) ---
+// --- ЧИПЫ ---
 const PLATFORM   = ['🎮 PlayStation','💻 ПК'];
 const MODES      = ['📖 Сюжет','🏹 Выживание','🗻 Испытания Иё','⚔️ Соперники','📜 Главы'];
 const GOALS      = ['🏆 Получение трофеев','🔎 Узнать что-то новое','👥 Поиск тиммейтов'];
@@ -119,28 +119,47 @@ const profileForm = $('profileForm');
 const resetBtn    = $('resetBtn');
 
 if(profileForm){
-  // отрисовать чипы
   renderChips($('platformChips'),   PLATFORM);
   renderChips($('modesChips'),      MODES);
   renderChips($('goalsChips'),      GOALS);
   renderChips($('difficultyChips'), DIFFICULTY);
 
-  // submit
+  // --- PSN validation ---
+  const psnInput = profileForm.psn;
+  const psnError = document.createElement('div');
+  psnError.className = 'error-text';
+  psnInput?.parentNode?.appendChild(psnError);
+
+  function validatePSN(){
+    if(!psnInput) return true;
+    const val = psnInput.value.trim();
+    const ok = /^[A-Za-z0-9_-]{3,16}$/.test(val);
+    if(!ok){
+      psnError.textContent = "Ник должен быть 3–16 символов, латиница, цифры, дефис или подчёркивание.";
+      psnInput.classList.add('error');
+    } else {
+      psnError.textContent = "";
+      psnInput.classList.remove('error');
+    }
+    return ok;
+  }
+  psnInput?.addEventListener('input', validatePSN);
+
   profileForm.addEventListener('submit', (e)=>{
     e.preventDefault();
+    if(!validatePSN()){ hapticERR(); return; }
+
     if(v_real_name) v_real_name.textContent = (profileForm.real_name?.value || '').trim() || '—';
     if(v_psn)       v_psn.textContent       = (profileForm.psn?.value || '').trim() || '—';
-
     refreshProfileView();
 
     if(tg?.showPopup){
       tg.showPopup({ title: 'Профиль обновлён', message: 'Данные сохранены.', buttons: [{type:'ok'}] });
-      try{ tg.HapticFeedback?.impactOccurred('medium'); }catch{}
+      hapticOK();
     }
     scrollTopSmooth();
   });
 
-  // reset
   if(resetBtn){
     resetBtn.addEventListener('click', ()=>{
       try{ profileForm.reset(); }catch{}
@@ -166,10 +185,8 @@ async function loadTrophies(){
   if(TROPHIES) return TROPHIES;
   try{
     const res = await fetch(TROPHIES_URL, { cache:'no-store' });
-    TROPHIES = await res.json();  // объект {key: {name, emoji, description[]}}
-  }catch(e){
-    TROPHIES = {};
-  }
+    TROPHIES = await res.json();
+  }catch(e){ TROPHIES = {}; }
   return TROPHIES;
 }
 function renderTrophyList(data){
@@ -204,33 +221,97 @@ function openTrophyDetail(key){
 const proofFormEl  = $('proofForm');
 const proofFilesEl = $('proofFiles');
 const commentEl    = $('commentText');
+const previewEl    = $('filePreview');
+
+if(commentEl){
+  commentEl.addEventListener('input', ()=>{
+    commentEl.style.height = 'auto';
+    commentEl.style.height = Math.min(commentEl.scrollHeight, 200) + 'px';
+  });
+}
+
+if(proofFilesEl && previewEl){
+  proofFilesEl.addEventListener('change', ()=>{
+    previewEl.innerHTML = '';
+    const files = Array.from(proofFilesEl.files || []);
+    if(!files.length) return;
+    const limit = 5;
+    files.slice(0, limit).forEach(file=>{
+      const div = document.createElement('div');
+      div.className = 'preview-item';
+      if(file.type.startsWith('image/')){
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.onload = ()=> URL.revokeObjectURL(img.src);
+        div.appendChild(img);
+      } else if(file.type.startsWith('video/')){
+        const vid = document.createElement('div');
+        vid.textContent = '🎥';
+        div.appendChild(vid);
+      } else {
+        div.textContent = '📄';
+      }
+      previewEl.appendChild(div);
+    });
+    if(files.length > limit){
+      const more = document.createElement('div');
+      more.className = 'preview-more';
+      more.textContent = `+${files.length - limit}`;
+      previewEl.appendChild(more);
+    }
+  });
+}
+
+let submitting = false;
+function shake(el){
+  if(!el) return;
+  el.classList.remove('shake');
+  void el.offsetWidth;
+  el.classList.add('shake');
+  hapticERR();
+}
 
 async function submitProof(){
-  const filesCount = proofFilesEl?.files?.length || 0;
-  const comment    = (commentEl?.value || '').trim();
+  if(submitting) return;
+  submitting = true;
+  setTimeout(()=>submitting=false, 1500);
 
-  if(filesCount === 0 && !comment){
-    if(tg?.showPopup){ tg.showPopup({ title:'Нужно доказательство', message:'Добавьте файл и/или комментарий.', buttons:[{type:'ok'}] }); }
-    else { alert('Добавьте файл и/или комментарий.'); }
-    hapticERR();
+  const filesCount = proofFilesEl?.files?.length || 0;
+  const comment = (commentEl?.value || '').trim();
+
+  if(filesCount === 0 || !comment){
+    if(!filesCount) shake(proofFilesEl.closest('.form-group') || proofFilesEl);
+    if(!comment) shake(commentEl);
+    if(tg?.showPopup){
+      tg.showPopup({ title:'Ошибка', message:'Добавьте файл и комментарий.', buttons:[{type:'ok'}] });
+    }
     return;
   }
 
-  // Тут будет реальный аплоад на сервер
   hapticOK();
-  if(tg?.showPopup){ tg.showPopup({ title:'Заявка отправлена', message:'Спасибо! Модераторы рассмотрят вашу заявку и бот напишет вам в ЛС', buttons:[{type:'ok'}] }); }
-  else { alert('Заявка отправлена (демо).'); }
-  showScreen('trophies');
+  if(tg?.showPopup){
+    tg.showPopup({ title:'Заявка отправлена', message:'✅ Спасибо! Модераторы рассмотрят вашу заявку.' });
+  }
+
+  if(previewEl) previewEl.innerHTML = '';
+  if(proofFilesEl) proofFilesEl.value = '';
+  if(commentEl) commentEl.value = '';
+
+  const form = document.querySelector('.application-form');
+  if(form){
+    form.innerHTML = `<div class="success-message">Заявка отправлена ✅</div>
+      <button id="backButton" class="button">Назад</button>`;
+    $('backButton')?.addEventListener('click', ()=> showScreen('trophies'));
+  }
 }
-if(proofFormEl){
-  proofFormEl.addEventListener('submit', (e)=>{ e.preventDefault(); submitProof(); });
-}
+
+if(proofFormEl){ proofFormEl.addEventListener('submit', e=>{ e.preventDefault(); submitProof(); }); }
 if(tg){
   tg.onEvent('mainButtonClicked', submitProof);
   tg.onEvent('backButtonClicked', ()=> showScreen('trophies'));
 }
 
-// --- Навигация: прямые обработчики (без делегаций) ---
+// --- Навигация ---
 $('openProfileBtn')?.addEventListener('click', ()=> showScreen('profile'));
 $('trophiesBtn')?.addEventListener('click', ()=> showScreen('trophies'));
 $('homeBtn')?.addEventListener('click', ()=> showScreen('home'));

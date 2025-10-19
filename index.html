@@ -31,6 +31,9 @@
           <button id="trophiesBtn" class="big-btn">🏆 Трофеи</button>
           <button id="buildsBtn" class="big-btn ghost">🛠️ Билды</button>
         </div>
+
+        <!-- Пустой отступ снизу экрана -->
+        <div class="footer-actions"></div>
       </section>
 
       <!-- ====== ПРОФИЛЬ ====== -->
@@ -88,12 +91,11 @@
           </form>
         </section>
 
-        <div class="footer-actions">
-          <button id="homeBtn" class="btn wide">🏠 Домой</button>
-        </div>
+        <!-- Пустой отступ снизу экрана -->
+        <div class="footer-actions"></div>
       </section>
 
-      <!-- ====== ТРОФЕИ ====== -->
+      <!-- ====== ТРОФЕИ (СПИСОК) ====== -->
       <section id="trophiesScreen" class="hidden">
         <section class="card">
           <h2 class="card-title">Ваши трофеи</h2>
@@ -111,12 +113,11 @@
           <div id="trophyList" class="list-buttons"></div>
         </section>
 
-        <div class="footer-actions">
-          <button id="trophiesHomeBtn" class="btn wide">🏠 Домой</button>
-        </div>
+        <!-- Пустой отступ снизу экрана -->
+        <div class="footer-actions"></div>
       </section>
 
-      <!-- ====== ТРОФЕЙ: ДЕТАЛЬ ====== -->
+      <!-- ====== КОНКРЕТНЫЙ ТРОФЕЙ ====== -->
       <section id="trophyDetailScreen" class="hidden">
         <section class="card">
           <h2 id="trophyTitle" class="card-title">Трофей</h2>
@@ -127,9 +128,17 @@
           <h3 class="card-title">Отправить заявку</h3>
           <form id="proofForm" class="form">
             <div class="input">
-              <label for="proofFiles">Прикрепите скриншоты/видео</label>
+              <label for="proofFiles">Прикрепите фото/видео</label>
+
+              <!-- Скрытый input (визуально скрыт) -->
               <input id="proofFiles" type="file" multiple accept="image/*,video/*" class="visually-hidden" />
-              <button type="button" id="proofUploadBox" class="upload-row">＋ Прикрепить медиа</button>
+
+              <!-- Узкий прямоугольник-триггер -->
+              <button type="button" id="proofUploadBox" class="upload-row" aria-label="Прикрепить медиа">
+                ＋ Прикрепить медиа
+              </button>
+
+              <!-- Лента миниатюр -->
               <div id="filePreview" class="preview-row"></div>
             </div>
 
@@ -144,16 +153,19 @@
           </form>
         </section>
 
-        <div class="footer-actions">
-          <button id="backToListBtn" class="btn wide">⬅️ К списку трофеев</button>
-        </div>
+        <!-- Пустой отступ снизу экрана -->
+        <div class="footer-actions"></div>
       </section>
 
-      <!-- ====== БИЛДЫ ====== -->
+      <!-- ====== БИЛДЫ: СПИСОК ====== -->
       <section id="buildsScreen" class="hidden">
         <div class="top-action">
-          <button id="createBuildBtn" class="btn primary wide">＋ Создать билд</button>
+          <button id="createBuildBtn" class="btn primary wide" type="button" aria-label="Создать билд">
+            ＋ Создать билд
+          </button>
         </div>
+
+        <div class="space-md"></div>
 
         <section class="card">
           <h3 class="card-title">Мои билды</h3>
@@ -163,19 +175,18 @@
           </div>
         </section>
 
-        <div class="footer-actions">
-          <button id="buildsHomeBtn" class="btn wide">🏠 Домой</button>
-        </div>
+        <!-- Пустой отступ снизу экрана -->
+        <div class="footer-actions"></div>
       </section>
 
       <!-- ====== СОЗДАТЬ БИЛД ====== -->
       <section id="buildCreateScreen" class="hidden">
         <section class="card">
           <h2 class="card-title">Создать билд</h2>
-          <form id="buildForm" class="form">
+          <form id="buildForm" class="form" autocomplete="off">
             <div class="input">
               <label for="build_name">Название</label>
-              <input id="build_name" type="text" maxlength="40" placeholder="Название билда" />
+              <input id="build_name" name="build_name" type="text" maxlength="40" placeholder="Название билда" />
             </div>
 
             <div class="input">
@@ -190,26 +201,31 @@
 
             <div class="input">
               <label for="build_desc">Описание</label>
-              <textarea id="build_desc" rows="3" placeholder="Опишите билд"></textarea>
+              <textarea id="build_desc" rows="3" placeholder="Опишите как работает этот билд"></textarea>
             </div>
 
             <div class="input">
-              <label>Скриншоты (2 изображения)</label>
+              <label>Скриншоты (2 изображения: «Техники» и «Снаряжение»)</label>
+
+              <!-- Скрытые инпуты (визуально скрыты, НЕ display:none) -->
               <input id="build_shot1" data-idx="1" type="file" accept="image/*" class="visually-hidden" />
               <input id="build_shot2" data-idx="2" type="file" accept="image/*" class="visually-hidden" />
+
+              <!-- Два квадрата в ряд -->
               <div class="shots-two" id="shotsTwo">
-                <button type="button" class="upload-box" data-idx="1">＋</button>
-                <button type="button" class="upload-box" data-idx="2">＋</button>
+                <button type="button" class="upload-box" data-idx="1" aria-label="Загрузить первое изображение">＋</button>
+                <button type="button" class="upload-box" data-idx="2" aria-label="Загрузить второе изображение">＋</button>
               </div>
             </div>
           </form>
         </section>
 
+        <!-- Кнопка только «Создать» (Отмену убрали — назад через BackButton) -->
         <div class="actions-bar">
-          <button id="buildCancelBtn" class="btn ghost wide">Отмена</button>
-          <button id="buildSubmitBtn" class="btn primary wide">Создать</button>
+          <button type="button" id="buildSubmitBtn" class="btn primary wide">Создать</button>
         </div>
 
+        <!-- Гарантированный нижний отступ -->
         <div class="footer-actions"></div>
       </section>
 
@@ -229,13 +245,16 @@
           <div id="buildDetailShots" class="shots-grid"></div>
         </section>
 
-        <div class="footer-actions">
-          <button id="backToBuildsBtn" class="btn wide">⬅️ К списку билдов</button>
-        </div>
+        <!-- Пустой отступ снизу экрана -->
+        <div class="footer-actions"></div>
       </section>
     </main>
 
-    <div id="lightbox" class="lightbox hidden"><img id="lightboxImg" /></div>
+    <!-- Лайтбокс для изображений -->
+    <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true">
+      <img id="lightboxImg" alt="Просмотр изображения" />
+    </div>
+
     <script src="app.js" defer></script>
   </body>
 </html>

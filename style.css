@@ -41,6 +41,9 @@ body{
 /* Кнопка под заголовком «Билды» */
 .top-action{margin:-4px 0 12px}
 
+/* Доп. пустое пространство */
+.space-md{height:12px}
+
 /* Grid */
 .profile-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .field label{font-size:12px;color:var(--tg-hint);margin-bottom:4px;display:block}

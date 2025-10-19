@@ -29,9 +29,7 @@
 
           <button id="openProfileBtn" class="big-btn">👤 Мой профиль</button>
           <button id="trophiesBtn" class="big-btn">🏆 Трофеи</button>
-          <button id="buildsBtn" class="big-btn ghost">
-            🛠️ Билды
-          </button>
+          <button id="buildsBtn" class="big-btn ghost">🛠️ Билды</button>
         </div>
       </section>
 
@@ -151,14 +149,15 @@
 
       <!-- ====== БИЛДЫ: СПИСОК ====== -->
       <section id="buildsScreen" class="hidden">
-        <section class="card">
-          <h2 class="card-title">Билды</h2>
-        </section>
-
-        <!-- Отдельная широкая кнопка под заголовком -->
-        <div class="fullwidth-row">
-          <button id="createBuildBtn" class="btn primary wide">＋ Создать билд</button>
+        <!-- Отдельная широкая кнопка (карточку «Билды» удалили) -->
+        <div class="top-action">
+          <button id="createBuildBtn" class="btn primary wide" type="button" aria-label="Создать билд">
+            ＋ Создать билд
+          </button>
         </div>
+
+        <!-- Небольшое пустое пространство перед «Мои билды» -->
+        <div class="space-md"></div>
 
         <section class="card">
           <h3 class="card-title">Мои билды</h3>
@@ -180,7 +179,7 @@
           <form id="buildForm" class="form" autocomplete="off">
             <div class="input">
               <label for="build_name">Название</label>
-              <input id="build_name" name="build_name" type="text" maxlength="36" placeholder="Название билда" />
+              <input id="build_name" name="build_name" type="text" maxlength="40" placeholder="Название билда" />
             </div>
 
             <div class="input">
@@ -199,16 +198,17 @@
             </div>
 
             <div class="input">
-              <label for="build_shots">Скриншоты (2 изображения: «Техники» и «Снаряжение»)</label>
+              <label for="build_shots">Скриншот (2 изображения: «Техники» и «Снаряжение»)</label>
 
               <!-- Скрытый инпут -->
-              <input id="build_shots" type="file" accept="image/*" multiple class="visually-hidden" />
+              <input id="build_shots" type="file" accept="image/*" multiple style="display:none" />
 
-              <!-- Квадратик с плюсиком -->
-              <div class="uploader">
-                <button type="button" id="shotAddBtn" class="shot-add" aria-label="Добавить изображения">＋</button>
-                <div id="buildShotsPreview" class="shots-preview"></div>
-              </div>
+              <!-- Квадрат с плюсиком -->
+              <button type="button" id="uploadBox" class="upload-box" aria-label="Загрузить изображения">
+                ＋
+              </button>
+
+              <div id="buildShotsPreview" class="shots-preview"></div>
             </div>
 
             <div class="actions">

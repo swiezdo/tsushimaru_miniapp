@@ -29,8 +29,8 @@
 
           <button id="openProfileBtn" class="big-btn">👤 Мой профиль</button>
           <button id="trophiesBtn" class="big-btn">🏆 Трофеи</button>
-          <button id="builderBtn" class="big-btn ghost" disabled title="Скоро">
-            🛠️ Конструктор билдов (скоро)
+          <button id="buildsBtn" class="big-btn ghost">
+            🛠️ Билды
           </button>
         </div>
       </section>
@@ -102,7 +102,6 @@
           <div class="profile-grid">
             <div class="field span-2">
               <label>Полученные трофеи</label>
-              <!-- без <br>, чтобы не надувать отступы -->
               <div class="value lines">Легенда Цусимы 🗡
 Легенда Эдзо 🏔</div>
             </div>
@@ -139,7 +138,6 @@
               <textarea id="commentText" rows="1" placeholder="Добавьте комментарий"></textarea>
             </div>
 
-            <!-- Кнопка для браузера; в Telegram будет системная MainButton -->
             <div class="actions only-browser">
               <button type="submit" class="btn primary" id="sendProofBtn">Отправить заявку</button>
             </div>
@@ -150,7 +148,96 @@
           <button id="backToListBtn" class="btn wide">⬅️ К списку трофеев</button>
         </div>
       </section>
+
+      <!-- ====== БИЛДЫ: СПИСОК ====== -->
+      <section id="buildsScreen" class="hidden">
+        <section class="card">
+          <h2 class="card-title">Билды</h2>
+          <div class="actions" style="justify-content:flex-start;margin-top:0">
+            <button id="createBuildBtn" class="chip-btn" type="button" aria-label="Создать билд">
+              <span style="font-weight:700">＋</span> <span>Создать билд</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3 class="card-title">Мои билды</h3>
+          <div id="myBuildsList" class="list-builds"></div>
+          <div id="noBuildsHint" class="hint muted" style="margin-top:8px;display:none">
+            Пока пусто. Нажмите «Создать билд».
+          </div>
+        </section>
+
+        <div class="footer-actions">
+          <button id="buildsHomeBtn" class="btn wide">🏠 Домой</button>
+        </div>
+      </section>
+
+      <!-- ====== ДОБАВИТЬ БИЛД ====== -->
+      <section id="buildCreateScreen" class="hidden">
+        <section class="card">
+          <h2 class="card-title">Добавить билд</h2>
+          <form id="buildForm" class="form" autocomplete="off">
+            <div class="input">
+              <label for="build_name">Название</label>
+              <input id="build_name" name="build_name" type="text" maxlength="64" placeholder="Название билда" />
+            </div>
+
+            <div class="input">
+              <label>Класс</label>
+              <div id="classChips" class="chips"></div>
+            </div>
+
+            <div class="input">
+              <label>Теги</label>
+              <div id="tagsChips" class="chips"></div>
+            </div>
+
+            <div class="input">
+              <label for="build_desc">Описание</label>
+              <textarea id="build_desc" rows="3" placeholder="Опишите как работает этот билд"></textarea>
+            </div>
+
+            <div class="input">
+              <label for="build_shots">Скриншот (2 изображения: «Техники» и «Снаряжение»)</label>
+              <input id="build_shots" type="file" accept="image/*" multiple />
+              <div id="buildShotsPreview" class="shots-preview"></div>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="btn primary">Создать</button>
+              <button type="button" id="buildCancelBtn" class="btn ghost">Отмена</button>
+            </div>
+          </form>
+        </section>
+      </section>
+
+      <!-- ====== ДЕТАЛИ БИЛДА ====== -->
+      <section id="buildDetailScreen" class="hidden">
+        <section class="card">
+          <h2 id="buildDetailTitle" class="card-title">Билд</h2>
+          <div class="profile-grid">
+            <div class="field"><label>Класс</label><div id="vd_class" class="value">—</div></div>
+            <div class="field"><label>Теги</label><div id="vd_tags" class="value lines">—</div></div>
+            <div class="field span-2"><label>Описание</label><div id="vd_desc" class="value lines">—</div></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3 class="card-title">Скриншоты</h3>
+          <div id="buildDetailShots" class="shots-grid"></div>
+        </section>
+
+        <div class="footer-actions">
+          <button id="backToBuildsBtn" class="btn wide">⬅️ К списку билдов</button>
+        </div>
+      </section>
     </main>
+
+    <!-- Лайтбокс для изображений -->
+    <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true">
+      <img id="lightboxImg" alt="Просмотр изображения" />
+    </div>
 
     <script src="app.js" defer></script>
   </body>

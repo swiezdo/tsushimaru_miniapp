@@ -53,10 +53,9 @@ body{
   background:transparent;color:var(--tg-tx);font-size:16px;line-height:1.35;outline:none;
   transition:border-color .2s, box-shadow .2s;
 }
-/* 1 строка по умолчанию, дальше растёт JS-ом */
 .input textarea{
   resize:none;
-  min-height: calc(1em + 24px); /* 1 строка + вертикальные паддинги */
+  min-height: calc(1em + 24px);
   max-height: 200px;
   overflow-y:auto;
 }
@@ -97,7 +96,9 @@ body{
 .footer-actions{margin:8px 0 calc(28px + var(--safe-bottom));}
 #backToListBtn,
 #trophiesHomeBtn,
-#homeBtn{margin-bottom:calc(28px + var(--safe-bottom));}
+#homeBtn,
+#buildsHomeBtn,
+#backToBuildsBtn{margin-bottom:calc(28px + var(--safe-bottom));}
 #submitInlineBtn{margin-bottom:8px;}
 
 /* List */
@@ -112,11 +113,9 @@ body{
 /* Trophy detail */
 .desc-list{margin-left:18px;display:grid;gap:6px}
 .desc-list li{line-height:1.35}
-
-/* Trophies spacing fix */
 #trophiesScreen .value{white-space:pre-line;line-height:1.15}
 
-/* Превью файлов */
+/* Превью файлов (трофеи) */
 #filePreview{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
 .preview-item{
   width:64px;height:64px;border-radius:8px;background:rgba(255,255,255,0.06);
@@ -149,11 +148,44 @@ body{
   color:#00131f;border:none;font-weight:600;font-size:15px;
 }
 
+/* Билды — список */
+.list-builds{display:grid;gap:8px}
+.build-item{
+  display:grid;grid-template-columns:48px 1fr;gap:10px;align-items:center;
+  padding:10px 12px;border-radius:12px;border:1px solid var(--stroke);background:transparent;cursor:pointer;min-height:48px
+}
+.build-item:active{transform:translateY(1px)}
+.build-icon{
+  width:48px;height:48px;border-radius:10px;border:1px solid var(--stroke);display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.04);overflow:hidden
+}
+.build-icon img{width:70%;height:70%;object-fit:contain;opacity:.95}
+.build-title{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.muted{color:var(--tg-hint);font-size:14px}
+
+/* Билды — превью и сетка скринов */
+.shots-preview{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.shot-thumb{
+  width:88px;height:88px;border-radius:10px;border:1px solid var(--stroke);overflow:hidden;background:rgba(255,255,255,0.06);
+  display:flex;align-items:center;justify-content:center
+}
+.shot-thumb img{width:100%;height:100%;object-fit:cover}
+.shots-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.shots-grid .shot-thumb{width:100%;height:160px}
+
+/* Лайтбокс */
+.lightbox{
+  position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999
+}
+.lightbox img{max-width:92vw;max-height:88vh;border-radius:12px;border:1px solid var(--stroke)}
+
 /* Responsive */
-@media(max-width:640px){.profile-grid{grid-template-columns:1fr}}
+@media(max-width:640px){
+  .profile-grid{grid-template-columns:1fr}
+  .shots-grid{grid-template-columns:1fr}
+}
 
 /* Touch */
-button,.btn,.big-btn,.list-btn,.chip-btn{
+button,.btn,.big-btn,.list-btn,.chip-btn,.build-item{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;
   -webkit-tap-highlight-color:transparent;touch-action:manipulation
 }

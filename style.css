@@ -112,3 +112,26 @@ a.big-btn { cursor: pointer; }
 
 /* На случай перекрытий — гарантируем кликабельность слоёв */
 .big-btn, .list-btn, .btn, .chip-btn { pointer-events: auto; }
+
+#trophiesScreen .profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+#trophiesScreen .field label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+  display: block;
+}
+
+#trophiesScreen .value {
+  font-size: 15px;
+  word-break: break-word;
+  white-space: pre-line;
+}
+
+#trophiesScreen .span-2 {
+  grid-column: 1 / -1;
+}

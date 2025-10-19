@@ -98,17 +98,19 @@
     var prof = document.getElementById('profileScreen');
     var title = document.getElementById('appTitle');
 
-    if(name === 'profile'){
+    if (name === 'profile') {
       home.classList.add('hidden');
       prof.classList.remove('hidden');
+      document.querySelector('.topbar').style.display = 'flex';
       title.textContent = 'Профиль';
       scrollTopSmooth();
     } else {
       prof.classList.add('hidden');
       home.classList.remove('hidden');
-      title.textContent = 'Tsushima.Ru';
+      document.querySelector('.topbar').style.display = 'none';
       scrollTopSmooth();
     }
+
   }
 
   onReady(function(){

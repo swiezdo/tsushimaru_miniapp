@@ -24,7 +24,8 @@ body{
   padding:16px;
   max-width:920px;
   margin:auto;
-  padding-bottom: calc(16px + var(--safe-bottom));
+  /* было: calc(16px + var(--safe-bottom)) — добавили «воздух» для нижних кнопок */
+  padding-bottom: calc(28px + var(--safe-bottom));
 }
 
 .hidden{display:none}
@@ -87,7 +88,10 @@ body{
 .big-btn.primary{background:var(--accent);border-color:transparent;color:#00131f;font-weight:700}
 .big-btn.ghost{opacity:.95}
 
-.footer-actions{margin:8px 0 16px}
+/* Блок нижних кнопок: добавили больше отступа снизу, с учётом safe-area */
+.footer-actions{
+  margin:8px 0 calc(28px + var(--safe-bottom));
+}
 
 /* List */
 .list-buttons{display:grid;gap:8px}
@@ -105,7 +109,7 @@ body{
 /* Trophies spacing fix */
 #trophiesScreen .value{white-space:pre-line;line-height:1.15}
 
-/* --- ДОБАВЛЕНО: превью файлов --- */
+/* --- Превью файлов --- */
 #filePreview{
   display:flex;
   flex-wrap:wrap;
@@ -142,7 +146,7 @@ body{
   font-size:13px;
 }
 
-/* --- ДОБАВЛЕНО: ошибки и shake --- */
+/* --- Ошибки и shake --- */
 .error{border-color:#ff4444!important;}
 .error-text{color:#ff4444;font-size:12px;margin-top:4px}
 @keyframes shake{
@@ -153,7 +157,7 @@ body{
 }
 .shake{animation:shake .3s}
 
-/* --- ДОБАВЛЕНО: экран успеха --- */
+/* --- Экран успеха --- */
 .success-message{
   text-align:center;
   font-size:16px;

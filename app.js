@@ -10,6 +10,9 @@ const tg = window.Telegram?.WebApp || null;
     if(th.text_color) document.documentElement.style.setProperty('--tg-tx', th.text_color);
     if(th.hint_color) document.documentElement.style.setProperty('--tg-hint', th.hint_color);
     document.documentElement.classList.add('tg');
+
+    // Мы больше НЕ используем Telegram MainButton — отключаем его везде.
+    tg.MainButton.hide();
   }catch(e){}
 })();
 function hapticOK(){ try{ tg?.HapticFeedback?.notificationOccurred('success'); }catch{} }
@@ -32,18 +35,45 @@ function setTopbar(visible, title){
   if(tb) tb.style.display = visible ? 'flex' : 'none';
   if(title) { const t = $('appTitle'); if(t) t.textContent = title; }
 }
+
+// Вспомогательно: создаём/обновляем inline-кнопку «Отправить» на детальном экране трофея
+function ensureInlineSubmitButton(){
+  const backBtn = $('backToListBtn');
+  if(!backBtn) return;
+
+  // если уже вставляли — не дублируем
+  let submitInline = $('submitInlineBtn');
+  if(!submitInline){
+    submitInline = document.createElement('button');
+    submitInline.id = 'submitInlineBtn';
+    // наследуем классы «как у кнопки к списку» (единый стиль)
+    submitInline.className = backBtn.className || 'btn';
+    // если у backBtn есть .wide — оставим такой же вид
+    submitInline.textContent = 'Отправить';
+    // вставляем ПЕРЕД «к списку трофеев»
+    backBtn.parentNode.insertBefore(submitInline, backBtn);
+    // небольшой отступ между кнопками, если сетка/флекс отсутствует
+    submitInline.style.marginBottom = '8px';
+  }else{
+    submitInline.textContent = 'Отправить';
+  }
+
+  // навесим обработчик
+  submitInline.onclick = (e)=>{ e.preventDefault(); submitProof(); };
+}
+
 function showScreen(name){
   Object.values(screens).forEach(el => el && el.classList.add('hidden'));
   const el = screens[name];
   if(el) el.classList.remove('hidden');
 
+  // Главное — не трогаем MainButton. Только системная back-кнопка при деталях трофея.
   if(tg){
     if(name === 'trophyDetail'){
-      tg.MainButton.setParams({ text: 'Отправить', is_active: true, is_visible: true });
-      tg.MainButton.show();
       tg.BackButton.show();
+      // создаём inline-«Отправить»
+      ensureInlineSubmitButton();
     } else {
-      tg.MainButton.hide();
       tg.BackButton.hide();
     }
   }
@@ -56,14 +86,14 @@ function showScreen(name){
   scrollTopSmooth();
 }
 
-// --- Header user chip ---
+// --- Header user chip (если есть username из Telegram) ---
 (function(){
   const chip = $('userChip');
   const uname = tg?.initDataUnsafe?.user?.username;
   if(chip && uname) chip.textContent = '@' + uname;
 })();
 
-// --- ЧИПЫ ---
+// --- ЧИПЫ (ровно как в проекте) ---
 const PLATFORM   = ['🎮 PlayStation','💻 ПК'];
 const MODES      = ['📖 Сюжет','🏹 Выживание','🗻 Испытания Иё','⚔️ Соперники','📜 Главы'];
 const GOALS      = ['🏆 Получение трофеев','🔎 Узнать что-то новое','👥 Поиск тиммейтов'];
@@ -119,6 +149,7 @@ const profileForm = $('profileForm');
 const resetBtn    = $('resetBtn');
 
 if(profileForm){
+  // отрисовать чипы
   renderChips($('platformChips'),   PLATFORM);
   renderChips($('modesChips'),      MODES);
   renderChips($('goalsChips'),      GOALS);
@@ -145,12 +176,14 @@ if(profileForm){
   }
   psnInput?.addEventListener('input', validatePSN);
 
+  // submit
   profileForm.addEventListener('submit', (e)=>{
     e.preventDefault();
     if(!validatePSN()){ hapticERR(); return; }
 
     if(v_real_name) v_real_name.textContent = (profileForm.real_name?.value || '').trim() || '—';
     if(v_psn)       v_psn.textContent       = (profileForm.psn?.value || '').trim() || '—';
+
     refreshProfileView();
 
     if(tg?.showPopup){
@@ -160,6 +193,7 @@ if(profileForm){
     scrollTopSmooth();
   });
 
+  // reset
   if(resetBtn){
     resetBtn.addEventListener('click', ()=>{
       try{ profileForm.reset(); }catch{}
@@ -185,8 +219,10 @@ async function loadTrophies(){
   if(TROPHIES) return TROPHIES;
   try{
     const res = await fetch(TROPHIES_URL, { cache:'no-store' });
-    TROPHIES = await res.json();
-  }catch(e){ TROPHIES = {}; }
+    TROPHIES = await res.json();  // объект {key: {name, emoji, description[]}}
+  }catch(e){
+    TROPHIES = {};
+  }
   return TROPHIES;
 }
 function renderTrophyList(data){
@@ -223,6 +259,7 @@ const proofFilesEl = $('proofFiles');
 const commentEl    = $('commentText');
 const previewEl    = $('filePreview');
 
+// Адаптивная высота textarea комментария
 if(commentEl){
   commentEl.addEventListener('input', ()=>{
     commentEl.style.height = 'auto';
@@ -230,11 +267,13 @@ if(commentEl){
   });
 }
 
+// Превью для загруженных файлов
 if(proofFilesEl && previewEl){
   proofFilesEl.addEventListener('change', ()=>{
     previewEl.innerHTML = '';
     const files = Array.from(proofFilesEl.files || []);
     if(!files.length) return;
+
     const limit = 5;
     files.slice(0, limit).forEach(file=>{
       const div = document.createElement('div');
@@ -253,6 +292,7 @@ if(proofFilesEl && previewEl){
       }
       previewEl.appendChild(div);
     });
+
     if(files.length > limit){
       const more = document.createElement('div');
       more.className = 'preview-more';
@@ -277,41 +317,52 @@ async function submitProof(){
   setTimeout(()=>submitting=false, 1500);
 
   const filesCount = proofFilesEl?.files?.length || 0;
-  const comment = (commentEl?.value || '').trim();
+  const comment    = (commentEl?.value || '').trim();
 
+  // По твоим правилам: обязательны И файл, И комментарий
   if(filesCount === 0 || !comment){
     if(!filesCount) shake(proofFilesEl.closest('.form-group') || proofFilesEl);
-    if(!comment) shake(commentEl);
+    if(!comment)    shake(commentEl);
     if(tg?.showPopup){
       tg.showPopup({ title:'Ошибка', message:'Добавьте файл и комментарий.', buttons:[{type:'ok'}] });
     }
     return;
   }
 
+  // Тут будет реальный аплоад на сервер
   hapticOK();
   if(tg?.showPopup){
     tg.showPopup({ title:'Заявка отправлена', message:'✅ Спасибо! Модераторы рассмотрят вашу заявку.' });
   }
 
+  // Очистка формы
   if(previewEl) previewEl.innerHTML = '';
   if(proofFilesEl) proofFilesEl.value = '';
-  if(commentEl) commentEl.value = '';
+  if(commentEl){
+    commentEl.value = '';
+    commentEl.style.height = 'auto';
+  }
 
-  const form = document.querySelector('.application-form');
-  if(form){
-    form.innerHTML = `<div class="success-message">Заявка отправлена ✅</div>
+  // Показываем экран успеха вместо формы
+  const formWrap = document.querySelector('.application-form');
+  if(formWrap){
+    formWrap.innerHTML = `<div class="success-message">Заявка отправлена ✅</div>
       <button id="backButton" class="button">Назад</button>`;
     $('backButton')?.addEventListener('click', ()=> showScreen('trophies'));
   }
 }
 
-if(proofFormEl){ proofFormEl.addEventListener('submit', e=>{ e.preventDefault(); submitProof(); }); }
+// Привязка к форме (если есть)
+if(proofFormEl){
+  proofFormEl.addEventListener('submit', (e)=>{ e.preventDefault(); submitProof(); });
+}
+
+// Обработчик системной Back-кнопки Telegram
 if(tg){
-  tg.onEvent('mainButtonClicked', submitProof);
   tg.onEvent('backButtonClicked', ()=> showScreen('trophies'));
 }
 
-// --- Навигация ---
+// --- Навигация: прямые обработчики ---
 $('openProfileBtn')?.addEventListener('click', ()=> showScreen('profile'));
 $('trophiesBtn')?.addEventListener('click', ()=> showScreen('trophies'));
 $('homeBtn')?.addEventListener('click', ()=> showScreen('home'));

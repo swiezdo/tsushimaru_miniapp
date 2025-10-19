@@ -67,6 +67,14 @@ body{
 }
 .input input:focus,.input textarea:focus{border-color:var(--accent)}
 
+/* Панель действий под карточкой */
+.actions-bar{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin: -4px 0 calc(28px + var(--safe-bottom));
+}
+
 /* Upload boxes (два квадрата в ряд) */
 .shots-two{
   display:grid;
@@ -178,6 +186,7 @@ body{
   .profile-grid{grid-template-columns:1fr}
   .shots-grid{grid-template-columns:1fr}
   .shots-two{grid-template-columns:1fr;gap:8px}
+  .actions-bar{grid-template-columns:1fr;gap:8px}
 }
 
 /* Touch */

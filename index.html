@@ -199,22 +199,23 @@
               <label>Скриншоты (2 изображения: «Техники» и «Снаряжение»)</label>
 
               <!-- Скрытые инпуты (по одному на каждый квадрат) -->
-              <input id="build_shot1" type="file" accept="image/*" style="display:none" />
-              <input id="build_shot2" type="file" accept="image/*" style="display:none" />
+              <input id="build_shot1" data-idx="1" type="file" accept="image/*" style="display:none" />
+              <input id="build_shot2" data-idx="2" type="file" accept="image/*" style="display:none" />
 
               <!-- Два квадрата в ряд -->
-              <div class="shots-two">
-                <button type="button" id="uploadBox1" class="upload-box" aria-label="Загрузить первое изображение">＋</button>
-                <button type="button" id="uploadBox2" class="upload-box" aria-label="Загрузить второе изображение">＋</button>
+              <div class="shots-two" id="shotsTwo">
+                <button type="button" class="upload-box" data-idx="1" aria-label="Загрузить первое изображение">＋</button>
+                <button type="button" class="upload-box" data-idx="2" aria-label="Загрузить второе изображение">＋</button>
               </div>
-            </div>
-
-            <div class="actions">
-              <button type="submit" class="btn primary">Создать</button>
-              <button type="button" id="buildCancelBtn" class="btn ghost">Отмена</button>
             </div>
           </form>
         </section>
+
+        <!-- КНОПКИ ПОД КАРТОЧКОЙ ФОРМЫ -->
+        <div class="actions-bar">
+          <button type="button" id="buildCancelBtn" class="btn ghost wide">Отмена</button>
+          <button type="button" id="buildSubmitBtn" class="btn primary wide">Создать</button>
+        </div>
       </section>
 
       <!-- ====== ДЕТАЛИ БИЛДА ====== -->

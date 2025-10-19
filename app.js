@@ -67,7 +67,6 @@ function showScreen(name){
 function ensureInlineSubmitButton(){
   const backBtn = $('backToListBtn');
   if(!backBtn) return;
-
   let submitInline = $('submitInlineBtn');
   if(!submitInline){
     submitInline = document.createElement('button');
@@ -396,10 +395,10 @@ const tagsChipsEl    = $('tagsChips');
 
 const shotInput1     = $('build_shot1');
 const shotInput2     = $('build_shot2');
-const uploadBox1     = $('uploadBox1');
-const uploadBox2     = $('uploadBox2');
+const shotsTwo       = $('shotsTwo');
 
 const buildCancelBtn = $('buildCancelBtn');
+const buildSubmitBtn = $('buildSubmitBtn');
 
 const buildDetailTitle = $('buildDetailTitle');
 const vd_class   = $('vd_class');
@@ -439,40 +438,44 @@ function makeThumb(src){
   return wrap;
 }
 
-// Два отдельных квадрата: каждый — один файл
+// Два отдельных слота: по одному файлу
 let shot1Data = null;
 let shot2Data = null;
 
-function handleShotPick(which){
-  const input = which === 1 ? shotInput1 : shotInput2;
-  const box   = which === 1 ? uploadBox1 : uploadBox2;
-  if(!input || !box) return;
-
-  // открыть файловый диалог
-  box.addEventListener('click', ()=>{
+// Делегирование клика по квадратам — надёжно в WebView
+if(shotsTwo){
+  shotsTwo.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.upload-box');
+    if(!btn) return;
+    const idx = btn.dataset.idx;
+    const input = idx === '1' ? shotInput1 : shotInput2;
+    if(!input) return;
     input.click();
   });
+}
 
-  input.addEventListener('change', async ()=>{
+// Реакция на выбор файла
+function bindShotInput(input, idx){
+  input?.addEventListener('change', async ()=>{
     const file = input.files && input.files[0];
-    if(!file){ return; }
-
+    if(!file) return;
     try{
       const data = await fileToDataURL(file);
       const thumb = makeThumb(data);
-
-      // заменить квадрат на миниатюру
-      box.replaceWith(thumb);
-
-      if(which === 1) shot1Data = data;
-      else            shot2Data = data;
+      // Заменяем соответствующий квадрат на превью
+      const box = shotsTwo?.querySelector(`.upload-box[data-idx="${idx}"]`);
+      if(box && box.parentNode){
+        box.parentNode.replaceChild(thumb, box);
+      }
+      if(idx === '1') shot1Data = data; else shot2Data = data;
+      hapticTap();
     }catch(_){
-      shake(box);
+      shake(shotsTwo);
     }
   });
 }
-handleShotPick(1);
-handleShotPick(2);
+bindShotInput(shotInput1, '1');
+bindShotInput(shotInput2, '2');
 
 // Storage
 function loadBuilds(){
@@ -533,49 +536,23 @@ function resetBuildForm(){
   try{ buildForm?.reset(); }catch{}
   setActive(classChipsEl, []);
   setActive(tagsChipsEl,  []);
-
-  // восстановить квадраты загрузки
-  shot1Data = null; shot2Data = null;
-
   if(shotInput1) shotInput1.value = '';
   if(shotInput2) shotInput2.value = '';
+  shot1Data = null; shot2Data = null;
 
-  // Перерисуем контейнер с квадратами (на случай, если их заменили миниатюры)
-  const shotsContainer = document.querySelector('.shots-two');
-  if(shotsContainer){
-    shotsContainer.innerHTML = '';
-    const b1 = document.createElement('button');
-    b1.type = 'button';
-    b1.id = 'uploadBox1';
-    b1.className = 'upload-box';
-    b1.setAttribute('aria-label','Загрузить первое изображение');
-    b1.textContent = '＋';
-
-    const b2 = document.createElement('button');
-    b2.type = 'button';
-    b2.id = 'uploadBox2';
-    b2.className = 'upload-box';
-    b2.setAttribute('aria-label','Загрузить второе изображение');
-    b2.textContent = '＋';
-
-    shotsContainer.appendChild(b1);
-    shotsContainer.appendChild(b2);
-
-    // пересвяжем элементы и обработчики
-    window.uploadBox1 = $('uploadBox1');
-    window.uploadBox2 = $('uploadBox2');
-    handleShotPick(1);
-    handleShotPick(2);
+  // Восстановить квадраты
+  if(shotsTwo){
+    shotsTwo.innerHTML = `
+      <button type="button" class="upload-box" data-idx="1" aria-label="Загрузить первое изображение">＋</button>
+      <button type="button" class="upload-box" data-idx="2" aria-label="Загрузить второе изображение">＋</button>
+    `;
   }
-
-  // высоту описания — по умолчанию
   if(buildDescEl) buildDescEl.style.height = 'auto';
 }
 
-// Отмена — назад к списку
-buildCancelBtn?.addEventListener('click', ()=>{
-  showScreen('builds');
-});
+// Кнопки под карточкой
+buildCancelBtn?.addEventListener('click', ()=> showScreen('builds'));
+buildSubmitBtn?.addEventListener('click', ()=> buildForm?.requestSubmit());
 
 // Создание билда
 if(buildForm){
@@ -589,12 +566,10 @@ if(buildForm){
     const tags  = activeValues(tagsChipsEl);
     const desc  = (buildDescEl?.value || '').trim();
 
-    // Требуем строго 2 изображения (по одному в каждый квадрат)
     if(!name){ shake(buildNameEl); buildNameEl?.focus(); return; }
     if(!klass){ shake(classChipsEl); return; }
     if(!shot1Data || !shot2Data){
-      const container = document.querySelector('.shots-two');
-      shake(container);
+      shake(shotsTwo);
       return;
     }
 

@@ -39,11 +39,35 @@ function setTopbar(visible, title){
   if(title) { const t = $('appTitle'); if(t) t.textContent = title; }
 }
 
+function setFooterSafeSpacing(name){
+  // По умолчанию: компактный, чтобы не «кусало» кнопки
+  const APPLY = (rootSel, pxBottom) => {
+    const el = document.querySelector(`${rootSel} .footer-actions`);
+    if(el) el.style.margin = `8px 0 ${pxBottom}px`;
+  };
+  if(name === 'home'){
+    APPLY('#homeScreen', 28); // главная
+  } else if(name === 'profile'){
+    APPLY('#profileScreen', 28);
+  } else if(name === 'trophies'){
+    APPLY('#trophiesScreen', 28);
+  } else if(name === 'trophyDetail'){
+    // Здесь раньше была «пропасть». Делаем совсем небольшой отступ.
+    APPLY('#trophyDetailScreen', 8);
+  } else if(name === 'builds'){
+    APPLY('#buildsScreen', 28);
+  } else if(name === 'buildCreate'){
+    APPLY('#buildCreateScreen', 28);
+  } else if(name === 'buildDetail'){
+    APPLY('#buildDetailScreen', 28);
+  }
+}
+
 function configureSystemButtons(name){
   if(!tg) return;
 
-  // Главный экран: BackButton скрыт, показываем MainButton «Закрыть»
   if(name === 'home'){
+    // Главный экран: Back скрыт, доступно «Закрыть»
     tg.BackButton.hide();
     tg.MainButton.setText('Закрыть');
     tg.MainButton.show();
@@ -52,11 +76,9 @@ function configureSystemButtons(name){
     return;
   }
 
-  // Остальные экраны: BackButton показываем, MainButton скрываем
+  // Остальные экраны: показываем системный BackButton, MainButton прячем
   tg.MainButton.hide();
   tg.offEvent?.('mainButtonClicked');
-
-  // Показываем системную «Назад» на всех, кроме home
   tg.BackButton.show();
 }
 
@@ -67,6 +89,13 @@ function showScreen(name){
   currentScreen = name;
 
   configureSystemButtons(name);
+  setFooterSafeSpacing(name);
+
+  if(tg){
+    // На всякий случай жёстко синхронизируем BackButton:
+    if(name === 'home') tg.BackButton.hide();
+    else tg.BackButton.show();
+  }
 
   if(name === 'home') setTopbar(false);
   else if(name === 'profile') setTopbar(true, 'Профиль');
@@ -98,6 +127,10 @@ function ensureInlineSubmitButton(){
     submitInline.textContent = 'Отправить заявку';
   }
   submitInline.onclick = (e)=>{ e.preventDefault(); submitProof(); };
+
+  // Убедимся, что нет «лишнего» большого отступа снизу
+  const fa = document.querySelector('#trophyDetailScreen .footer-actions');
+  if(fa) fa.style.margin = '8px 0 8px';
 }
 
 // Header user chip
@@ -410,23 +443,26 @@ async function submitProof(){
 }
 
 // Навигация по системной кнопке «Назад» Telegram
+function handleBack(){
+  switch(currentScreen){
+    case 'profile':
+    case 'trophies':
+    case 'builds':
+      showScreen('home'); break;
+    case 'trophyDetail':
+      resetProofForm();
+      showScreen('trophies'); break;
+    case 'buildCreate':
+    case 'buildDetail':
+      showScreen('builds'); break;
+    default:
+      showScreen('home'); break;
+  }
+}
 if(tg){
-  tg.onEvent('backButtonClicked', ()=>{
-    switch(currentScreen){
-      case 'profile':
-      case 'trophies':
-      case 'builds':
-        showScreen('home'); break;
-      case 'trophyDetail':
-        resetProofForm();
-        showScreen('trophies'); break;
-      case 'buildCreate':
-      case 'buildDetail':
-        showScreen('builds'); break;
-      default:
-        showScreen('home'); break;
-    }
-  });
+  // Старый и новый варианты API — оба, чтобы работало везде
+  tg.onEvent('backButtonClicked', handleBack);
+  try{ tg.BackButton.onClick(handleBack); }catch{}
 }
 
 // --- Навигация (главное меню) ---
@@ -441,7 +477,7 @@ const TAG_VALUES   = ['HellMode','Спидран','Соло','Сюжет','Со�
 const CLASS_ICON = {
   'Самурай':'./samurai-wh.svg',
   'Охотник':'./hunter-wh.svg',
-  'Убийица':'./assassin-wh.svg',
+  'Убийца':'./assassin-wh.svg',
   'Ронин':'./ronin-wh.svg'
 };
 

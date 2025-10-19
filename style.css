@@ -11,7 +11,9 @@
   --tg-tx: var(--fg);
   --tg-hint: var(--muted);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --press:#ff9f2d; /* оранжевый для подсветки краёв */
+
+  /* для оранжевой окантовки при реальном клике */
+  --press:#ff9f2d;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -40,7 +42,7 @@ body{
 .card-title{font-weight:600;margin-bottom:12px}
 
 /* Кнопка под заголовком «Билды» */
-.top-action{ margin:16px 0 4px; }
+.top-action{margin:-4px 0 12px}
 
 /* Доп. пустое пространство */
 .space-md{height:12px}
@@ -73,7 +75,7 @@ body{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px;
-  margin:16px 0; /* было: -4px 0 calc(28px + var(--safe-bottom)) */
+  margin: -4px 0 calc(28px + var(--safe-bottom));
 }
 
 /* Upload boxes (два квадрата в ряд) */
@@ -199,7 +201,8 @@ button,.btn,.big-btn,.list-btn,.chip-btn,.build-item,.upload-box{
 /* В Telegram скрываем дубль-кнопки «Отправить» (есть MainButton) */
 html.tg .only-browser{display:none}
 
+/* === Окантовка при реальном клике (см. app.js addClickFeedback) === */
 .tap-hi{
   border-color: var(--press) !important;
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--press) 50%, transparent);
+  box-shadow: inset 0 0 0 1px rgba(255,159,45,0.55);
 }

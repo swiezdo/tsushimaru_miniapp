@@ -20,6 +20,27 @@ function hapticTap(){ try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{}
 function $(id){ return document.getElementById(id); }
 function scrollTopSmooth(){ window.scrollTo({top:0, behavior:'smooth'}); }
 
+/* ========= CLICK-только подсветка + хэптик (без ложных срабатываний при скролле) =========
+ * Реагируем только на реальный click — при прокрутке браузер клик не генерирует.
+ * Работает для .big-btn, #trophyList .list-btn, #myBuildsList .build-item.
+ */
+(function(){
+  function addClickFeedback(selector){
+    document.addEventListener('click', (e)=>{
+      const el = e.target.closest(selector);
+      if(!el) return;
+      // короткая оранжевая окантовка
+      el.classList.add('tap-hi');
+      setTimeout(()=> el.classList.remove('tap-hi'), 140);
+      // лёгкая тактильная отдача
+      hapticTap();
+    }, true); // capture, чтобы отработать до навигации/перерендера
+  }
+  addClickFeedback('.big-btn');
+  addClickFeedback('#trophyList .list-btn');
+  addClickFeedback('#myBuildsList .build-item');
+})();
+
 // --- Screens ---
 const screens = {
   home: $('homeScreen'),

@@ -78,21 +78,21 @@ body{
 }
 .input input:focus,.input textarea:focus{border-color:var(--accent)}
 
-/* Панель действий под карточкой (единый нижний отступ как у остальных кнопок) */
+/* Панель действий под карточкой */
 .actions-bar{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px;
-  margin: -4px 0 0; /* сам блок без большого нижнего margin */
+  margin: -4px 0 0;
 }
 
 /* Гарантированный отступ как у нижних кнопок */
 .footer-actions{margin:8px 0 calc(28px + var(--safe-bottom));}
 
-/* Для экрана подачи заявки — чуть меньше, чтобы не было «пропасти» */
+/* Для экрана подачи заявки — чуть меньше */
 #trophyDetailScreen .footer-actions{margin:8px 0 calc(16px + var(--safe-bottom));}
 
-/* Upload boxes (два квадрата в ряд) */
+/* Upload boxes */
 .shots-two{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -106,10 +106,10 @@ body{
 }
 .upload-box:active{transform:translateY(1px)}
 
-/* Узкий прямоугольник-триггер для медиа (трофеи) */
+/* Узкий прямоугольник-триггер для медиа */
 .upload-row{
   width:100%;
-  min-height:44px; /* одна строка */
+  min-height:44px;
   border-radius:10px;
   border:1px solid var(--stroke);
   background:rgba(255,255,255,0.04);
@@ -119,7 +119,7 @@ body{
 }
 .upload-row:active{transform:translateY(1px)}
 
-/* Лента миниатюр (трофеи) */
+/* Лента миниатюр */
 .preview-row{
   display:flex;gap:6px;margin-top:8px;
   overflow-x:auto;padding-bottom:4px;
@@ -206,7 +206,7 @@ body{
 .build-title{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tg-tx)}
 .muted{color:var(--tg-hint);font-size:14px}
 
-/* Детали билдов — сетка скринов */
+/* Детали билдов */
 .shots-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .shots-grid .shot-thumb{width:100%;height:160px;border-radius:10px;border:1px solid var(--stroke);overflow:hidden;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center}
 .shot-thumb img{width:100%;height:100%;object-fit:cover}
@@ -232,5 +232,5 @@ button,.btn,.big-btn,.list-btn,.chip-btn,.build-item,.upload-box,.upload-row{
   -webkit-tap-highlight-color:transparent;touch-action:manipulation
 }
 
-/* В Telegram скрываем дубль-кнопки «Отправить» (есть MainButton) */
+/* В Telegram скрываем дубль-кнопки «Отправить» */
 html.tg .only-browser{display:none}

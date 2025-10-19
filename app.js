@@ -15,8 +15,10 @@ const tg = window.Telegram?.WebApp || null;
 })();
 function hapticOK(){ try{ tg?.HapticFeedback?.notificationOccurred('success'); }catch{} }
 function hapticERR(){ try{ tg?.HapticFeedback?.notificationOccurred('error'); }catch{} }
-function hapticTap(){ try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{} }
+// Тап-хаптик отключён глобально (по задаче)
+function hapticTap(){}
 
+// Утилиты
 function $(id){ return document.getElementById(id); }
 function scrollTopSmooth(){ window.scrollTo({top:0, behavior:'smooth'}); }
 
@@ -29,26 +31,9 @@ function applyTopInset(){
 }
 window.addEventListener('resize', applyTopInset);
 
-// ===== Подсветка при тапе (без тактильной отдачи) =====
-function addTapHighlight(selector){
-  const els = document.querySelectorAll(selector);
-  els.forEach(el=>{
-    if(el.dataset.tapbound) return;         // чтобы не двойнить слушатели
-    el.dataset.tapbound = '1';
-
-    const onDown = () => {
-      el.classList.add('tap-hi');
-      // убран hapticTap();
-    };
-    const clear = () => el.classList.remove('tap-hi');
-
-    el.addEventListener('pointerdown', onDown);
-    el.addEventListener('pointerup', clear);
-    el.addEventListener('pointerleave', clear);
-    el.addEventListener('pointercancel', clear);
-    el.addEventListener('blur', clear);
-  });
-}
+// ===== Подсветка при тапе + тактильная отдача =====
+// Полностью отключено (не добавляем классы/слушатели)
+function addTapHighlight(/* selector */){ /* disabled by request */ }
 
 // --- Screens ---
 const screens = {
@@ -112,11 +97,9 @@ function ensureInlineSubmitButton(){
     }else{
       submitInline.textContent = 'Отправить';
     }
-    submitInline.onclick = (e)=>{
-      e.preventDefault();
-      hapticTap(); // оставлено только для этой кнопки
-      submitProof();
-    };
+    submitInline.onclick = (e)=>{ e.preventDefault(); submitProof(); };
+    // Хаптик только для этой кнопки
+    submitInline.addEventListener('pointerdown', ()=>{ try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{} });
     return;
   }
 
@@ -130,11 +113,9 @@ function ensureInlineSubmitButton(){
       submitInline.textContent = 'Отправить';
       form.appendChild(submitInline);
     }
-    submitInline.onclick = (e)=>{
-      e.preventDefault();
-      hapticTap(); // оставлено только для этой кнопки
-      submitProof();
-    };
+    submitInline.onclick = (e)=>{ e.preventDefault(); submitProof(); };
+    // Хаптик только для этой кнопки
+    submitInline.addEventListener('pointerdown', ()=>{ try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{} });
   }
 }
 
@@ -167,7 +148,7 @@ function renderChips(container, values, {single=false, onChange}={}){
       } else {
         b.classList.toggle('active');
       }
-      // убран hapticTap();
+      // tap-хаптик отключён
       onChange?.();
     });
     container.appendChild(b);
@@ -233,7 +214,7 @@ if(profileForm){
 
   profileForm.addEventListener('submit', (e)=>{
     e.preventDefault();
-    if(!validatePSN()){ /* убран hapticERR(); */ return; }
+    if(!validatePSN()){ hapticERR(); return; }
 
     if(v_real_name) v_real_name.textContent = (profileForm.real_name?.value || '').trim() || '—';
     if(v_psn)       v_psn.textContent       = (profileForm.psn?.value || '').trim() || '—';
@@ -241,16 +222,14 @@ if(profileForm){
 
     if(tg?.showPopup){
       tg.showPopup({ title: 'Профиль обновлён', message: 'Данные сохранены.', buttons: [{type:'ok'}] });
-      // убран hapticOK();
+      hapticOK();
     }
     scrollTopSmooth();
   });
 
-  // Тактильная отдача — только на кнопку «Сохранить»
-  profileSaveBtn?.addEventListener('click', ()=>{
-    hapticTap();
-    profileForm.requestSubmit();
-  });
+  // Хаптик только на нажатие «Сохранить»
+  profileSaveBtn?.addEventListener('pointerdown', ()=>{ try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{} });
+  profileSaveBtn?.addEventListener('click', ()=> profileForm.requestSubmit());
 }
 
 // --- Трофеи ---
@@ -283,8 +262,7 @@ function renderTrophyList(data){
     trophyListEl.appendChild(btn);
   });
 
-  // подсветка без тактильной отдачи
-  addTapHighlight('#trophyList .list-btn');
+  // Подсветка/хаптик — отключены глобально
 }
 
 const proofFormEl  = $('proofForm');
@@ -364,7 +342,7 @@ function shake(el){
   el.classList.remove('shake');
   void el.offsetWidth;
   el.classList.add('shake');
-  // убран hapticERR();
+  hapticERR();
 }
 async function submitProof(){
   if(submitting) return;
@@ -383,7 +361,7 @@ async function submitProof(){
     return;
   }
 
-  // убран hapticOK();
+  hapticOK();
   if(tg?.showPopup){
     tg.showPopup({ title:'Заявка отправлена', message:'✅ Модераторы рассмотрят вашу заявку.' });
   }
@@ -395,11 +373,6 @@ async function submitProof(){
 if(proofFormEl){
   proofFormEl.addEventListener('submit', (e)=>{ e.preventDefault(); submitProof(); });
 }
-// Браузерная кнопка «Отправить заявку» (только в web, не в Telegram)
-$('sendProofBtn')?.addEventListener('click', ()=>{
-  hapticTap(); // оставлено только для этой кнопки
-});
-
 $('backToListBtn')?.addEventListener('click', ()=>{
   resetProofForm();
   showScreen('trophies');
@@ -421,7 +394,7 @@ $('openProfileBtn')?.addEventListener('click', ()=> showScreen('profile'));
 $('trophiesBtn')?.addEventListener('click', ()=> showScreen('trophies'));
 $('buildsBtn')?.addEventListener('click', ()=> { renderMyBuilds(); showScreen('builds'); });
 
-// Подсветка для кнопок на главном экране (без тактильной отдачи)
+// Подсветка для кнопок на главном экране — отключено
 addTapHighlight('.big-btn');
 
 // ===================== БИЛДЫ =====================
@@ -537,7 +510,7 @@ function bindShotInput(input, idx){
       }
 
       if(idx === '1') shot1Data = data; else shot2Data = data;
-      // убран hapticTap();
+      // tap-хаптик отключён
     }catch(_){
       shake(shotsTwo);
     }
@@ -593,16 +566,16 @@ function renderMyBuilds(){
     myBuildsList.appendChild(row);
   });
 
-  // подсветка без тактильной отдачи
-  addTapHighlight('#myBuildsList .build-item');
+  // Подсветка/хаптик — отключены глобально
 }
 
 // Открыть экран «Создать билд»
 createBuildBtn?.addEventListener('click', ()=>{
-  hapticTap(); // оставлено только для этой кнопки
   resetBuildForm();
   showScreen('buildCreate');
 });
+// Хаптик только на кнопку «Создать билд» (на экране «Билды»)
+createBuildBtn?.addEventListener('pointerdown', ()=>{ try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{} });
 
 // Сброс формы билда
 function resetBuildForm(){
@@ -622,11 +595,9 @@ function resetBuildForm(){
   if(buildDescEl) buildDescEl.style.height = 'auto';
 }
 
-// Кнопка «Создать» (тактильная отдача только здесь)
-buildSubmitBtn?.addEventListener('click', ()=>{
-  hapticTap(); // оставлено только для этой кнопки
-  buildForm?.requestSubmit();
-});
+// Кнопка «Создать»
+buildSubmitBtn?.addEventListener('pointerdown', ()=>{ try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{} });
+buildSubmitBtn?.addEventListener('click', ()=> buildForm?.requestSubmit());
 
 // Создание билда
 if(buildForm){
@@ -661,7 +632,7 @@ if(buildForm){
     all.push(item);
     saveBuilds(all);
 
-    // убран hapticOK();
+    hapticOK();
     tg?.showPopup?.({ title:'Билд создан', message:'Сохранено локально (макет, без сервера).', buttons:[{type:'ok'}] });
 
     renderMyBuilds();
@@ -721,5 +692,5 @@ lightbox?.addEventListener('click', closeLightbox);
   refreshProfileView();
   renderMyBuilds();
 
-  // подсветка для кнопок на главной уже подключена выше
+  // подсветка для кнопок на главной отключена
 })();

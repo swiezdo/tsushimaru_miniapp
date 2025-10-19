@@ -3,85 +3,118 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Профиль</title>
+    <title>Tsushima.Ru</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <main class="container">
       <header class="topbar">
-        <div class="title">Профиль</div>
+        <div class="title" id="appTitle">Tsushima.Ru</div>
         <div id="userChip" class="chip">Гость</div>
       </header>
 
-      <!-- Профиль -->
-      <section class="card">
-        <h2 class="card-title">Ваш профиль</h2>
-        <div class="profile-grid">
-          <div class="field"><label>Имя</label><div id="v_real_name" class="value">—</div></div>
-          <div class="field"><label>Ник в PlayStation Network</label><div id="v_psn" class="value">—</div></div>
+      <!-- ====== ЭКРАН 1: HOME ====== -->
+      <section id="homeScreen" class="card home">
+        <div class="brand">
+          <img class="logo" src="./-1.png" alt="Tsushima.Ru" />
+          <h1 class="brand-title">Tsushima.Ru</h1>
+        </div>
 
-          <div class="field"><label>Платформа</label>
-            <div id="v_platform" class="value lines">—</div>
-          </div>
+        <div class="home-buttons">
+          <a class="big-btn primary" href="https://t.me/+ZFiVYVrz-PEzYjBi" target="_blank" rel="noopener">
+            🏯 Группа Tsushima.Ru
+          </a>
 
-          <div class="field"><label>Режимы</label>
-            <div id="v_modes" class="value lines">—</div>
-          </div>
+          <button id="openProfileBtn" class="big-btn">
+            👤 Мой профиль
+          </button>
 
-          <div class="field"><label>Цели</label>
-            <div id="v_goals" class="value lines">—</div>
-          </div>
+          <button id="trophiesBtn" class="big-btn ghost">
+            🏆 Трофеи (скоро)
+          </button>
 
-          <div class="field"><label>Сложность</label>
-            <div id="v_difficulty" class="value lines">—</div>
-          </div>
-
-          <div class="field span-2"><label>Трофеи</label>
-            <div id="v_trophies" class="value lines">Легенда Цусимы 🗡<br>Легенда Эдзо 🏔</div>
-          </div>
+          <button id="builderBtn" class="big-btn ghost">
+            🛠️ Конструктор билдов (скоро)
+          </button>
         </div>
       </section>
 
-      <!-- Регистрация / Обновление -->
-      <section class="card">
-        <h2 class="card-title">Обновление профиля</h2>
-        <form id="profileForm" class="form" autocomplete="on">
-          <div class="input">
-            <label for="real_name">Имя</label>
-            <input id="real_name" name="real_name" type="text" maxlength="64" placeholder="например, Дмитрий" />
-          </div>
+      <!-- ====== ЭКРАН 2: ПРОФИЛЬ ====== -->
+      <section id="profileScreen" class="hidden">
+        <!-- Профиль -->
+        <section class="card">
+          <h2 class="card-title">Ваш профиль</h2>
+          <div class="profile-grid">
+            <div class="field"><label>Имя</label><div id="v_real_name" class="value">—</div></div>
+            <div class="field"><label>Ник в PlayStation Network</label><div id="v_psn" class="value">—</div></div>
 
-          <div class="input">
-            <label for="psn">Ник в PlayStation Network</label>
-            <input id="psn" name="psn" type="text" inputmode="latin" maxlength="32" placeholder="например, swiezdo" />
-          </div>
+            <div class="field"><label>Платформа</label>
+              <div id="v_platform" class="value lines">—</div>
+            </div>
 
-          <div class="input">
-            <label>Платформа</label>
-            <div id="platformChips" class="chips"></div>
-          </div>
+            <div class="field"><label>Режимы</label>
+              <div id="v_modes" class="value lines">—</div>
+            </div>
 
-          <div class="input">
-            <label>Режимы</label>
-            <div id="modesChips" class="chips"></div>
-          </div>
+            <div class="field"><label>Цели</label>
+              <div id="v_goals" class="value lines">—</div>
+            </div>
 
-          <div class="input">
-            <label>Цели</label>
-            <div id="goalsChips" class="chips"></div>
-          </div>
+            <div class="field"><label>Сложность</label>
+              <div id="v_difficulty" class="value lines">—</div>
+            </div>
 
-          <div class="input">
-            <label>Сложность</label>
-            <div id="difficultyChips" class="chips"></div>
+            <div class="field span-2"><label>Трофеи</label>
+              <div id="v_trophies" class="value lines">Легенда Цусимы 🗡<br>Легенда Эдзо 🏔</div>
+            </div>
           </div>
+        </section>
 
-          <div class="actions">
-            <button type="submit" class="btn primary">Сохранить</button>
-            <button type="button" id="resetBtn" class="btn ghost">Сбросить</button>
-          </div>
-        </form>
+        <!-- Регистрация / Обновление -->
+        <section class="card">
+          <h2 class="card-title">Обновление профиля</h2>
+          <form id="profileForm" class="form" autocomplete="on">
+            <div class="input">
+              <label for="real_name">Имя</label>
+              <input id="real_name" name="real_name" type="text" maxlength="64" placeholder="например, Дмитрий" />
+            </div>
+
+            <div class="input">
+              <label for="psn">Ник в PlayStation Network</label>
+              <input id="psn" name="psn" type="text" inputmode="latin" maxlength="32" placeholder="например, swiezdo" />
+            </div>
+
+            <div class="input">
+              <label>Платформа</label>
+              <div id="platformChips" class="chips"></div>
+            </div>
+
+            <div class="input">
+              <label>Режимы</label>
+              <div id="modesChips" class="chips"></div>
+            </div>
+
+            <div class="input">
+              <label>Цели</label>
+              <div id="goalsChips" class="chips"></div>
+            </div>
+
+            <div class="input">
+              <label>Сложность</label>
+              <div id="difficultyChips" class="chips"></div>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="btn primary">Сохранить</button>
+              <button type="button" id="resetBtn" class="btn ghost">Сбросить</button>
+            </div>
+          </form>
+        </section>
+
+        <div class="footer-actions">
+          <button id="homeBtn" class="btn wide">🏠 Домой</button>
+        </div>
       </section>
     </main>
 

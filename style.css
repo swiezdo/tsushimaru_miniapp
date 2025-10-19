@@ -78,7 +78,7 @@ body{
 }
 .input input:focus,.input textarea:focus{border-color:var(--accent)}
 
-/* Панель действий под карточкой (тот же нижний отступ, что и у остальных кнопок) */
+/* Панель действий под карточкой (единый нижний отступ как у остальных кнопок) */
 .actions-bar{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -160,14 +160,11 @@ body{
 .big-btn.primary{background:var(--accent);border-color:transparent;color:#00131f;font-weight:700}
 .big-btn.ghost{opacity:.95}
 
-/* Нижние кнопки — одинаковый зазор до низа */
+/* Нижние кнопки — единый зазор до низа */
 .footer-actions{margin:8px 0 calc(28px + var(--safe-bottom));}
-#backToListBtn,
-#trophiesHomeBtn,
-#homeBtn,
-#buildsHomeBtn,
-#backToBuildsBtn{margin-bottom:calc(28px + var(--safe-bottom));}
-#submitInlineBtn{margin-bottom:8px;}
+
+/* Убрали индивидуальные margin-bottom у кнопок, чтобы не было двойного отступа */
+/* (раньше здесь был блок с #backToListBtn, #trophiesHomeBtn, #homeBtn, #buildsHomeBtn, #backToBuildsBtn) */
 
 /* List */
 .list-buttons{display:grid;gap:8px}

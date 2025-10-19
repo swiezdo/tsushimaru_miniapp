@@ -30,6 +30,10 @@ const screens = {
   buildCreate: $('buildCreateScreen'),
   buildDetail: $('buildDetailScreen'),
 };
+function isVisible(name){
+  const el = screens[name];
+  return el && !el.classList.contains('hidden');
+}
 function setTopbar(visible, title){
   const tb = document.querySelector('.topbar');
   if(tb) tb.style.display = visible ? 'flex' : 'none';
@@ -42,11 +46,11 @@ function showScreen(name){
   if(el) el.classList.remove('hidden');
 
   if(tg){
-    if(name === 'trophyDetail'){
+    // ПРАВКА: показываем системную кнопку «Назад» на нужных экранах
+    if (['profile','trophies','builds','buildCreate','buildDetail','trophyDetail'].includes(name)){
       tg.BackButton.show();
-      ensureInlineSubmitButton();
-    } else if (name === 'buildCreate' || name === 'buildDetail'){
-      tg.BackButton.show();
+      // Для трофея — гарантируем инлайн-кнопку «Отправить»
+      if(name === 'trophyDetail') ensureInlineSubmitButton();
     } else {
       tg.BackButton.hide();
     }
@@ -366,19 +370,27 @@ $('backToListBtn')?.addEventListener('click', ()=>{
   showScreen('trophies');
 });
 
-// системная назад-кнопка Telegram
+// ПРАВКА: системная назад-кнопка Telegram — новая маршрутизация
 if(tg){
   tg.onEvent('backButtonClicked', ()=>{
-    if(!screens.builds?.classList.contains('hidden')){
+    if (isVisible('buildCreate')) {                 // со «Создать билд» → «Билды»
       showScreen('builds');
       return;
     }
-    if(!screens.trophyDetail?.classList.contains('hidden')){
+    if (isVisible('buildDetail')) {                 // с деталей билда → «Билды»
+      showScreen('builds');
+      return;
+    }
+    if (isVisible('trophyDetail')) {                // с деталей трофея → «Трофеи»
       resetProofForm();
       showScreen('trophies');
       return;
     }
-    showScreen('home');
+    if (isVisible('profile') || isVisible('trophies') || isVisible('builds')) {
+      showScreen('home');                           // с разделов верхнего уровня → «Главная»
+      return;
+    }
+    showScreen('home');                             // дефолт
   });
 }
 

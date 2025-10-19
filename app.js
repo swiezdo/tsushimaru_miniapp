@@ -218,7 +218,7 @@ async function submitProof(){
 
   // Тут будет реальный аплоад на сервер
   hapticOK();
-  if(tg?.showPopup){ tg.showPopup({ title:'Заявка отправлена', message:'Спасибо! Модераторы рассмотрят вашу заявку.', buttons:[{type:'ok'}] }); }
+  if(tg?.showPopup){ tg.showPopup({ title:'Заявка отправлена', message:'Спасибо! Модераторы рассмотрят вашу заявку и бот напишет вам в ЛС', buttons:[{type:'ok'}] }); }
   else { alert('Заявка отправлена (демо).'); }
   showScreen('trophies');
 }

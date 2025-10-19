@@ -43,7 +43,7 @@
             <div class="field"><label>Имя</label><div id="v_real_name" class="value">—</div></div>
             <div class="field"><label>Ник в PlayStation Network</label><div id="v_psn" class="value">—</div></div>
 
-            <div class="field"><label>Платформа</label><div id="v_platform" class="value lines">—</div></div>
+            <div class="field"><label>Платформы</label><div id="v_platform" class="value lines">—</div></div>
             <div class="field"><label>Режимы</label><div id="v_modes" class="value lines">—</div></div>
             <div class="field"><label>Цели</label><div id="v_goals" class="value lines">—</div></div>
             <div class="field"><label>Сложность</label><div id="v_difficulty" class="value lines">—</div></div>
@@ -51,16 +51,16 @@
         </section>
 
         <section class="card">
-          <h2 class="card-title">Обновление профиля</h2>
+          <h2 class="card-title">Обновить профиль</h2>
           <form id="profileForm" class="form" autocomplete="on">
             <div class="input">
               <label for="real_name">Имя</label>
-              <input id="real_name" name="real_name" type="text" maxlength="64" placeholder="например, Дмитрий" />
+              <input id="real_name" name="real_name" type="text" maxlength="64" placeholder="например, Василий" />
             </div>
 
             <div class="input">
               <label for="psn">Ник в PlayStation Network</label>
-              <input id="psn" name="psn" type="text" inputmode="latin" maxlength="32" placeholder="например, swiezdo" />
+              <input id="psn" name="psn" type="text" inputmode="latin" maxlength="32" placeholder="например, PUPkin" />
             </div>
 
             <div class="input">
@@ -130,18 +130,18 @@
           <h3 class="card-title">Отправить заявку</h3>
           <form id="proofForm" class="form">
             <div class="input">
-              <label for="proofFiles">Прикрепите скриншоты/видео (доказательство)</label>
+              <label for="proofFiles">Прикрепите скриншоты/видео</label>
               <input id="proofFiles" type="file" multiple accept="image/*,video/*" />
             </div>
 
             <div class="input">
               <label for="commentText">Комментарий (необязательно)</label>
-              <textarea id="commentText" rows="4" placeholder="Опишите детали прохождения, тайм-коды, особенности..."></textarea>
+              <textarea id="commentText" rows="4" placeholder="Добавьте комментарий к заявке"></textarea>
             </div>
 
             <!-- Кнопка для браузера; в Telegram будет системная MainButton -->
             <div class="actions only-browser">
-              <button type="submit" class="btn primary" id="sendProofBtn">Отправить</button>
+              <button type="submit" class="btn primary" id="sendProofBtn">Отправить заявку</button>
             </div>
           </form>
         </section>

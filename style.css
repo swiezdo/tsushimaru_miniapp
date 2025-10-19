@@ -12,6 +12,7 @@ body{
 }
 .hidden{display:none}
 
+/* Шапка */
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
 .title{font-size:20px;font-weight:600}
 .chip{border:1px solid var(--stroke);border-radius:999px;padding:6px 10px;color:var(--muted)}
@@ -33,7 +34,7 @@ body{
   border:1px solid var(--stroke);background:transparent;color:var(--fg);
 }
 
-/* ЧИПЫ */
+/* Чипы */
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip-btn{
   display:inline-flex;align-items:center;gap:6px;
@@ -49,6 +50,7 @@ body{
 .btn.ghost{opacity:.9}
 .btn.wide{width:100%}
 .btn:active{transform:translateY(1px)}
+.stack{display:grid;gap:8px}
 
 /* HOME */
 .home .brand{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:12px}

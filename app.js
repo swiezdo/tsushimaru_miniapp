@@ -1,5 +1,4 @@
 (function(){
-  // Совместимый JS для Telegram WebView
   var tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 
   function onReady(fn){
@@ -7,8 +6,8 @@
     else { fn(); }
   }
 
-  // ==== Storage (с fallback в память) ====
-  var STORAGE_KEY = 'demo_profile_v6';
+  // ====== Storage (с fallback в память) ======
+  var STORAGE_KEY = 'demo_profile_v7';
   var memStore = null;
 
   function loadProfile(){
@@ -30,12 +29,43 @@
     catch(e){ memStore = p; }
   }
 
-  // ==== Наборы значений для чипов ====
+  // ====== Наборы значений для чипов ======
   var PLATFORM   = ['🎮 PlayStation','💻 ПК'];
   var MODES      = ['📖 Сюжет','🏹 Выживание','🗻 Испытания Иё','⚔️ Соперники','📜 Главы'];
   var GOALS      = ['🏆 Получение трофеев','🔎 Узнать что-то новое','👥 Поиск тиммейтов'];
   var DIFFICULTY = ['🥉 Бронза','🥈 Серебро','🥇 Золото','🏅 Платина','👻 Кошмар','🔥 HellMode'];
 
+  // ====== Трофеи (подтягиваем из JSON на GitHub/локально) ======
+  // Положи trophies.json в корень репозитория — либо укажи прямой URL GitHub Raw.
+  var TROPHIES_URL = './trophies.json';
+
+  // Встроенный дефолт на случай, если загрузка не удалась
+  var TROPHIES_FALLBACK = {
+    "trophy1": {
+      "name": "Легенда Цусимы",
+      "emoji": "🗡️",
+      "description": [
+        "Легенда Цусимы — получите платиновый трофей в игре Ghost of Tsushima.",
+        "Доказательство: Скриншот с видимым PSN и платиновым призом."
+      ]
+    },
+    "trophy2": {
+      "name": "Легенда Эдзо",
+      "emoji": "🏔",
+      "description": [
+        "Легенда Эдзо — получите платиновый трофей в Ghost of Yōtei.",
+        "Доказательство: Скриншот с видимым PSN и платиновым призом."
+      ]
+    }
+  };
+
+  function fetchTrophies(){
+    return fetch(TROPHIES_URL,{cache:'no-store'})
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .catch(function(){ return JSON.parse(JSON.stringify(TROPHIES_FALLBACK)); });
+  }
+
+  // ===== helpers =====
   function renderChips(container, values){
     container.innerHTML = '';
     for(var i=0;i<values.length;i++){
@@ -66,7 +96,6 @@
   }
   function joinLines(arr){ return (arr && arr.length) ? arr.join('\n') : '—'; }
 
-  // ===== Небольшая обратная связь =====
   function scrollTopSmooth(){
     try{ window.scrollTo({top:0, behavior:'smooth'}); }
     catch(e){ window.scrollTo(0,0); }
@@ -93,155 +122,5 @@
   }
 
   // ===== Навигация между экранами =====
-  function showScreen(name){
-    var home = document.getElementById('homeScreen');
-    var prof = document.getElementById('profileScreen');
-    var title = document.getElementById('appTitle');
-
-    if (name === 'profile') {
-      home.classList.add('hidden');
-      prof.classList.remove('hidden');
-      document.querySelector('.topbar').style.display = 'flex';
-      title.textContent = 'Профиль';
-      scrollTopSmooth();
-    } else {
-      prof.classList.add('hidden');
-      home.classList.remove('hidden');
-      document.querySelector('.topbar').style.display = 'none';
-      scrollTopSmooth();
-    }
-
-  }
-
-  onReady(function(){
-    // UI refs
-    var userChip = document.getElementById('userChip');
-    var form = document.getElementById('profileForm');
-    var resetBtn = document.getElementById('resetBtn');
-
-    var openProfileBtn = document.getElementById('openProfileBtn');
-    var homeBtn = document.getElementById('homeBtn');
-    var trophiesBtn = document.getElementById('trophiesBtn');
-    var builderBtn = document.getElementById('builderBtn');
-
-    var out = {
-      real_name:  document.getElementById('v_real_name'),
-      psn:        document.getElementById('v_psn'),
-      platform:   document.getElementById('v_platform'),
-      modes:      document.getElementById('v_modes'),
-      goals:      document.getElementById('v_goals'),
-      difficulty: document.getElementById('v_difficulty'),
-      trophies:   document.getElementById('v_trophies')
-    };
-
-    var platformChips   = document.getElementById('platformChips');
-    var modesChips      = document.getElementById('modesChips');
-    var goalsChips      = document.getElementById('goalsChips');
-    var difficultyChips = document.getElementById('difficultyChips');
-
-    // Тема Telegram (минимально)
-    try{
-      if(tg && tg.themeParams){
-        var tp = tg.themeParams;
-        if(tp.bg_color)     document.documentElement.style.setProperty('--bg', tp.bg_color);
-        if(tp.text_color)   document.documentElement.style.setProperty('--fg', tp.text_color);
-        if(tp.hint_color)   document.documentElement.style.setProperty('--muted', tp.hint_color);
-        if(tp.button_color) document.documentElement.style.setProperty('--accent', tp.button_color);
-        if(tg.ready) tg.ready();
-        if(tg.expand) tg.expand();
-        var me = tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
-        if(me && me.first_name) userChip.textContent = me.first_name;
-        else userChip.textContent = 'Пользователь';
-      } else {
-        userChip.textContent = 'Демо';
-      }
-    }catch(e){}
-
-    // Рисуем чипы
-    renderChips(platformChips, PLATFORM);
-    renderChips(modesChips, MODES);
-    renderChips(goalsChips, GOALS);
-    renderChips(difficultyChips, DIFFICULTY);
-
-    // Профиль -> форма
-    var p = loadProfile();
-    renderProfile(p);
-    fillForm(p);
-    setChipsActive(platformChips,   p.platform || []);
-    setChipsActive(modesChips,      p.modes || []);
-    setChipsActive(goalsChips,      p.goals || []);
-    setChipsActive(difficultyChips, p.difficulty || []);
-
-    // Тоггл по клику
-    function toggleHandler(e){
-      if(e.target && e.target.classList.contains('chip-btn')){
-        e.target.classList.toggle('active');
-      }
-    }
-    platformChips.addEventListener('click', toggleHandler);
-    modesChips.addEventListener('click', toggleHandler);
-    goalsChips.addEventListener('click', toggleHandler);
-    difficultyChips.addEventListener('click', toggleHandler);
-
-    // Сохранить
-    form.addEventListener('submit', function(e){
-      e.preventDefault();
-      var updated = {
-        real_name: (form.real_name.value || '').trim(),
-        psn:       (form.psn.value || '').trim(),
-        platform:  getSelectedFromChips(platformChips),
-        modes:     getSelectedFromChips(modesChips),
-        goals:     getSelectedFromChips(goalsChips),
-        difficulty:getSelectedFromChips(difficultyChips)
-      };
-      saveProfile(updated);
-      renderProfile(updated); // мгновенное обновление карточки
-      try{ if(tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred) tg.HapticFeedback.notificationOccurred('success'); }catch(e){}
-      scrollTopSmooth();
-      showFeedback('Профиль обновлён');
-    });
-
-    // Сброс (полностью пусто)
-    resetBtn.addEventListener('click', function(){
-      var empty = {
-        real_name:'', psn:'', platform:[], modes:[], goals:[], difficulty:[]
-      };
-      saveProfile(empty);
-      renderProfile(empty);
-      fillForm(empty);
-      setChipsActive(platformChips,   []);
-      setChipsActive(modesChips,      []);
-      setChipsActive(goalsChips,      []);
-      setChipsActive(difficultyChips, []);
-      try{ if(tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred) tg.HapticFeedback.impactOccurred('light'); }catch(e){}
-      scrollTopSmooth();
-      showFeedback('Профиль очищен');
-    });
-
-    // Навигация
-    openProfileBtn.addEventListener('click', function(){ showScreen('profile'); });
-    homeBtn.addEventListener('click', function(){ showScreen('home'); });
-
-    // Пока заглушки
-    function soon(){ showFeedback('Скоро! В разработке.'); }
-    trophiesBtn.addEventListener('click', soon);
-    builderBtn.addEventListener('click', soon);
-
-    // По умолчанию показываем Home
-    showScreen('home');
-
-    function renderProfile(p){
-      out.real_name.textContent   = p.real_name || '—';
-      out.psn.textContent         = p.psn || '—';
-      out.platform.textContent    = joinLines(p.platform);
-      out.modes.textContent       = joinLines(p.modes);
-      out.goals.textContent       = joinLines(p.goals);
-      out.difficulty.textContent  = joinLines(p.difficulty);
-      out.trophies.innerHTML      = 'Легенда Цусимы 🗡<br>Легенда Эдзо 🏔';
-    }
-    function fillForm(p){
-      form.real_name.value = p.real_name || '';
-      form.psn.value       = p.psn || '';
-    }
-  });
-})();
+  function showScreen(name, options){
+    var home    = document

@@ -26,17 +26,9 @@
             🏯 Группа Tsushima.Ru
           </a>
 
-          <button id="openProfileBtn" class="big-btn">
-            👤 Мой профиль
-          </button>
-
-          <button id="trophiesBtn" class="big-btn ghost">
-            🏆 Трофеи (скоро)
-          </button>
-
-          <button id="builderBtn" class="big-btn ghost">
-            🛠️ Конструктор билдов (скоро)
-          </button>
+          <button id="openProfileBtn" class="big-btn">👤 Мой профиль</button>
+          <button id="openTrophiesBtn" class="big-btn">🏆 Трофеи</button>
+          <button id="builderBtn" class="big-btn ghost">🛠️ Конструктор билдов (скоро)</button>
         </div>
       </section>
 
@@ -77,16 +69,16 @@
           <form id="profileForm" class="form" autocomplete="on">
             <div class="input">
               <label for="real_name">Имя</label>
-              <input id="real_name" name="real_name" type="text" maxlength="64" placeholder="например, Василий" />
+              <input id="real_name" name="real_name" type="text" maxlength="64" placeholder="например, Дмитрий" />
             </div>
 
             <div class="input">
               <label for="psn">Ник в PlayStation Network</label>
-              <input id="psn" name="psn" type="text" inputmode="latin" maxlength="32" placeholder="например, PuPKIn" />
+              <input id="psn" name="psn" type="text" inputmode="latin" maxlength="32" placeholder="например, swiezdo" />
             </div>
 
             <div class="input">
-              <label>Платформы</label>
+              <label>Платформа</label>
               <div id="platformChips" class="chips"></div>
             </div>
 
@@ -114,6 +106,52 @@
 
         <div class="footer-actions">
           <button id="homeBtn" class="btn wide">🏠 Домой</button>
+        </div>
+      </section>
+
+      <!-- ====== ЭКРАН 3: ТРОФЕИ (СПИСОК) ====== -->
+      <section id="trophiesScreen" class="hidden">
+        <section class="card">
+          <h2 class="card-title">Ваши трофеи</h2>
+          <div class="value lines" id="myTrophiesList">
+            Легенда Цусимы 🗡
+            <br>Легенда Эдзо 🏔
+          </div>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">Список трофеев</h2>
+          <div id="trophiesButtons" class="stack"></div>
+        </section>
+
+        <div class="footer-actions">
+          <button id="trophiesHomeBtn" class="btn wide">🏠 Домой</button>
+        </div>
+      </section>
+
+      <!-- ====== ЭКРАН 4: КОНКРЕТНЫЙ ТРОФЕЙ ====== -->
+      <section id="trophyDetailScreen" class="hidden">
+        <section class="card">
+          <h2 class="card-title" id="trophyTitle">Трофей</h2>
+          <div id="trophyDesc" class="value lines">—</div>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">Подать заявку</h2>
+          <form id="claimForm" class="form">
+            <div class="input">
+              <label for="proofFile">Доказательство (скрин/видео)</label>
+              <input id="proofFile" name="proofFile" type="file" accept="image/*,video/*" />
+            </div>
+            <div class="actions">
+              <button type="submit" class="btn primary">Отправить заявку (тест)</button>
+              <button type="button" id="backToListBtn" class="btn">← К списку</button>
+            </div>
+          </form>
+        </section>
+
+        <div class="footer-actions">
+          <button id="detailHomeBtn" class="btn wide">🏠 Домой</button>
         </div>
       </section>
     </main>

@@ -11,6 +11,7 @@ const tg = window.Telegram?.WebApp || null;
     if(th.hint_color) document.documentElement.style.setProperty('--tg-hint', th.hint_color);
     document.documentElement.classList.add('tg');
     tg.MainButton.hide();
+    tg.BackButton.hide();
   }catch(e){}
 })();
 function hapticOK(){ try{ tg?.HapticFeedback?.notificationOccurred('success'); }catch{} }
@@ -30,27 +31,42 @@ const screens = {
   buildCreate: $('buildCreateScreen'),
   buildDetail: $('buildDetailScreen'),
 };
+let currentScreen = 'home';
+
 function setTopbar(visible, title){
   const tb = document.querySelector('.topbar');
   if(tb) tb.style.display = visible ? 'flex' : 'none';
   if(title) { const t = $('appTitle'); if(t) t.textContent = title; }
 }
 
+function configureSystemButtons(name){
+  if(!tg) return;
+
+  // Главный экран: BackButton скрыт, показываем MainButton «Закрыть»
+  if(name === 'home'){
+    tg.BackButton.hide();
+    tg.MainButton.setText('Закрыть');
+    tg.MainButton.show();
+    tg.offEvent?.('mainButtonClicked');
+    tg.onEvent('mainButtonClicked', ()=> tg.close && tg.close());
+    return;
+  }
+
+  // Остальные экраны: BackButton показываем, MainButton скрываем
+  tg.MainButton.hide();
+  tg.offEvent?.('mainButtonClicked');
+
+  // Показываем системную «Назад» на всех, кроме home
+  tg.BackButton.show();
+}
+
 function showScreen(name){
   Object.values(screens).forEach(el => el && el.classList.add('hidden'));
   const el = screens[name];
   if(el) el.classList.remove('hidden');
+  currentScreen = name;
 
-  if(tg){
-    if(name === 'trophyDetail'){
-      tg.BackButton.show();
-      ensureInlineSubmitButton();
-    } else if (name === 'buildCreate' || name === 'buildDetail'){
-      tg.BackButton.show();
-    } else {
-      tg.BackButton.hide();
-    }
-  }
+  configureSystemButtons(name);
 
   if(name === 'home') setTopbar(false);
   else if(name === 'profile') setTopbar(true, 'Профиль');
@@ -60,23 +76,26 @@ function showScreen(name){
   else if(name === 'buildCreate') setTopbar(true, 'Создать билд');
   else if(name === 'buildDetail') setTopbar(true, 'Билд');
 
+  // В Telegram: инлайн-кнопка отправки на экране трофея
+  if(name === 'trophyDetail'){ ensureInlineSubmitButton(); }
+
   scrollTopSmooth();
 }
 
-// inline «Отправить» на экране трофея
+// Инлайн «Отправить заявку» на экране трофея (для Telegram)
 function ensureInlineSubmitButton(){
-  const backBtn = $('backToListBtn');
-  if(!backBtn) return;
+  const form = $('proofForm');
+  if(!form) return;
   let submitInline = $('submitInlineBtn');
   if(!submitInline){
     submitInline = document.createElement('button');
     submitInline.id = 'submitInlineBtn';
-    submitInline.className = backBtn.className || 'btn';
-    submitInline.textContent = 'Отправить';
-    backBtn.parentNode.insertBefore(submitInline, backBtn);
-    submitInline.style.marginBottom = '8px';
+    submitInline.className = 'btn primary';
+    submitInline.textContent = 'Отправить заявку';
+    form.appendChild(submitInline);
+    submitInline.style.marginTop = '4px';
   }else{
-    submitInline.textContent = 'Отправить';
+    submitInline.textContent = 'Отправить заявку';
   }
   submitInline.onclick = (e)=>{ e.preventDefault(); submitProof(); };
 }
@@ -239,7 +258,7 @@ const proofUpload   = $('proofUploadBox');  // узкий прямоугольн
 const commentEl     = $('commentText');
 const previewEl     = $('filePreview');
 
-// Буфер выбранных медиа (накапливаем между выборами)
+// Буфер выбранных медиа
 let proofFilesBuffer = [];
 
 function uniqueKey(file){ return [file.name, file.size, file.lastModified, file.type].join('::'); }
@@ -258,7 +277,6 @@ function renderProofPreviews(){
   const MAX_TILES = 4;
 
   if(proofFilesBuffer.length <= MAX_TILES){
-    // Показываем все, но не больше 4 (на всякий)
     proofFilesBuffer.slice(0, MAX_TILES).forEach(file=>{
       const div = document.createElement('div');
       div.className = 'preview-item';
@@ -277,7 +295,7 @@ function renderProofPreviews(){
     return;
   }
 
-  // Больше 4: первые 3 миниатюры + четвёртая «+N»
+  // Больше 4: первые 3 + четвёртая «+N»
   proofFilesBuffer.slice(0, 3).forEach(file=>{
     const div = document.createElement('div');
     div.className = 'preview-item';
@@ -307,7 +325,7 @@ proofUpload?.addEventListener('click', ()=>{
   proofFilesEl?.click();
 });
 
-// На каждое добавление — дополняем буфер, перерисовываем и синхронизируем input.files
+// На каждое добавление — дополняем буфер
 if(proofFilesEl){
   proofFilesEl.addEventListener('change', ()=>{
     const picked = Array.from(proofFilesEl.files || []);
@@ -391,28 +409,23 @@ async function submitProof(){
   showScreen('trophies');
 }
 
-// Навигация «трофеи»
-if(proofFormEl){
-  proofFormEl.addEventListener('submit', (e)=>{ e.preventDefault(); submitProof(); });
-}
-$('backToListBtn')?.addEventListener('click', ()=>{
-  resetProofForm();
-  showScreen('trophies');
-});
-
-// системная назад-кнопка Telegram
+// Навигация по системной кнопке «Назад» Telegram
 if(tg){
   tg.onEvent('backButtonClicked', ()=>{
-    if(!screens.builds?.classList.contains('hidden')){
-      showScreen('builds');
-      return;
+    switch(currentScreen){
+      case 'profile':
+      case 'trophies':
+      case 'builds':
+        showScreen('home'); break;
+      case 'trophyDetail':
+        resetProofForm();
+        showScreen('trophies'); break;
+      case 'buildCreate':
+      case 'buildDetail':
+        showScreen('builds'); break;
+      default:
+        showScreen('home'); break;
     }
-    if(!screens.trophyDetail?.classList.contains('hidden')){
-      resetProofForm();
-      showScreen('trophies');
-      return;
-    }
-    showScreen('home');
   });
 }
 
@@ -420,10 +433,6 @@ if(tg){
 $('openProfileBtn')?.addEventListener('click', ()=> showScreen('profile'));
 $('trophiesBtn')?.addEventListener('click', ()=> showScreen('trophies'));
 $('buildsBtn')?.addEventListener('click', ()=> { renderMyBuilds(); showScreen('builds'); });
-
-$('homeBtn')?.addEventListener('click', ()=> showScreen('home'));
-$('trophiesHomeBtn')?.addEventListener('click', ()=> showScreen('home'));
-$('buildsHomeBtn')?.addEventListener('click', ()=> showScreen('home'));
 
 // ===================== БИЛДЫ =====================
 const LS_KEY_BUILDS = 'tsu_builds_v1';
@@ -451,7 +460,6 @@ const shotInput1     = $('build_shot1');
 const shotInput2     = $('build_shot2');
 const shotsTwo       = $('shotsTwo');
 
-const buildCancelBtn = $('buildCancelBtn');
 const buildSubmitBtn = $('buildSubmitBtn');
 
 const buildDetailTitle = $('buildDetailTitle');
@@ -501,7 +509,7 @@ function renderShotThumb(idx, src){
   return btn;
 }
 
-// Два отдельных слота: по одному файлу
+// Два отдельных слота
 let shot1Data = null;
 let shot2Data = null;
 
@@ -616,8 +624,7 @@ function resetBuildForm(){
   if(buildDescEl) buildDescEl.style.height = 'auto';
 }
 
-// Кнопки под карточкой
-buildCancelBtn?.addEventListener('click', ()=> showScreen('builds'));
+// Только «Создать» (кнопка Отмена удалена)
 buildSubmitBtn?.addEventListener('click', ()=> buildForm?.requestSubmit());
 
 // Создание билда
@@ -688,7 +695,6 @@ function openBuildDetail(id){
 
   showScreen('buildDetail');
 }
-$('backToBuildsBtn')?.addEventListener('click', ()=> showScreen('builds'));
 
 // Лайтбокс
 const lightbox = $('lightbox');

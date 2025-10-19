@@ -1,127 +1,186 @@
-:root {
-  --tg-bg: var(--tg-theme-bg-color, #ffffff);
-  --tg-text: var(--tg-theme-text-color, #000000);
-  --tg-hint: var(--tg-theme-hint-color, #999999);
-  --tg-accent: var(--tg-theme-link-color, #2481cc);
+:root{
+  --bg:#0e1621;
+  --fg:#fff;
+  --muted:#aeb7c2;
+  --card:rgba(255,255,255,0.04);
+  --accent:#2ea6ff;
+  --stroke:rgba(255,255,255,0.08);
+  --radius:16px;
+
+  --tg-bg: var(--bg);
+  --tg-tx: var(--fg);
+  --tg-hint: var(--muted);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-body {
-  background: var(--tg-bg);
-  color: var(--tg-text);
-  font-family: system-ui, sans-serif;
-  margin: 0;
-  padding: 0;
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+
+body{
+  font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu;
+  background:var(--tg-bg);
+  color:var(--tg-tx);
+  -webkit-font-smoothing:antialiased;
+  padding:16px;
+  max-width:920px;
+  margin:auto;
+  padding-bottom: calc(16px + var(--safe-bottom));
 }
 
-/* --- Preview block --- */
-#filePreview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
+.hidden{display:none}
+
+/* Topbar */
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.title{font-size:20px;font-weight:600}
+.chip{border:1px solid var(--stroke);border-radius:999px;padding:6px 10px;color:var(--tg-hint)}
+
+/* Card */
+.card{background:var(--card);border:1px solid var(--stroke);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.card-title{font-weight:600;margin-bottom:12px}
+
+/* Grid */
+.profile-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.field label{font-size:12px;color:var(--tg-hint);margin-bottom:4px;display:block}
+.value{font-size:15px;word-break:break-word}
+.value.lines{white-space:pre-line}
+.span-2{grid-column:1/-1}
+
+/* Forms */
+.form{display:grid;gap:12px}
+.input label{font-size:13px;color:var(--tg-hint);margin-bottom:6px}
+.input input,.input textarea{
+  width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--stroke);
+  background:transparent;color:var(--tg-tx);font-size:16px;line-height:1.35;outline:none;
+  transition:border-color .2s, box-shadow .2s;
+}
+.input textarea{resize:none;min-height:60px;max-height:200px;overflow-y:auto}
+.input input:focus,.input textarea:focus{border-color:var(--accent)}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:10px 14px;border-radius:999px;border:1px solid var(--stroke);
+  background:transparent;color:var(--tg-tx);cursor:pointer;font-size:15px;min-height:44px
+}
+.chip-btn.active{background:var(--accent);border-color:transparent;color:#00131f;font-weight:600}
+
+/* Buttons */
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+.btn{border:1px solid var(--stroke);border-radius:12px;padding:12px 16px;background:transparent;color:var(--tg-tx);cursor:pointer;min-height:44px;font-size:16px}
+.btn.primary{background:var(--accent);border-color:transparent;color:#00131f;font-weight:700}
+.btn.ghost{opacity:.95}
+.btn.wide{width:100%}
+.btn:active{transform:translateY(1px)}
+.only-browser{display:block}
+
+/* Home */
+.home .brand{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:12px}
+.logo{width:128px;height:128px;object-fit:contain}
+.brand-title{font-size:22px;font-weight:700;letter-spacing:.3px}
+.home-buttons{display:grid;gap:10px;margin-top:8px}
+.big-btn{
+  display:flex;align-items:center;justify-content:center;
+  padding:14px 16px;border-radius:16px;border:1px solid var(--stroke);
+  background:transparent;color:var(--tg-tx);font-size:16px;cursor:pointer;text-decoration:none;min-height:50px
+}
+.big-btn.primary{background:var(--accent);border-color:transparent;color:#00131f;font-weight:700}
+.big-btn.ghost{opacity:.95}
+
+.footer-actions{margin:8px 0 16px}
+
+/* List */
+.list-buttons{display:grid;gap:8px}
+.list-btn{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 14px;border:1px solid var(--stroke);border-radius:12px;background:transparent;color:var(--tg-tx);cursor:pointer;min-height:48px
+}
+.list-btn:active{transform:translateY(1px)}
+.list-btn .right{opacity:.7}
+
+/* Trophy detail */
+.desc-list{margin-left:18px;display:grid;gap:6px}
+.desc-list li{line-height:1.35}
+
+/* Trophies spacing fix */
+#trophiesScreen .value{white-space:pre-line;line-height:1.15}
+
+/* --- ДОБАВЛЕНО: превью файлов --- */
+#filePreview{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:6px;
+}
+.preview-item{
+  width:64px;
+  height:64px;
+  border-radius:8px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid var(--stroke);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  font-size:12px;
+  color:var(--tg-hint);
+}
+.preview-item img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.preview-more{
+  width:64px;
+  height:64px;
+  border-radius:8px;
+  background:rgba(255,255,255,0.1);
+  color:var(--tg-hint);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
 }
 
-.preview-item {
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.05);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  color: var(--tg-text);
+/* --- ДОБАВЛЕНО: ошибки и shake --- */
+.error{border-color:#ff4444!important;}
+.error-text{color:#ff4444;font-size:12px;margin-top:4px}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-4px)}
+  50%{transform:translateX(4px)}
+  75%{transform:translateX(-4px)}
+}
+.shake{animation:shake .3s}
+
+/* --- ДОБАВЛЕНО: экран успеха --- */
+.success-message{
+  text-align:center;
+  font-size:16px;
+  font-weight:500;
+  margin-top:40px;
+  color:var(--tg-tx);
+}
+.button{
+  display:block;
+  margin:20px auto 0;
+  padding:10px 20px;
+  border-radius:12px;
+  background:var(--accent);
+  color:#00131f;
+  border:none;
+  font-weight:600;
+  font-size:15px;
 }
 
-.preview-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* Responsive */
+@media(max-width:640px){.profile-grid{grid-template-columns:1fr}}
+
+/* Touch */
+button,.btn,.big-btn,.list-btn,.chip-btn{
+  -webkit-user-select:none;-moz-user-select:none;user-select:none;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation
 }
 
-.preview-more {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.1);
-  color: var(--tg-hint);
-  font-size: 13px;
-}
-
-/* --- Textarea --- */
-#comment {
-  width: 100%;
-  min-height: 60px;
-  max-height: 200px;
-  resize: none;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 8px;
-  padding: 8px;
-  font-size: 14px;
-  line-height: 1.4;
-  background: var(--tg-bg);
-  color: var(--tg-text);
-  transition: border-color 0.2s;
-}
-
-#comment:focus {
-  outline: none;
-  border-color: var(--tg-accent);
-}
-
-/* --- Error states --- */
-.error {
-  border-color: #e74c3c !important;
-}
-
-.error-text {
-  color: #e74c3c;
-  font-size: 12px;
-  margin-top: 4px;
-}
-
-/* --- Shake animation --- */
-@keyframes shake {
-  0% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-4px);
-  }
-  50% {
-    transform: translateX(4px);
-  }
-  75% {
-    transform: translateX(-4px);
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
-
-.shake {
-  animation: shake 0.3s;
-}
-
-/* --- Success message --- */
-.success-message {
-  text-align: center;
-  font-size: 16px;
-  color: var(--tg-text);
-  margin-top: 40px;
-}
-
-.button {
-  display: block;
-  margin: 20px auto 0;
-  padding: 10px 20px;
-  font-size: 15px;
-  background: var(--tg-accent);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-}
+/* В Telegram скрываем дубль-кнопки «Отправить» (есть MainButton) */
+html.tg .only-browser{display:none}

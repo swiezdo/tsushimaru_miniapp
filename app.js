@@ -57,7 +57,7 @@ function showScreen(name){
   else if(name === 'trophies') setTopbar(true, 'Трофеи');
   else if(name === 'trophyDetail') setTopbar(true, 'Трофеи');
   else if(name === 'builds') setTopbar(true, 'Билды');
-  else if(name === 'buildCreate') setTopbar(true, 'Создать билд');
+  else if(name === 'buildCreate') setTopbar(true, 'Создать билд'); // ←
   else if(name === 'buildDetail') setTopbar(true, 'Билд');
 
   scrollTopSmooth();
@@ -67,6 +67,7 @@ function showScreen(name){
 function ensureInlineSubmitButton(){
   const backBtn = $('backToListBtn');
   if(!backBtn) return;
+
   let submitInline = $('submitInlineBtn');
   if(!submitInline){
     submitInline = document.createElement('button');
@@ -429,13 +430,27 @@ function fileToDataURL(file){
     r.readAsDataURL(file);
   });
 }
-function makeThumb(src){
-  const wrap = document.createElement('div');
-  wrap.className = 'shot-thumb';
+function getShotInputByIdx(idx){
+  return idx === '1' ? shotInput1 : shotInput2;
+}
+function renderShotThumb(idx, src){
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'shot-thumb';
+  btn.dataset.idx = String(idx);
   const img = document.createElement('img');
   img.src = src;
-  wrap.appendChild(img);
-  return wrap;
+  btn.appendChild(img);
+
+  // По тапу — снова открыть тот же input для замены файла
+  btn.addEventListener('click', ()=>{
+    const input = getShotInputByIdx(String(idx));
+    if(!input) return;
+    try{ input.value = ''; }catch{}
+    input.click();
+  });
+
+  return btn;
 }
 
 // Два отдельных слота: по одному файлу
@@ -445,11 +460,12 @@ let shot2Data = null;
 // Делегирование клика по квадратам — надёжно в WebView
 if(shotsTwo){
   shotsTwo.addEventListener('click', (e)=>{
-    const btn = e.target.closest('.upload-box');
-    if(!btn) return;
-    const idx = btn.dataset.idx;
-    const input = idx === '1' ? shotInput1 : shotInput2;
+    const box = e.target.closest('.upload-box');
+    if(!box) return;
+    const idx = box.dataset.idx;
+    const input = getShotInputByIdx(idx);
     if(!input) return;
+    try{ input.value = ''; }catch{}
     input.click();
   });
 }
@@ -461,12 +477,21 @@ function bindShotInput(input, idx){
     if(!file) return;
     try{
       const data = await fileToDataURL(file);
-      const thumb = makeThumb(data);
-      // Заменяем соответствующий квадрат на превью
-      const box = shotsTwo?.querySelector(`.upload-box[data-idx="${idx}"]`);
-      if(box && box.parentNode){
-        box.parentNode.replaceChild(thumb, box);
+
+      // Найти квадрат или уже существующую миниатюру для этого индекса
+      const targetEl =
+        shotsTwo?.querySelector(`.upload-box[data-idx="${idx}"]`) ||
+        shotsTwo?.querySelector(`.shot-thumb[data-idx="${idx}"]`);
+
+      const thumb = renderShotThumb(idx, data);
+
+      if(targetEl && targetEl.parentNode){
+        targetEl.parentNode.replaceChild(thumb, targetEl);
+      } else if (shotsTwo){
+        // На всякий случай, если контейнер пуст — просто вставим
+        shotsTwo.appendChild(thumb);
       }
+
       if(idx === '1') shot1Data = data; else shot2Data = data;
       hapticTap();
     }catch(_){
@@ -540,7 +565,7 @@ function resetBuildForm(){
   if(shotInput2) shotInput2.value = '';
   shot1Data = null; shot2Data = null;
 
-  // Восстановить квадраты
+  // Восстановить квадраты (если были заменены превью)
   if(shotsTwo){
     shotsTwo.innerHTML = `
       <button type="button" class="upload-box" data-idx="1" aria-label="Загрузить первое изображение">＋</button>

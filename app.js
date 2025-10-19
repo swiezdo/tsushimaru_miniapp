@@ -29,24 +29,72 @@ function applyTopInset(){
 }
 window.addEventListener('resize', applyTopInset);
 
-// ===== Подсветка при тапе + тактильная отдача =====
+// ===== Подсветка при ТАПЕ + анти-скролл защита =====
 function addTapHighlight(selector){
   const els = document.querySelectorAll(selector);
   els.forEach(el=>{
-    if(el.dataset.tapbound) return;         // чтобы не двойнить слушатели
+    if(el.dataset.tapbound) return; // чтобы не дублить слушатели
     el.dataset.tapbound = '1';
 
-    const onDown = () => {
-      el.classList.add('tap-hi');
-      hapticTap();
-    };
-    const clear = () => el.classList.remove('tap-hi');
+    let startX=0, startY=0, startT=0, moved=false, pid=null, pressed=false;
+    const MOVE_THR = 8;      // пикселей — порог для распознавания скролла
+    const TIME_THR = 500;    // мс — слишком долгие удержания считаем не-тачем
 
-    el.addEventListener('pointerdown', onDown);
-    el.addEventListener('pointerup', clear);
-    el.addEventListener('pointerleave', clear);
-    el.addEventListener('pointercancel', clear);
-    el.addEventListener('blur', clear);
+    const clearVisual = ()=> { el.classList.remove('tap-hi'); pressed=false; };
+    const onDown = (e)=>{
+      // только основной палец/кнопка
+      if(e.pointerType && e.pointerType !== 'mouse' && e.isPrimary === false) return;
+      pid = e.pointerId ?? null;
+      const t = (e.touches?.[0]) || e;
+      startX = t.clientX; startY = t.clientY; startT = Date.now();
+      moved = false;
+      pressed = true;
+      // ВАЖНО: подсветку НЕ включаем сразу — только после успешного тапа
+      // чтобы избежать «мигания» во время скролла.
+    };
+    const onMove = (e)=>{
+      if(!pressed) return;
+      // игнор событий не от нашего pointerId (на случай мульти-тач)
+      if(pid!=null && e.pointerId!=null && e.pointerId!==pid) return;
+      const t = (e.touches?.[0]) || e;
+      const dx = Math.abs((t.clientX||0) - startX);
+      const dy = Math.abs((t.clientY||0) - startY);
+      if(dx > MOVE_THR || dy > MOVE_THR){
+        moved = true;
+        clearVisual(); // сразу снимаем любые эффекты
+      }
+    };
+    const onUp = ()=>{
+      if(!pressed){ return; }
+      const dt = Date.now() - startT;
+      // «настоящий тап», если не двигались и не слишком долго держали
+      const isTap = !moved && dt < TIME_THR;
+      if(isTap){
+        // короткая визуальная подсветка + тактильная отдача
+        el.classList.add('tap-hi');
+        hapticTap();
+        setTimeout(clearVisual, 120);
+      } else {
+        clearVisual();
+      }
+      pressed = false;
+      pid = null;
+    };
+    const onCancel = ()=>{ pressed=false; pid=null; clearVisual(); };
+
+    // Pointer-слушатели покрывают и мышь, и сенсор
+    el.addEventListener('pointerdown', onDown, {passive:true});
+    el.addEventListener('pointermove', onMove,  {passive:true});
+    el.addEventListener('pointerup',   onUp,    {passive:true});
+    el.addEventListener('pointerleave',onCancel,{passive:true});
+    el.addEventListener('pointercancel',onCancel,{passive:true});
+    el.addEventListener('blur', onCancel, {passive:true});
+
+    // Для iOS/старых WebView дополнительно подстрахуемся touch-событиями
+    el.addEventListener('touchstart', onDown, {passive:true});
+    el.addEventListener('touchmove',  onMove, {passive:true});
+    el.addEventListener('touchend',   onUp,   {passive:true});
+    el.addEventListener('touchcancel',onCancel,{passive:true});
   });
 }
 
@@ -271,7 +319,7 @@ function renderTrophyList(data){
     trophyListEl.appendChild(btn);
   });
 
-  // подсветка и тактильная отдача для списка трофеев
+  // подсветка и тактильная отдача для списка трофеев (с защитой от скролла)
   addTapHighlight('#trophyList .list-btn');
 }
 
@@ -404,7 +452,7 @@ $('openProfileBtn')?.addEventListener('click', ()=> showScreen('profile'));
 $('trophiesBtn')?.addEventListener('click', ()=> showScreen('trophies'));
 $('buildsBtn')?.addEventListener('click', ()=> { renderMyBuilds(); showScreen('builds'); });
 
-// Подсветка для кнопок на главном экране
+// Подсветка для кнопок на главном экране (с защитой)
 addTapHighlight('.big-btn');
 
 // ===================== БИЛДЫ =====================
@@ -576,7 +624,7 @@ function renderMyBuilds(){
     myBuildsList.appendChild(row);
   });
 
-  // подсветка и тактильная отдача для «Моих билдов»
+  // подсветка + анти-скролл защита для «Моих билдов»
   addTapHighlight('#myBuildsList .build-item');
 }
 
@@ -700,5 +748,5 @@ lightbox?.addEventListener('click', closeLightbox);
   refreshProfileView();
   renderMyBuilds();
 
-  // подсветка для кнопок на главной уже подключена выше
+  // Подсветка для кнопок на главной (с защитой) уже подключена выше
 })();

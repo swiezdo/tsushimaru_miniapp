@@ -24,8 +24,8 @@ body{
   padding:16px;
   max-width:920px;
   margin:auto;
-  /* Увеличили нижний внутренний отступ страницы для «воздуха» у нижних кнопок */
-  padding-bottom: calc(56px + var(--safe-bottom));
+  /* немного воздуха под нижние кнопки */
+  padding-bottom: calc(36px + var(--safe-bottom));
 }
 
 .hidden{display:none}
@@ -88,11 +88,12 @@ body{
 .big-btn.primary{background:var(--accent);border-color:transparent;color:#00131f;font-weight:700}
 .big-btn.ghost{opacity:.95}
 
-/* Нижние кнопки/блоки — добавили явный зазор до системной панели */
-.footer-actions{ margin:8px 0 calc(40px + var(--safe-bottom)); }
-#backToListBtn{ margin-bottom: calc(40px + var(--safe-bottom)); }
-/* если используем нашу inline-кнопку отправки — небольшой зазор между ней и «к списку» */
-#submitInlineBtn{ margin-bottom: 10px; }
+/* Нижние кнопки: единый зазор до нижней границы */
+.footer-actions{margin:8px 0 calc(28px + var(--safe-bottom));}
+#backToListBtn,
+#trophiesHomeBtn,
+#homeBtn{margin-bottom:calc(28px + var(--safe-bottom));}
+#submitInlineBtn{margin-bottom:8px;}
 
 /* List */
 .list-buttons{display:grid;gap:8px}

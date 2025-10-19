@@ -1,13 +1,7 @@
 :root{
-  /* Поддержка Telegram CSS variables + fallback */
-  --bg: var(--tg-theme-bg-color, #0e1621);
-  --fg: var(--tg-theme-text-color, #ffffff);
-  --muted: var(--tg-theme-hint-color, #aeb7c2);
-  --accent: var(--tg-theme-button-color, #2ea6ff);
-  --accent-text: var(--tg-theme-button-text-color, #00131f);
-  --secondary: var(--tg-theme-secondary-bg-color, rgba(255,255,255,0.04));
-  --stroke: var(--tg-theme-section-separator-color, rgba(255,255,255,0.12));
-  --radius:16px;
+  --bg:#0e1621;--fg:#fff;--muted:#aeb7c2;
+  --card:rgba(255,255,255,0.04);--accent:#2ea6ff;
+  --stroke:rgba(255,255,255,0.08);--radius:16px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{
@@ -23,10 +17,8 @@ body{
 .chip{border:1px solid var(--stroke);border-radius:999px;padding:6px 10px;color:var(--muted)}
 
 .card{
-  background:var(--secondary);
-  border:1px solid var(--stroke);
-  border-radius:var(--radius);
-  padding:16px;margin-bottom:16px
+  background:var(--card);border:1px solid var(--stroke);
+  border-radius:var(--radius);padding:16px;margin-bottom:16px
 }
 .card-title{font-weight:600;margin-bottom:12px}
 
@@ -42,33 +34,19 @@ body{
 .input input,
 .input textarea{
   width:100%;padding:10px 12px;border-radius:12px;
-  border:1px solid var(--stroke);background:var(--secondary);color:var(--fg);
+  border:1px solid var(--stroke);background:transparent;color:var(--fg);
   resize:vertical;
 }
 .input textarea{min-height:88px}
-
-/* Улучшенная textarea как поле ввода */
-.textarea-wrapper{
-  border:1px solid var(--stroke);
-  border-radius:12px;
-  background:var(--secondary);
-  overflow:hidden;
-  display:flex;
-}
-.textarea-wrapper textarea{
-  flex:1;border:none;background:transparent;color:var(--fg);
-  font-size:15px;padding:10px 12px;resize:none;outline:none;
-}
-.textarea-wrapper textarea::placeholder{color:var(--muted);opacity:.7}
 
 /* ЧИПЫ */
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip-btn{
   display:inline-flex;align-items:center;gap:6px;
   padding:8px 12px;border-radius:999px;border:1px solid var(--stroke);
-  background:var(--secondary);color:var(--fg);cursor:pointer;font-size:14px;
+  background:transparent;color:var(--fg);cursor:pointer;font-size:14px;
 }
-.chip-btn.active{background:var(--accent);border-color:transparent;color:var(--accent-text);font-weight:600}
+.chip-btn.active{background:var(--accent);border-color:transparent;color:#00131f;font-weight:600}
 
 /* Кнопки */
 .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
@@ -76,7 +54,7 @@ body{
   border:1px solid var(--stroke);border-radius:12px;padding:10px 14px;
   background:transparent;color:var(--fg);cursor:pointer
 }
-.btn.primary{background:var(--accent);border-color:transparent;color:var(--accent-text);font-weight:600}
+.btn.primary{background:var(--accent);border-color:transparent;color:#00131f;font-weight:600}
 .btn.ghost{opacity:.9}
 .btn.wide{width:100%}
 .btn:active{transform:translateY(1px)}
@@ -91,7 +69,7 @@ body{
   padding:14px 16px;border-radius:16px;border:1px solid var(--stroke);
   background:transparent;color:var(--fg);font-size:16px;cursor:pointer;text-decoration:none;
 }
-.big-btn.primary{background:var(--accent);border-color:transparent;color:var(--accent-text);font-weight:700}
+.big-btn.primary{background:var(--accent);border-color:transparent;color:#00131f;font-weight:700}
 .big-btn.ghost{opacity:.95}
 
 .footer-actions{margin:8px 0 16px}
@@ -101,7 +79,7 @@ body{
 .list-btn{
   display:flex;justify-content:space-between;align-items:center;
   padding:12px 14px;border:1px solid var(--stroke);border-radius:12px;
-  background:var(--secondary);color:var(--fg);cursor:pointer
+  background:transparent;color:var(--fg);cursor:pointer
 }
 .list-btn:active{transform:translateY(1px)}
 .list-btn .right{opacity:.7}
@@ -125,3 +103,28 @@ a.big-btn {cursor:pointer;}
 
 /* Трофеи */
 #trophiesScreen .span-2{grid-column:1/-1}
+
+/* --- улучшенное поле комментария в заявке --- */
+.textarea-wrapper {
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  background: transparent;
+  overflow: hidden;
+  display: flex;
+}
+
+.textarea-wrapper textarea {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font-size: 15px;
+  padding: 10px 12px;
+  resize: none;
+  outline: none;
+}
+
+.textarea-wrapper textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}

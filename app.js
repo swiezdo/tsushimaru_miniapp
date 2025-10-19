@@ -20,49 +20,35 @@ function hapticTap(){ try{ tg?.HapticFeedback?.impactOccurred('light'); }catch{}
 function $(id){ return document.getElementById(id); }
 function scrollTopSmooth(){ window.scrollTo({top:0, behavior:'smooth'}); }
 
-/* ========= Подсветка + хэптик ТОЛЬКО на реальном клике, с мини-паузой =========
- * Решение проблемы «не видно подсветку»: перехватываем click (capture),
- * включаем подсветку, отменяем клик, через 120 мс пересылаем клик заново.
- * На повторном клике обработчик ничего не задерживает (флажок data-replayClick).
- */
-(function(){
-  function addClickFeedback(selector){
-    document.addEventListener('click', (e)=>{
-      const el = e.target.closest(selector);
-      if(!el) return;
+// ===== Отступ сверху под системные элементы Telegram =====
+const TOP_OFFSET_PX = 64; // ≈ 4 строки
+function applyTopInset(){
+  const root = document.querySelector('main.container');
+  if(!root) return;
+  root.style.paddingTop = `calc(env(safe-area-inset-top, 0px) + ${TOP_OFFSET_PX}px)`;
+}
+window.addEventListener('resize', applyTopInset);
 
-      // Повторный (переигранный) клик – пропускаем без задержек/подсветки
-      if(el.dataset.replayClick === '1'){
-        el.dataset.replayClick = '0';
-        return; // даём событию пройти дальше
-      }
+// ===== Подсветка при тапе + тактильная отдача =====
+function addTapHighlight(selector){
+  const els = document.querySelectorAll(selector);
+  els.forEach(el=>{
+    if(el.dataset.tapbound) return;         // чтобы не двойнить слушатели
+    el.dataset.tapbound = '1';
 
-      // Первый реальный клик – показываем подсветку и хэптик, задерживаем навигацию
+    const onDown = () => {
       el.classList.add('tap-hi');
       hapticTap();
+    };
+    const clear = () => el.classList.remove('tap-hi');
 
-      // Останавливаем стандартный поток клика
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Короткая пауза, чтобы подсветка точно отрисовалась
-      setTimeout(()=>{
-        // снимаем подсветку и переигрываем клик
-        el.classList.remove('tap-hi');
-        el.dataset.replayClick = '1';
-        // Важно: пересылаем MouseEvent('click') c bubbles:true
-        el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-      }, 120);
-    }, true); // capture: отработаем раньше твоих обработчиков
-  }
-
-  // Главные кнопки
-  addClickFeedback('.big-btn');
-  // Список трофеев
-  addClickFeedback('#trophyList .list-btn');
-  // Список билдов
-  addClickFeedback('#myBuildsList .build-item');
-})();
+    el.addEventListener('pointerdown', onDown);
+    el.addEventListener('pointerup', clear);
+    el.addEventListener('pointerleave', clear);
+    el.addEventListener('pointercancel', clear);
+    el.addEventListener('blur', clear);
+  });
+}
 
 // --- Screens ---
 const screens = {
@@ -111,7 +97,7 @@ function showScreen(name){
 
 // inline «Отправить» на экране трофея
 function ensureInlineSubmitButton(){
-  const backBtn = $('backToListBtn'); // кнопки может не быть — ок
+  const backBtn = $('backToListBtn'); // кнопки больше нет — будет undefined
   const form = $('proofForm');
 
   if(backBtn && backBtn.parentNode){
@@ -284,6 +270,9 @@ function renderTrophyList(data){
     btn.addEventListener('click', ()=> openTrophyDetail(key));
     trophyListEl.appendChild(btn);
   });
+
+  // подсветка и тактильная отдача для списка трофеев
+  addTapHighlight('#trophyList .list-btn');
 }
 
 const proofFormEl  = $('proofForm');
@@ -414,6 +403,9 @@ if(tg){
 $('openProfileBtn')?.addEventListener('click', ()=> showScreen('profile'));
 $('trophiesBtn')?.addEventListener('click', ()=> showScreen('trophies'));
 $('buildsBtn')?.addEventListener('click', ()=> { renderMyBuilds(); showScreen('builds'); });
+
+// Подсветка для кнопок на главном экране
+addTapHighlight('.big-btn');
 
 // ===================== БИЛДЫ =====================
 const LS_KEY_BUILDS = 'tsu_builds_v1';
@@ -583,6 +575,9 @@ function renderMyBuilds(){
 
     myBuildsList.appendChild(row);
   });
+
+  // подсветка и тактильная отдача для «Моих билдов»
+  addTapHighlight('#myBuildsList .build-item');
 }
 
 // Открыть экран «Создать билд»
@@ -680,6 +675,7 @@ function openBuildDetail(id){
 
   showScreen('buildDetail');
 }
+$('backToBuildsBtn')?.addEventListener('click', ()=> showScreen('builds'));
 
 // Лайтбокс
 const lightbox = $('lightbox');
@@ -697,9 +693,12 @@ lightbox?.addEventListener('click', closeLightbox);
 
 // ===================== Старт =====================
 (async function start(){
+  applyTopInset();
   showScreen('home');
   const data = await loadTrophies();
   renderTrophyList(data);
   refreshProfileView();
   renderMyBuilds();
+
+  // подсветка для кнопок на главной уже подключена выше
 })();

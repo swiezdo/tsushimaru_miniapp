@@ -1,141 +1,166 @@
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Tsushima.Ru</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <main class="container">
-      <header class="topbar">
-        <div class="title" id="appTitle">Tsushima.Ru</div>
-        <div id="userChip" class="chip">Гость</div>
-      </header>
 
-      <!-- ====== ЭКРАН 1: HOME ====== -->
-      <section id="homeScreen" class="card home">
-        <div class="brand">
-          <img class="logo" src="./-1.png" alt="Tsushima.Ru" />
-          <h1 class="brand-title">Tsushima.Ru</h1>
-        </div>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tsushima.Ru</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-        <div class="home-buttons">
-          <a class="big-btn primary" href="https://t.me/+ZFiVYVrz-PEzYjBi" target="_blank" rel="noopener">
-            🏯 Группа Tsushima.Ru
-          </a>
+<body>
+  <main class="container">
+    <header class="topbar">
+      <div class="title" id="appTitle">Tsushima.Ru</div>
+      <div id="userChip" class="chip">Гость</div>
+    </header>
 
-          <button id="openProfileBtn" class="big-btn">
-            👤 Мой профиль
-          </button>
+    <!-- ====== ЭКРАН 1: HOME ====== -->
+    <section id="homeScreen" class="card home">
+      <div class="brand">
+        <img class="logo" src="./-1.png" alt="Tsushima.Ru" />
+        <h1 class="brand-title">Tsushima.Ru</h1>
+      </div>
 
-          <button id="trophiesBtn" class="big-btn">
-            🏆 Трофеи
-          </button>
+      <div class="home-buttons">
+        <a class="big-btn primary" href="https://t.me/+ZFiVYVrz-PEzYjBi" target="_blank" rel="noopener">
+          🏯 Группа Tsushima.Ru
+        </a>
 
-          <button id="builderBtn" class="big-btn ghost" disabled title="Скоро">
-            🛠️ Конструктор билдов (скоро)
-          </button>
-        </div>
-      </section>
+        <button id="openProfileBtn" class="big-btn">
+          👤 Мой профиль
+        </button>
 
-      <!-- ====== ЭКРАН 2: ПРОФИЛЬ ====== -->
-      <section id="profileScreen" class="hidden">
-        <section class="card">
-          <h2 class="card-title">Ваш профиль</h2>
-          <div class="profile-grid">
-            <div class="field"><label>Имя</label><div id="v_real_name" class="value">—</div></div>
-            <div class="field"><label>Ник в PlayStation Network</label><div id="v_psn" class="value">—</div></div>
-            <div class="field"><label>Платформа</label><div id="v_platform" class="value lines">—</div></div>
-            <div class="field"><label>Режимы</label><div id="v_modes" class="value lines">—</div></div>
-            <div class="field"><label>Цели</label><div id="v_goals" class="value lines">—</div></div>
-            <div class="field"><label>Сложность</label><div id="v_difficulty" class="value lines">—</div></div>
+        <button id="trophiesBtn" class="big-btn">
+          🏆 Трофеи
+        </button>
+
+        <button id="builderBtn" class="big-btn ghost" disabled title="Скоро">
+          🛠️ Конструктор билдов (скоро)
+        </button>
+      </div>
+    </section>
+
+    <!-- ====== ЭКРАН 2: ПРОФИЛЬ ====== -->
+    <section id="profileScreen" class="hidden">
+      <section class="card">
+        <h2 class="card-title">Ваш профиль</h2>
+        <div class="profile-grid">
+          <div class="field"><label>Имя</label>
+            <div id="v_real_name" class="value">—</div>
           </div>
-        </section>
-
-        <section class="card">
-          <h2 class="card-title">Обновление профиля</h2>
-          <form id="profileForm" class="form" autocomplete="on">
-            <div class="input">
-              <label for="real_name">Имя</label>
-              <input id="real_name" name="real_name" type="text" maxlength="64" placeholder="например, Дмитрий" />
-            </div>
-
-            <div class="input">
-              <label for="psn">Ник в PlayStation Network</label>
-              <input id="psn" name="psn" type="text" inputmode="latin" maxlength="32" placeholder="например, swiezdo" />
-            </div>
-
-            <div class="input"><label>Платформа</label><div id="platformChips" class="chips"></div></div>
-            <div class="input"><label>Режимы</label><div id="modesChips" class="chips"></div></div>
-            <div class="input"><label>Цели</label><div id="goalsChips" class="chips"></div></div>
-            <div class="input"><label>Сложность</label><div id="difficultyChips" class="chips"></div></div>
-
-            <div class="actions">
-              <button type="submit" class="btn primary">Сохранить</button>
-              <button type="button" id="resetBtn" class="btn ghost">Сбросить</button>
-            </div>
-          </form>
-        </section>
-
-        <div class="footer-actions">
-          <button id="homeBtn" class="btn wide">🏠 Домой</button>
+          <div class="field"><label>Ник в PlayStation Network</label>
+            <div id="v_psn" class="value">—</div>
+          </div>
+          <div class="field"><label>Платформа</label>
+            <div id="v_platform" class="value lines">—</div>
+          </div>
+          <div class="field"><label>Режимы</label>
+            <div id="v_modes" class="value lines">—</div>
+          </div>
+          <div class="field"><label>Цели</label>
+            <div id="v_goals" class="value lines">—</div>
+          </div>
+          <div class="field"><label>Сложность</label>
+            <div id="v_difficulty" class="value lines">—</div>
+          </div>
         </div>
       </section>
 
-      <!-- ====== ЭКРАН 3: ТРОФЕИ ====== -->
-      <section id="trophiesScreen" class="hidden">
-        <section class="card">
-          <h2 class="card-title">Ваши трофеи</h2>
-          <div class="profile-grid">
-            <div class="field span-2">
-              <label>Полученные трофеи</label>
-              <div class="value lines">Легенда Цусимы 🗡<br>Легенда Эдзо 🏔</div>
+      <section class="card">
+        <h2 class="card-title">Обновление профиля</h2>
+        <form id="profileForm" class="form" autocomplete="on">
+          <div class="input">
+            <label for="real_name">Имя</label>
+            <input id="real_name" name="real_name" type="text" maxlength="64" placeholder="например, Дмитрий" />
+          </div>
+
+          <div class="input">
+            <label for="psn">Ник в PlayStation Network</label>
+            <input id="psn" name="psn" type="text" inputmode="latin" maxlength="32" placeholder="например, swiezdo" />
+          </div>
+
+          <div class="input"><label>Платформа</label>
+            <div id="platformChips" class="chips"></div>
+          </div>
+          <div class="input"><label>Режимы</label>
+            <div id="modesChips" class="chips"></div>
+          </div>
+          <div class="input"><label>Цели</label>
+            <div id="goalsChips" class="chips"></div>
+          </div>
+          <div class="input"><label>Сложность</label>
+            <div id="difficultyChips" class="chips"></div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn primary">Сохранить</button>
+            <button type="button" id="resetBtn" class="btn ghost">Сбросить</button>
+          </div>
+        </form>
+      </section>
+
+      <div class="footer-actions">
+        <button id="homeBtn" class="btn wide">🏠 Домой</button>
+      </div>
+    </section>
+
+    <!-- ====== ЭКРАН 3: ТРОФЕИ ====== -->
+    <section id="trophiesScreen" class="hidden">
+      <section class="card">
+        <h2 class="card-title">Ваши трофеи</h2>
+        <div class="profile-grid">
+          <div class="field span-2">
+            <label>Полученные трофеи</label>
+            <div class="value lines">Легенда Цусимы 🗡<br>Легенда Эдзо 🏔</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="card-title">Список трофеев</h2>
+        <div id="trophyList" class="list-buttons"></div>
+      </section>
+
+      <div class="footer-actions">
+        <button id="trophiesHomeBtn" class="btn wide">🏠 Домой</button>
+      </div>
+    </section>
+
+    <!-- ====== ЭКРАН 4: КОНКРЕТНЫЙ ТРОФЕЙ ====== -->
+    <section id="trophyDetailScreen" class="hidden">
+      <section class="card">
+        <h2 id="trophyTitle" class="card-title">Трофей</h2>
+        <ul id="trophyDesc" class="desc-list"></ul>
+      </section>
+
+      <section class="card">
+        <h3 class="card-title">Подать заявку</h3>
+        <form id="proofForm" class="form">
+          <div class="input">
+            <label for="proofFiles">Прикрепите фото/видео</label>
+            <input id="proofFiles" type="file" multiple accept="image/*,video/*" />
+          </div>
+          <div class="input">
+            <label for="proofNote">Комментарий (необязательно)</label>
+            <div class="textarea-wrapper">
+              <textarea id="proofNote" rows="2" placeholder="Добавьте пояснение к заявке..."></textarea>
             </div>
           </div>
-        </section>
-
-        <section class="card">
-          <h2 class="card-title">Список трофеев</h2>
-          <div id="trophyList" class="list-buttons"></div>
-        </section>
-
-        <div class="footer-actions">
-          <button id="trophiesHomeBtn" class="btn wide">🏠 Домой</button>
-        </div>
+          <div class="actions">
+            <button type="submit" class="btn primary">Отправить</button>
+          </div>
+        </form>
       </section>
 
-      <!-- ====== ЭКРАН 4: КОНКРЕТНЫЙ ТРОФЕЙ ====== -->
-      <section id="trophyDetailScreen" class="hidden">
-        <section class="card">
-          <h2 id="trophyTitle" class="card-title">Трофей</h2>
-          <ul id="trophyDesc" class="desc-list"></ul>
-        </section>
+      <div class="footer-actions">
+        <button id="backToListBtn" class="btn wide">⬅️ К списку трофеев</button>
+      </div>
+    </section>
+  </main>
 
-        <section class="card">
-          <h3 class="card-title">Подать заявку</h3>
-          <form id="proofForm" class="form">
-            <div class="input">
-              <label for="proofFiles">Прикрепите скриншоты/видео (доказательство)</label>
-              <input id="proofFiles" type="file" multiple accept="image/*,video/*" />
-            </div>
-            <div class="input">
-              <label for="proofNote">Комментарий к заявке (необязательно)</label>
-              <textarea id="proofNote" rows="3" placeholder="Напишите сопроводительный текст…"></textarea>
-            </div>
-            <div class="actions">
-              <button type="submit" class="btn primary">Отправить</button>
-            </div>
-          </form>
-        </section>
+  <script src="app.js" defer></script>
+</body>
 
-        <div class="footer-actions">
-          <button id="backToListBtn" class="btn wide">⬅️ К списку трофеев</button>
-        </div>
-      </section>
-    </main>
-
-    <script src="app.js" defer></script>
-  </body>
 </html>

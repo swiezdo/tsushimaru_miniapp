@@ -94,20 +94,20 @@
     if(title) document.getElementById('appTitle').textContent = title;
   }
 
-  function showScreen(name){
-    var screens = ['homeScreen','profileScreen','trophiesScreen','trophyDetailScreen'];
-    screens.forEach(function(id){ document.getElementById(id).classList.add('hidden'); });
+  function showScreen(name) {
+    ['homeScreen', 'profileScreen', 'trophiesScreen', 'trophyDetailScreen']
+      .forEach(id => document.getElementById(id).classList.add('hidden'));
 
-    if(name === 'home'){
+    if (name === 'home') {
       document.getElementById('homeScreen').classList.remove('hidden');
       showTopbar(false);
-    } else if(name === 'profile'){
+    } else if (name === 'profile') {
       document.getElementById('profileScreen').classList.remove('hidden');
       showTopbar(true, 'Профиль');
-    } else if(name === 'trophies'){
+    } else if (name === 'trophies') {
       document.getElementById('trophiesScreen').classList.remove('hidden');
       showTopbar(true, 'Трофеи');
-    } else if(name === 'trophyDetail'){
+    } else if (name === 'trophyDetail') {
       document.getElementById('trophyDetailScreen').classList.remove('hidden');
       showTopbar(true, 'Трофеи');
     }
@@ -240,18 +240,51 @@
       scrollTopSmooth();
     });
 
-    // Навигация
-    openProfileBtn.addEventListener('click', function(){ showScreen('profile'); });
-    homeBtn.addEventListener('click',        function(){ showScreen('home');    });
+    // Делегирование кликов — работает даже если что-то рендерится позже
+    document.addEventListener('click', function (e) {
+      const t = e.target.closest('button, a.big-btn'); // ловим и <button>, и нашу большую <a>
+      if (!t) return;
 
-    trophiesBtn.addEventListener('click', function(){
-      // при первом входе подгружаем список
-      populateTrophyList();
-      showScreen('trophies');
-    });
-    trophiesHomeBtn.addEventListener('click', function(){ showScreen('home'); });
+      // Не даём тексту выделяться/перетаскиваться при длинном тапе
+      t.blur();
 
-    backToListBtn.addEventListener('click', function(){ showScreen('trophies'); });
+      // Домой (из профиля / трофеев)
+      if (t.id === 'homeBtn' || t.id === 'trophiesHomeBtn') {
+        showScreen('home');
+        e.preventDefault();
+        return;
+      }
+
+      // Открыть профиль
+      if (t.id === 'openProfileBtn') {
+        showScreen('profile');
+        e.preventDefault();
+        return;
+      }
+
+      // Открыть список трофеев
+      if (t.id === 'trophiesBtn') {
+        populateTrophyList();
+        showScreen('trophies');
+        e.preventDefault();
+        return;
+      }
+
+      // Назад к списку трофеев
+      if (t.id === 'backToListBtn') {
+        showScreen('trophies');
+        e.preventDefault();
+        return;
+      }
+
+      // Кнопка «трофей в списке»
+      if (t.classList.contains('list-btn') && t.dataset.id) {
+        openTrophyDetail(t.dataset.id);
+        e.preventDefault();
+        return;
+      }
+    }, { passive: true });
+
 
     // Заглушка билдера
     function soon(){ showFeedback('Скоро! В разработке.'); }

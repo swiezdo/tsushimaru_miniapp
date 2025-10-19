@@ -85,3 +85,18 @@ body{
 @media(max-width:640px){
   .profile-grid{grid-template-columns:1fr}
 }
+
+/* Кнопки и чипы: без выделения текста и без "синего" тап-хайлайта */
+button, .btn, .big-btn, .list-btn, .chip-btn {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* улучшает отклик на тапы */
+}
+
+/* Чтобы <a.big-btn> вела себя как настоящая кнопка при тапе */
+a.big-btn { cursor: pointer; }
+
+/* На случай перекрытий — гарантируем кликабельность слоёв */
+.big-btn, .list-btn, .btn, .chip-btn { pointer-events: auto; }

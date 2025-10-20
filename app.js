@@ -83,7 +83,7 @@ function showScreen(name) {
   if (tg) {
     if (['profile','trophies','builds','buildCreate','buildDetail','trophyDetail'].includes(name)) {
       tg.BackButton.show();
-      if (name === 'trophyDetail') ensureInlineSubmitButton();
+      // ранний вариант добавлял кнопку в форму — теперь кнопка вне формы, отдельная, так что ничего не делаем
     } else {
       tg.BackButton.hide();
     }
@@ -98,24 +98,6 @@ function showScreen(name) {
   else if (name === 'buildDetail') setTopbar(true, 'Билд');
 
   scrollTopSmooth();
-}
-
-// В Telegram — добавить широкую кнопку «Отправить» на экране трофея (если её нет)
-function ensureInlineSubmitButton() {
-  const form = $('proofForm');
-  if (!form) return;
-
-  let submitInline = $('submitInlineBtn');
-  if (!submitInline) {
-    submitInline = document.createElement('button');
-    submitInline.id = 'submitInlineBtn';
-    submitInline.type = 'button';
-    submitInline.className = 'btn primary wide';
-    submitInline.textContent = 'Отправить';
-    form.appendChild(submitInline);
-  }
-  submitInline.onclick = (e) => { e.preventDefault(); submitProof(); };
-  submitInline.addEventListener('pointerdown', () => hapticTap());
 }
 
 // Header user chip
@@ -273,20 +255,85 @@ function renderTrophyList(data) {
   addTapHighlight('#trophyList .list-btn');
 }
 
-const proofFormEl  = $('proofForm');
-const proofFilesEl = $('proofFiles');
-const commentEl    = $('commentText');
-const previewEl    = $('filePreview');
+const proofFormEl     = $('proofForm');
+const proofFilesEl    = $('proofFiles');       // скрытый input[type=file]
+const proofSubmitBtn  = $('proofSubmitBtn');   // ВНЕ формы — общий actions-bar
+const commentEl       = $('commentText');
+const previewEl       = $('filePreview');
+const proofAddBtn     = $('proofAddBtn');      // узкая кнопка-строка «＋ Прикрепить»
 
-// NEW: кнопка-строка «＋ Прикрепить»
-$('proofAddBtn')?.addEventListener('click', () => {
+// Локальный список выбранных файлов (мы контролируем превью и отправку)
+let proofSelected = []; // Array<File>
+
+// Кнопка «＋ Прикрепить»
+proofAddBtn?.addEventListener('click', () => {
   try { proofFilesEl.value = ''; } catch {}
   proofFilesEl?.click();
 });
 
+// При выборе файлов — дополняем список и перерисовываем превью
+if (proofFilesEl) {
+  proofFilesEl.addEventListener('change', () => {
+    const files = Array.from(proofFilesEl.files || []);
+    if (!files.length) return;
+
+    // Добавляем, избегая дублей (по name+size+lastModified)
+    const keyOf = (f) => `${f.name}::${f.size}::${f.lastModified}`;
+    const existing = new Set(proofSelected.map(keyOf));
+    files.forEach((f) => { if (!existing.has(keyOf(f))) proofSelected.push(f); });
+
+    renderProofPreview();
+  });
+}
+
+// Рендер компактных превью (макс 4 + «+N») с возможностью удаления по тапу
+function renderProofPreview() {
+  if (!previewEl) return;
+  previewEl.innerHTML = '';
+
+  const limit = 4;
+  const toShow = proofSelected.slice(0, limit);
+
+  toShow.forEach((file, idx) => {
+    const tile = document.createElement('div');
+    tile.className = 'preview-item removable'; // overlay «×»
+    tile.title = 'Нажмите, чтобы удалить';
+
+    // Контент
+    if (file.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.onload = () => URL.revokeObjectURL(img.src);
+      tile.appendChild(img);
+    } else if (file.type.startsWith('video/')) {
+      tile.textContent = '🎥';
+    } else {
+      tile.textContent = '📄';
+    }
+
+    // Удаление по тапу
+    tile.addEventListener('click', () => {
+      proofSelected.splice(idx, 1);
+      hapticTap();
+      renderProofPreview();
+    });
+
+    previewEl.appendChild(tile);
+  });
+
+  if (proofSelected.length > limit) {
+    const more = document.createElement('div');
+    more.className = 'preview-more';
+    more.textContent = `+${proofSelected.length - limit}`;
+    previewEl.appendChild(more);
+  }
+}
+
+// Сброс формы заявки
 function resetProofForm() {
   if (previewEl) previewEl.innerHTML = '';
   if (proofFilesEl) proofFilesEl.value = '';
+  proofSelected = [];
   if (commentEl) {
     commentEl.value = '';
     commentEl.style.height = 'auto';
@@ -318,39 +365,6 @@ if (commentEl) {
   setTimeout(autoResize, 0);
 }
 
-// превью файлов (трофеи) — максимум 4, 5-я плитка показывает "+N"
-if (proofFilesEl && previewEl) {
-  proofFilesEl.addEventListener('change', () => {
-    previewEl.innerHTML = '';
-    const files = Array.from(proofFilesEl.files || []);
-    if (!files.length) return;
-
-    const limit = 4; // показываем максимум 4 миниатюры
-    files.slice(0, limit).forEach((file) => {
-      const div = document.createElement('div');
-      div.className = 'preview-item';
-      if (file.type.startsWith('image/')) {
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(file);
-        img.onload = () => URL.revokeObjectURL(img.src);
-        div.appendChild(img);
-      } else if (file.type.startsWith('video/')) {
-        div.textContent = '🎥';
-      } else {
-        div.textContent = '📄';
-      }
-      previewEl.appendChild(div);
-    });
-
-    if (files.length > limit) {
-      const more = document.createElement('div');
-      more.className = 'preview-more';
-      more.textContent = `+${files.length - limit}`; // 5-я плитка — +N
-      previewEl.appendChild(more);
-    }
-  });
-}
-
 let submitting = false;
 function shake(el) {
   if (!el) return;
@@ -365,22 +379,28 @@ async function submitProof() {
   submitting = true;
   setTimeout(() => (submitting = false), 1200);
 
-  const filesCount = proofFilesEl?.files?.length || 0;
+  const filesCount = proofSelected.length; // используем наш список
   const comment    = (commentEl?.value || '').trim();
 
   if (filesCount === 0 || !comment) {
-    if (!filesCount) shake(proofFilesEl);
+    if (!filesCount) shake(previewEl || proofAddBtn || proofFilesEl);
     if (!comment)    shake(commentEl);
     tg?.showPopup?.({ title: 'Ошибка', message: 'Добавьте файл и комментарий.', buttons: [{ type: 'ok' }] });
     return;
   }
 
+  // тут была бы отправка на сервер; в демо просто показываем ok
   hapticOK();
   tg?.showPopup?.({ title: 'Заявка отправлена', message: '✅ Модераторы рассмотрят вашу заявку.' });
   resetProofForm();
   showScreen('trophies');
 }
 
+// Кнопка «Отправить» — теперь вне формы, в общем actions-bar
+proofSubmitBtn?.addEventListener('pointerdown', () => hapticTap());
+proofSubmitBtn?.addEventListener('click', (e) => { e.preventDefault?.(); submitProof(); });
+
+// Защита от случайной отправки самой form (Enter в textarea и т.п.)
 if (proofFormEl) {
   proofFormEl.addEventListener('submit', (e) => { e.preventDefault(); submitProof(); });
 }

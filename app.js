@@ -146,7 +146,7 @@ const v_modes      = $('v_modes');
 const v_goals      = $('v_goals');
 const v_difficulty = $('v_difficulty');
 
-function prettyLines(arr) { return (arr && arr.length) ? arr.join('\\n') : '—'; }
+function prettyLines(arr) { return (arr && arr.length) ? arr.join('\n') : '—'; }
 function refreshProfileView() {
   if (v_platform)   v_platform.textContent   = prettyLines(activeValues($('platformChips')));
   if (v_modes)      v_modes.textContent      = prettyLines(activeValues($('modesChips')));

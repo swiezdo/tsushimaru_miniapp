@@ -201,8 +201,31 @@ body{
 /* Детали билдов — сетка скринов */
 .shots-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .shots-grid .shot-thumb{width:100%;height:160px;border-radius:10px;border:1px solid var(--stroke);overflow:hidden;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center}
-.shot-thumb img{width:100%;height:100%;object-fit:cover}
+/* Контейнер (сам квадрат) */
+.shot-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  /* сохраняем квадрат */
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+/* Само изображение — заполняет квадрат */
+.shot-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* главное свойство */
+  object-position: center;
+  display: block;
+  border-radius: inherit;
+}
 /* Лайтбокс */
 .lightbox{
   position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999

@@ -8,7 +8,7 @@
     />
     <title>Tsushima.Ru</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="style.css?v=8" />
+    <link rel="stylesheet" href="style.css?v=9" />
   </head>
 
   <body>
@@ -127,13 +127,8 @@
           </form>
         </section>
 
-        <!-- Кнопка под карточкой -->
         <div class="actions-bar">
-          <button
-            type="button"
-            id="profileSaveBtn"
-            class="btn primary wide"
-          >
+          <button type="button" id="profileSaveBtn" class="btn primary wide">
             Сохранить
           </button>
         </div>
@@ -169,33 +164,24 @@
           <h2 id="trophyTitle" class="card-title">Трофей</h2>
           <ul id="trophyDesc" class="desc-list"></ul>
         </section>
-      
+
         <section class="card">
           <h3 class="card-title">Отправить заявку</h3>
           <form id="proofForm" class="form">
             <div class="input">
               <label for="proofFiles">Прикрепите скриншоты/видео</label>
-      
-              <!-- скрытый input -->
               <input id="proofFiles" type="file" multiple accept="image/*,video/*" style="display:none" />
-      
-              <!-- узкая прозрачная кнопка-строка с плюсом -->
               <button type="button" id="proofAddBtn" class="fileline-btn" aria-label="Прикрепить файлы">＋ Прикрепить</button>
-      
-              <!-- компактные превью -->
               <div id="filePreview" class="thumbs-row"></div>
             </div>
-      
+
             <div class="input">
               <label for="commentText">Комментарий (необязательно)</label>
               <textarea id="commentText" rows="1" placeholder="Добавьте комментарий"></textarea>
             </div>
-      
-            <!-- ВНУТРИ этой карточки больше НЕТ кнопки отправки -->
           </form>
         </section>
-      
-        <!-- КНОПКА ПОД БЛОКОМ (как на «Профиль») -->
+
         <div class="actions-bar">
           <button type="button" id="proofSubmitBtn" class="btn primary wide">Отправить</button>
         </div>
@@ -220,12 +206,17 @@
         <section class="card">
           <h3 class="card-title">Мои билды</h3>
           <div id="myBuildsList" class="list-builds"></div>
-          <div
-            id="noBuildsHint"
-            class="hint muted"
-            style="margin-top: 8px; display: none"
-          >
+          <div id="noBuildsHint" class="hint muted" style="margin-top: 8px; display: none">
             Пока пусто. Нажмите «Создать билд».
+          </div>
+        </section>
+
+        <!-- ====== НОВЫЙ БЛОК: ВСЕ БИЛДЫ ====== -->
+        <section class="card">
+          <h3 class="card-title">Все билды</h3>
+          <div id="allBuildsList" class="list-builds"></div>
+          <div id="noAllBuildsHint" class="hint muted" style="margin-top: 8px; display: none">
+            Публикаций пока нет.
           </div>
         </section>
       </section>
@@ -268,7 +259,6 @@
             <div class="input">
               <label>Скриншоты («Техники» и «Снаряжение»)</label>
 
-              <!-- Скрытые инпуты (по одному на каждый квадрат) -->
               <input
                 id="build_shot1"
                 data-idx="1"
@@ -284,7 +274,6 @@
                 style="display: none"
               />
 
-              <!-- Два квадрата в ряд -->
               <div class="shots-two" id="shotsTwo">
                 <button
                   type="button"
@@ -307,7 +296,6 @@
           </form>
         </section>
 
-        <!-- Кнопка под карточкой формы -->
         <div class="actions-bar">
           <button
             type="button"
@@ -320,9 +308,8 @@
         <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
       </section>
 
-      <!-- ====== ДЕТАЛИ БИЛДА ====== -->
+      <!-- ====== ДЕТАЛИ МОЕГО БИЛДА (с кнопками) ====== -->
       <section id="buildDetailScreen" class="hidden">
-        <!-- Верхняя кнопка действия (опубликовать) — перед разделом с названием -->
         <div class="actions-bar">
           <button
             id="publishBuildBtn"
@@ -356,7 +343,6 @@
           <div id="buildDetailShots" class="shots-grid"></div>
         </section>
 
-        <!-- Нижняя кнопка действия (удалить) — после блока «Скриншоты» -->
         <div class="actions-bar">
           <button
             id="deleteBuildBtn"
@@ -369,6 +355,42 @@
 
         <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
       </section>
+
+      <!-- ====== ДЕТАЛИ ПУБЛИЧНОГО БИЛДА (без кнопок действий) ====== -->
+      <section id="buildPublicDetailScreen" class="hidden">
+        <section class="card">
+          <h2 id="publicDetailTitle" class="card-title">Билд</h2>
+          <div class="profile-grid">
+            <div class="field">
+              <label>Класс</label>
+              <div id="pd_class" class="value">—</div>
+            </div>
+            <div class="field">
+              <label>Теги</label>
+              <div id="pd_tags" class="value lines">—</div>
+            </div>
+            <div class="field span-2">
+              <label>Описание</label>
+              <div id="pd_desc" class="value lines">—</div>
+            </div>
+            <div class="field">
+              <label>Автор</label>
+              <div id="pd_author" class="value">—</div>
+            </div>
+            <div class="field">
+              <label>Дата публикации</label>
+              <div id="pd_date" class="value">—</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3 class="card-title">Скриншоты</h3>
+          <div id="publicDetailShots" class="shots-grid"></div>
+        </section>
+
+        <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
+      </section>
     </main>
 
     <!-- ====== LIGHTBOX ====== -->
@@ -376,6 +398,6 @@
       <img id="lightboxImg" alt="Просмотр изображения" />
     </div>
 
-    <script src="app.js?v=8" defer></script>
+    <script src="app.js?v=9" defer></script>
   </body>
 </html>

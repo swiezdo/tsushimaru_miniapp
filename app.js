@@ -17,8 +17,7 @@ const tg = window.Telegram?.WebApp || null;
   } catch (e) {}
 })();
 
-// ---------------- Haptics OFF (полностью для наших кнопок)
-// (Telegram BackButton — нативный, не трогаем)
+// ---------------- Haptics OFF (для всех наших кнопок; BackButton нативный — не трогаем)
 function hapticOK()  {}
 function hapticERR() {}
 function hapticTap() {}
@@ -42,13 +41,14 @@ function addTapHighlight(selector) {
 
 // ---------------- Экранная навигация ----------------
 const screens = {
-  home:        $('homeScreen'),
-  profile:     $('profileScreen'),
-  trophies:    $('trophiesScreen'),
-  trophyDetail:$('trophyDetailScreen'),
-  builds:      $('buildsScreen'),
-  buildCreate: $('buildCreateScreen'),
-  buildDetail: $('buildDetailScreen'),
+  home:               $('homeScreen'),
+  profile:            $('profileScreen'),
+  trophies:           $('trophiesScreen'),
+  trophyDetail:       $('trophyDetailScreen'),
+  builds:             $('buildsScreen'),
+  buildCreate:        $('buildCreateScreen'),
+  buildDetail:        $('buildDetailScreen'),       // детали МОЕГО билда (с кнопками)
+  buildPublicDetail:  $('buildPublicDetailScreen'), // детали ПУБЛИКАЦИИ (без кнопок)
 };
 
 function isVisible(name) {
@@ -71,20 +71,21 @@ function showScreen(name) {
   if (el) el.classList.remove('hidden');
 
   if (tg) {
-    if (['profile','trophies','builds','buildCreate','buildDetail','trophyDetail'].includes(name)) {
+    if (['profile','trophies','builds','buildCreate','buildDetail','buildPublicDetail','trophyDetail'].includes(name)) {
       tg.BackButton.show();
     } else {
       tg.BackButton.hide();
     }
   }
 
-  if (name === 'home')             setTopbar(false);
-  else if (name === 'profile')     setTopbar(true, 'Профиль');
-  else if (name === 'trophies')    setTopbar(true, 'Трофеи');
-  else if (name === 'trophyDetail')setTopbar(true, 'Трофеи');
-  else if (name === 'builds')      setTopbar(true, 'Билды');
-  else if (name === 'buildCreate') setTopbar(true, 'Создать билд');
-  else if (name === 'buildDetail') setTopbar(true, 'Билд');
+  if (name === 'home')                 setTopbar(false);
+  else if (name === 'profile')         setTopbar(true, 'Профиль');
+  else if (name === 'trophies')        setTopbar(true, 'Трофеи');
+  else if (name === 'trophyDetail')    setTopbar(true, 'Трофеи');
+  else if (name === 'builds')          setTopbar(true, 'Билды');
+  else if (name === 'buildCreate')     setTopbar(true, 'Создать билд');
+  else if (name === 'buildDetail')     setTopbar(true, 'Билд');
+  else if (name === 'buildPublicDetail') setTopbar(true, 'Билд');
 
   scrollTopSmooth();
 }
@@ -224,7 +225,7 @@ async function loadTrophies() {
     const res = await fetch(TROPHIES_URL, { cache: 'no-store' });
     TROPHIES = await res.json();
   } catch (e) { TROPHIES = {}; }
-  return TROPHIES;
+    return TROPHIES;
 }
 
 function renderTrophyList(data) {
@@ -385,11 +386,11 @@ async function submitProof() {
   showScreen('trophies');
 }
 
-// Кнопка «Отправить» — теперь вне формы, в общем actions-bar
+// Кнопка «Отправить» — вне формы, в общем actions-bar
 proofSubmitBtn?.addEventListener('pointerdown', () => hapticTap());
 proofSubmitBtn?.addEventListener('click', (e) => { e.preventDefault?.(); submitProof(); });
 
-// Защита от случайной отправки самой form (Enter в textarea и т.п.)
+// Защита от случайной отправки самой form
 if (proofFormEl) {
   proofFormEl.addEventListener('submit', (e) => { e.preventDefault(); submitProof(); });
 }
@@ -397,9 +398,10 @@ if (proofFormEl) {
 // BackButton Telegram
 if (tg) {
   tg.onEvent('backButtonClicked', () => {
-    if (isVisible('buildCreate')) { showScreen('builds'); return; }
-    if (isVisible('buildDetail')) { showScreen('builds'); return; }
-    if (isVisible('trophyDetail')) { resetProofForm(); showScreen('trophies'); return; }
+    if (isVisible('buildCreate'))        { showScreen('builds'); return; }
+    if (isVisible('buildDetail'))        { showScreen('builds'); return; }
+    if (isVisible('buildPublicDetail'))  { showScreen('builds'); return; }
+    if (isVisible('trophyDetail'))       { resetProofForm(); showScreen('trophies'); return; }
     if (isVisible('profile') || isVisible('trophies') || isVisible('builds')) { showScreen('home'); return; }
     showScreen('home');
   });
@@ -408,12 +410,14 @@ if (tg) {
 // ---------------- Главное меню ----------------
 $('openProfileBtn')?.addEventListener('click', () => showScreen('profile'));
 $('trophiesBtn')?.addEventListener('click', () => showScreen('trophies'));
-$('buildsBtn')?.addEventListener('click', () => { renderMyBuilds(); showScreen('builds'); });
+$('buildsBtn')?.addEventListener('click', () => { renderMyBuilds(); renderAllBuilds(); showScreen('builds'); });
 
 addTapHighlight('.big-btn');
 
 // ---------------- БИЛДЫ ----------------
-const LS_KEY_BUILDS = 'tsu_builds_v1';
+const LS_KEY_BUILDS      = 'tsu_builds_v1';            // мои локальные билды
+const LS_KEY_PUB_BUILDS  = 'tsu_builds_public_v1';     // опубликованные (все билды, локальная имитация)
+
 const CLASS_VALUES = ['Самурай','Охотник','Убийца','Ронин'];
 const TAG_VALUES   = ['HellMode','Спидран','Соло','Сюжет','Соперники'];
 const CLASS_ICON = {
@@ -449,7 +453,20 @@ const buildDetailShots = $('buildDetailShots');
 const publishBuildBtn  = $('publishBuildBtn');
 const deleteBuildBtn   = $('deleteBuildBtn');
 
-// Текущий билд в деталях
+// Публичные детали
+const publicDetailTitle = $('publicDetailTitle');
+const pd_class          = $('pd_class');
+const pd_tags           = $('pd_tags');
+const pd_desc           = $('pd_desc');
+const pd_author         = $('pd_author');
+const pd_date           = $('pd_date');
+const publicDetailShots = $('publicDetailShots');
+
+// Списки «Все билды»
+const allBuildsList   = $('allBuildsList');
+const noAllBuildsHint = $('noAllBuildsHint');
+
+// Текущий билд в деталях (мой)
 let currentBuildId = null;
 
 // Рендер чипов формы билда
@@ -547,7 +564,6 @@ function bindShotInput(input, idx){
     const file = input.files && input.files[0];
     if(!file) return;
     try{
-      // Сжатие: длинная сторона до 1280px, качество ~0.7
       const data = await compressImageFile(file, { maxEdge: 1280, quality: 0.7 });
 
       const targetEl =
@@ -571,7 +587,7 @@ function bindShotInput(input, idx){
 bindShotInput(shotInput1, '1');
 bindShotInput(shotInput2, '2');
 
-// Storage
+// --------- Storage helpers ---------
 function loadBuilds() {
   try {
     const raw = localStorage.getItem(LS_KEY_BUILDS);
@@ -593,7 +609,20 @@ function saveBuilds(arr){
   }
 }
 
-// Рендер «Мои билды»
+function loadPublicBuilds() {
+  try {
+    const raw = localStorage.getItem(LS_KEY_PUB_BUILDS);
+    return raw ? JSON.parse(raw) : [];
+  } catch(_) { return []; }
+}
+function savePublicBuilds(arr) {
+  try {
+    localStorage.setItem(LS_KEY_PUB_BUILDS, JSON.stringify(arr||[]));
+    return true;
+  } catch(_) { return false; }
+}
+
+// --------- Списки ---------
 function renderMyBuilds() {
   const items = loadBuilds();
   myBuildsList.innerHTML = '';
@@ -631,14 +660,50 @@ function renderMyBuilds() {
   addTapHighlight('#myBuildsList .build-item');
 }
 
-// Открыть «Создать билд»
+function renderAllBuilds() {
+  const items = loadPublicBuilds();
+  allBuildsList.innerHTML = '';
+  if (!items.length) {
+    noAllBuildsHint.style.display = 'block';
+    return;
+  }
+  noAllBuildsHint.style.display = 'none';
+
+  items.slice().reverse().forEach((p) => {
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'build-item';
+    row.setAttribute('data-id', p.id);
+
+    const icon = document.createElement('div');
+    icon.className = 'build-icon';
+    const img = document.createElement('img');
+    img.alt = p.class || 'Класс';
+    img.src = CLASS_ICON[p.class] || CLASS_ICON['Самурай'];
+    icon.appendChild(img);
+
+    const title = document.createElement('div');
+    title.className = 'build-title';
+    const name = (p.name || 'Без названия').toString();
+    const safeName = name.length > 40 ? (name.slice(0, 40) + '…') : name;
+    title.textContent = safeName;
+
+    row.appendChild(icon);
+    row.appendChild(title);
+    row.addEventListener('click', () => openPublicBuildDetail(p.id));
+    allBuildsList.appendChild(row);
+  });
+
+  addTapHighlight('#allBuildsList .build-item');
+}
+
+// --------- Создание билда ---------
 createBuildBtn?.addEventListener('click', () => {
   resetBuildForm();
   showScreen('buildCreate');
 });
 createBuildBtn?.addEventListener('pointerdown', () => hapticTap());
 
-// Сброс формы билда
 function resetBuildForm() {
   try { buildForm?.reset(); } catch {}
   setActive(classChipsEl, []);
@@ -656,11 +721,9 @@ function resetBuildForm() {
   if (buildDescEl) buildDescEl.style.height = 'auto';
 }
 
-// Кнопка «Создать»
 buildSubmitBtn?.addEventListener('pointerdown', () => hapticTap());
 buildSubmitBtn?.addEventListener('click', () => buildForm?.requestSubmit());
 
-// Создание билда
 if (buildForm) {
   buildForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -688,9 +751,7 @@ if (buildForm) {
 
     const all = loadBuilds();
     all.push(item);
-    if (!saveBuilds(all)) {
-      return;
-    }
+    if (!saveBuilds(all)) { return; }
 
     hapticOK();
     tg?.showPopup?.({ title: 'Билд создан', message: 'Сохранено локально (макет, без сервера).', buttons: [{ type:'ok' }] });
@@ -700,14 +761,31 @@ if (buildForm) {
   });
 }
 
-// Детали билда
+// --------- Детали МОЕГО билда ---------
+function isBuildPublished(myId) {
+  const pubs = loadPublicBuilds();
+  return pubs.some(p => String(p.originalId) === String(myId));
+}
+function updatePublishButton(myId) {
+  if (!publishBuildBtn) return;
+  const published = isBuildPublished(myId);
+  if (published) {
+    publishBuildBtn.textContent = 'Скрыть';
+    publishBuildBtn.classList.remove('primary');
+    publishBuildBtn.classList.add('danger');
+  } else {
+    publishBuildBtn.textContent = 'Опубликовать';
+    publishBuildBtn.classList.add('primary');
+    publishBuildBtn.classList.remove('danger');
+  }
+}
+
 function openBuildDetail(id) {
   const all = loadBuilds();
   const b = all.find((x) => String(x.id) === String(id));
   if (!b) { tg?.showAlert?.('Билд не найден'); return; }
   currentBuildId = b.id;
 
-  // прокинуть id в кнопку удаления (надёжная привязка)
   if (deleteBuildBtn) {
     deleteBuildBtn.dataset.id = String(b.id);
   }
@@ -729,43 +807,140 @@ function openBuildDetail(id) {
     buildDetailShots.appendChild(wrap);
   });
 
+  updatePublishButton(b.id);
   showScreen('buildDetail');
 }
 
-// === Кнопки действий на детальной странице билда
+// Публикация/Скрытие
 publishBuildBtn?.addEventListener('click', () => {
-  hapticOK();
-  tg?.showPopup?.({
-    title: 'Публикация',
-    message: 'В демо-версии публикация не реализована.',
-    buttons: [{ type: 'ok' }]
-  });
+  if (!currentBuildId) return;
+
+  const myAll = loadBuilds();
+  const me = myAll.find(x => String(x.id) === String(currentBuildId));
+  if (!me) return;
+
+  const pubs = loadPublicBuilds();
+  const already = pubs.find(p => String(p.originalId) === String(me.id));
+
+  if (already) {
+    // СКРЫТЬ = удалить из «Все билды»
+    const rest = pubs.filter(p => String(p.originalId) !== String(me.id));
+    savePublicBuilds(rest);
+    updatePublishButton(me.id);
+    renderAllBuilds();
+    tg?.showPopup?.({ title:'Скрыто', message:'Билд скрыт из списка «Все билды».', buttons:[{type:'ok'}] });
+    return;
+  }
+
+  // ОПУБЛИКОВАТЬ = добавить дубль в «Все билды»
+  const uname = tg?.initDataUnsafe?.user?.username || 'Гость';
+  const pubItem = {
+    id: `pub_${Date.now()}`,
+    originalId: me.id,
+    name: me.name,
+    class: me.class,
+    tags: me.tags || [],
+    desc: me.desc || '',
+    shots: me.shots || [],
+    author: '@' + uname,
+    publishedAt: new Date().toISOString()
+  };
+
+  pubs.push(pubItem);
+  savePublicBuilds(pubs);
+  updatePublishButton(me.id);
+  renderAllBuilds();
+  tg?.showPopup?.({ title:'Опубликовано', message:'Билд добавлен в «Все билды».', buttons:[{type:'ok'}] });
 });
 
-// Обработчик удаления читает id из data-id (fallback — currentBuildId)
-deleteBuildBtn?.addEventListener('click', () => {
+// Подтверждение удаления (через Telegram popup с промисом)
+let _popupResolver = null;
+tg?.onEvent?.('popupClosed', (e) => {
+  if (_popupResolver) {
+    _popupResolver(e?.button_id === 'yes');
+    _popupResolver = null;
+  }
+});
+function tgConfirm(title, message) {
+  if (!tg?.showPopup) {
+    return Promise.resolve(window.confirm(message || title));
+  }
+  return new Promise((resolve) => {
+    _popupResolver = resolve;
+    tg.showPopup({
+      title: title || 'Подтверждение',
+      message: message || '',
+      buttons: [
+        {id:'no',  type:'cancel',      text:'Отмена'},
+        {id:'yes', type:'destructive', text:'Удалить'}
+      ]
+    });
+  });
+}
+
+// Обработчик «Удалить»
+deleteBuildBtn?.addEventListener('click', async () => {
   const idFromBtn = deleteBuildBtn?.dataset?.id;
   const id = idFromBtn ?? currentBuildId;
   if (!id) { tg?.showAlert?.('Не удалось определить билд для удаления.'); return; }
+
+  const ok = await tgConfirm('Удалить билд?', 'Вы уверены, что хотите удалить этот билд?');
+  if (!ok) return;
+
   deleteBuildById(String(id));
 });
 
-// Универсальная функция удаления
+// Универсальная функция удаления (убирает и из «Все билды», если опубликован)
 function deleteBuildById(id) {
+  // удалить из моих
   const rest = loadBuilds().filter((b) => String(b.id) !== String(id));
   if (!saveBuilds(rest)) return;
+
+  // если был опубликован — убрать и из публик-листа
+  const pubs = loadPublicBuilds();
+  const pubsRest = pubs.filter(p => String(p.originalId) !== String(id));
+  savePublicBuilds(pubsRest);
+
   renderMyBuilds();
-  tg?.showPopup?.({ title: 'Удалено', message: 'Билд удалён из списка.', buttons: [{ type:'ok' }] });
+  renderAllBuilds();
+  tg?.showPopup?.({ title: 'Удалено', message: 'Билд удалён.', buttons: [{ type:'ok' }] });
   showScreen('builds');
 }
 
-// (обёртка на случай использования в других местах)
-function handleDeleteCurrentBuild() {
-  if (!currentBuildId) { tg?.showAlert?.('Не выбран билд для удаления.'); return; }
-  deleteBuildById(String(currentBuildId));
+// --------- Детали ПУБЛИЧНОГО билда (без кнопок) ---------
+function openPublicBuildDetail(pubId) {
+  const pubs = loadPublicBuilds();
+  const p = pubs.find(x => String(x.id) === String(pubId));
+  if (!p) { tg?.showAlert?.('Публикация не найдена'); return; }
+
+  publicDetailTitle.textContent = p.name || 'Билд';
+  pd_class.textContent = p.class || '—';
+  pd_tags.textContent  = (p.tags && p.tags.length) ? p.tags.join('\n') : '—';
+  pd_desc.textContent  = p.desc || '—';
+  pd_author.textContent = p.author || '—';
+
+  // форматируем дату
+  try {
+    const d = new Date(p.publishedAt);
+    pd_date.textContent = isNaN(d.getTime()) ? '—' : d.toLocaleString();
+  } catch { pd_date.textContent = '—'; }
+
+  publicDetailShots.innerHTML = '';
+  (p.shots || []).forEach((src) => {
+    const wrap = document.createElement('button');
+    wrap.type = 'button';
+    wrap.className = 'shot-thumb';
+    const img = document.createElement('img');
+    img.src = src;
+    wrap.appendChild(img);
+    wrap.addEventListener('click', () => openLightbox(src));
+    publicDetailShots.appendChild(wrap);
+  });
+
+  showScreen('buildPublicDetail');
 }
 
-// Лайтбокс
+// --------- Лайтбокс ---------
 const lightbox = $('lightbox');
 const lightboxImg = $('lightboxImg');
 function openLightbox(src) {
@@ -788,7 +963,8 @@ lightbox?.addEventListener('click', closeLightbox);
   renderTrophyList(data);
   refreshProfileView();
   renderMyBuilds();
+  renderAllBuilds();
 
-  // Хайлайт для основных кликабельных элементов — вызов теперь без эффекта
+  // Вызов хайлайта теперь без эффекта
   addTapHighlight('.btn, .big-btn, .list-btn, .build-item, .chip-btn');
 })();

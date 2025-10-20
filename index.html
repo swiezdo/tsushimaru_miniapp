@@ -8,7 +8,7 @@
     />
     <title>Tsushima.Ru</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css?v=1" />
   </head>
 
   <body>
@@ -175,16 +175,27 @@
           <form id="proofForm" class="form">
             <div class="input">
               <label for="proofFiles">Прикрепите скриншоты/видео</label>
+
+              <!-- Скрытый инпут -->
               <input
                 id="proofFiles"
                 type="file"
                 multiple
                 accept="image/*,video/*"
+                style="display:none"
               />
+
+              <!-- Узкая прямоугольная кнопка запуска выбора -->
+              <button
+                type="button"
+                id="proofUploadBtn"
+                class="upload-bar"
+                aria-label="Добавить файлы"
+              >＋</button>
             </div>
 
-            <!-- Превью выбранных файлов -->
-            <div id="filePreview" class="preview-grid"></div>
+            <!-- Превью выбранных файлов (микро-миниатюры) -->
+            <div id="filePreview" class="preview-grid preview-sm"></div>
 
             <div class="input">
               <label for="commentText">Комментарий (необязательно)</label>
@@ -202,7 +213,7 @@
               </button>
             </div>
 
-            <!-- В Telegram JS добавит свою широкую кнопку отправки -->
+            <!-- В Telegram JS добавит широкую кнопку отправки -->
           </form>
         </section>
       </section>
@@ -381,6 +392,6 @@
       <img id="lightboxImg" alt="Просмотр изображения" />
     </div>
 
-    <script src="app.js" defer></script>
+    <script src="app.js?v=1" defer></script>
   </body>
 </html>

@@ -25,7 +25,7 @@ function $(id) { return document.getElementById(id); }
 function scrollTopSmooth() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
 // ---------------- Визуальные инклюды и отступы ----------------
-const TOP_OFFSET_PX = 64; // запас под верхние элементы Telegram
+const TOP_OFFSET_PX = 64;
 function applyTopInset() {
   const root = document.querySelector('main.container');
   if (!root) return;
@@ -273,10 +273,11 @@ function renderTrophyList(data) {
   addTapHighlight('#trophyList .list-btn');
 }
 
-const proofFormEl  = $('proofForm');
-const proofFilesEl = $('proofFiles');
-const commentEl    = $('commentText');
-const previewEl    = $('filePreview');
+const proofFormEl     = $('proofForm');
+const proofFilesEl    = $('proofFiles');
+const proofUploadBtn  = $('proofUploadBtn');
+const commentEl       = $('commentText');
+const previewEl       = $('filePreview');
 
 function resetProofForm() {
   if (previewEl) previewEl.innerHTML = '';
@@ -312,17 +313,25 @@ if (commentEl) {
   setTimeout(autoResize, 0);
 }
 
-// превью файлов (трофеи) — максимум 5, последняя плитка показывает "+N"
+// === Новая узкая кнопка выбора файлов
+proofUploadBtn?.addEventListener('click', () => {
+  try { proofFilesEl?.click(); } catch {}
+  hapticTap();
+});
+
+// превью файлов (до 4 миниатюр, 5-я — +N)
 if (proofFilesEl && previewEl) {
   proofFilesEl.addEventListener('change', () => {
     previewEl.innerHTML = '';
     const files = Array.from(proofFilesEl.files || []);
     if (!files.length) return;
 
-    const limit = 5;
-    files.slice(0, limit).forEach((file) => {
+    const maxThumbs = 4;
+    const extra = Math.max(0, files.length - maxThumbs);
+
+    files.slice(0, maxThumbs).forEach((file) => {
       const div = document.createElement('div');
-      div.className = 'preview-item';
+      div.className = 'preview-item preview-sm-item';
       if (file.type.startsWith('image/')) {
         const img = document.createElement('img');
         img.src = URL.createObjectURL(file);
@@ -336,10 +345,10 @@ if (proofFilesEl && previewEl) {
       previewEl.appendChild(div);
     });
 
-    if (files.length > limit) {
+    if (extra > 0) {
       const more = document.createElement('div');
-      more.className = 'preview-more';
-      more.textContent = `+${files.length - limit}`;
+      more.className = 'preview-more preview-sm-item';
+      more.textContent = `+${extra}`;
       previewEl.appendChild(more);
     }
   });
@@ -363,7 +372,7 @@ async function submitProof() {
   const comment    = (commentEl?.value || '').trim();
 
   if (filesCount === 0 || !comment) {
-    if (!filesCount) shake(proofFilesEl);
+    if (!filesCount) shake(proofUploadBtn || proofFilesEl);
     if (!comment)    shake(commentEl);
     tg?.showPopup?.({ title: 'Ошибка', message: 'Добавьте файл и комментарий.', buttons: [{ type: 'ok' }] });
     return;
@@ -532,7 +541,6 @@ function bindShotInput(input, idx){
     const file = input.files && input.files[0];
     if(!file) return;
     try{
-      // Сжатие: длинная сторона до 1280px, качество ~0.7
       const data = await compressImageFile(file, { maxEdge: 1280, quality: 0.7 });
 
       const targetEl =
@@ -674,7 +682,6 @@ if (buildForm) {
     const all = loadBuilds();
     all.push(item);
     if (!saveBuilds(all)) {
-      // не сохранилось — остаёмся на экране, чтобы пользователь мог поправить
       return;
     }
 
@@ -693,7 +700,6 @@ function openBuildDetail(id) {
   if (!b) { tg?.showAlert?.('Билд не найден'); return; }
   currentBuildId = b.id;
 
-  // прокинуть id в кнопку удаления (надёжная привязка)
   if (deleteBuildBtn) {
     deleteBuildBtn.dataset.id = String(b.id);
   }
@@ -718,7 +724,7 @@ function openBuildDetail(id) {
   showScreen('buildDetail');
 }
 
-// === Кнопки действий на детальной странице билда (привязка)
+// Действия в деталях билда
 publishBuildBtn?.addEventListener('click', () => {
   hapticOK();
   tg?.showPopup?.({
@@ -728,7 +734,6 @@ publishBuildBtn?.addEventListener('click', () => {
   });
 });
 
-// Обработчик удаления читает id из data-id (fallback — currentBuildId)
 deleteBuildBtn?.addEventListener('click', () => {
   const idFromBtn = deleteBuildBtn?.dataset?.id;
   const id = idFromBtn ?? currentBuildId;
@@ -736,7 +741,6 @@ deleteBuildBtn?.addEventListener('click', () => {
   deleteBuildById(String(id));
 });
 
-// Универсальная функция удаления
 function deleteBuildById(id) {
   const rest = loadBuilds().filter((b) => String(b.id) !== String(id));
   if (!saveBuilds(rest)) return;
@@ -745,7 +749,6 @@ function deleteBuildById(id) {
   showScreen('builds');
 }
 
-// (обёртка на случай использования в других местах)
 function handleDeleteCurrentBuild() {
   if (!currentBuildId) { tg?.showAlert?.('Не выбран билд для удаления.'); return; }
   deleteBuildById(String(currentBuildId));
@@ -775,6 +778,5 @@ lightbox?.addEventListener('click', closeLightbox);
   refreshProfileView();
   renderMyBuilds();
 
-  // Хайлайт для основных кликабельных элементов
-  addTapHighlight('.btn, .big-btn, .list-btn, .build-item, .chip-btn');
+  addTapHighlight('.btn, .big-btn, .list-btn, .build-item, .chip-btn, .upload-bar');
 })();

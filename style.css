@@ -76,18 +76,55 @@ body{
 }
 
 /* Upload boxes (два квадрата в ряд) */
+/* Компактные квадратные слоты для загрузки (форма создания билда) */
 .shots-two{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:repeat(2, auto);
   gap:8px;
+  justify-content:flex-start;
 }
-.upload-box{
-  width:100%;height:120px;border-radius:10px;border:1px solid var(--stroke);
-  background:rgba(255,255,255,0.04);color:var(--tg-tx);
-  display:inline-flex;align-items:center;justify-content:center;
-  font-size:36px;line-height:1;cursor:pointer;user-select:none;min-height:44px
+
+/* Маленькие квадраты с плюсом */
+.shots-two .upload-box{
+  width:88px;
+  height:88px;            /* жёсткий квадрат */
+  aspect-ratio:1/1;
+  border-radius:12px;
+  border:1px solid var(--stroke);
+  background:rgba(255,255,255,0.04);
+  font-size:28px;         /* размер плюса */
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  user-select:none;
+  min-height:unset;       /* отменяем возможные прежние min-height */
 }
-.upload-box:active{transform:translateY(1px)}
+
+/* Превью вместо плюса — тоже маленький квадрат */
+.shots-two .shot-thumb{
+  width:88px;
+  height:88px;
+  aspect-ratio:1/1;
+  border-radius:12px;
+  border:1px solid var(--stroke);
+  overflow:hidden;
+  background:rgba(255,255,255,0.06);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Картинка заполняет квадрат и ровно обрезается по краям */
+.shots-two .shot-thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+  border-radius:inherit;
+}
 
 /* Chips */
 .chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -201,31 +238,8 @@ body{
 /* Детали билдов — сетка скринов */
 .shots-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .shots-grid .shot-thumb{width:100%;height:160px;border-radius:10px;border:1px solid var(--stroke);overflow:hidden;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center}
-/* Контейнер (сам квадрат) */
-.shot-thumb {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  /* сохраняем квадрат */
-  overflow: hidden;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.shot-thumb img{width:100%;height:100%;object-fit:cover}
 
-/* Само изображение — заполняет квадрат */
-.shot-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* главное свойство */
-  object-position: center;
-  display: block;
-  border-radius: inherit;
-}
 /* Лайтбокс */
 .lightbox{
   position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999

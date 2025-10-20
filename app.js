@@ -167,15 +167,6 @@ if (profileForm) {
   const nameInput = profileForm.real_name;
   const psnInput  = profileForm.psn;
 
-  // контейнеры ошибок
-  const nameError = document.createElement('div');
-  nameError.className = 'error-text';
-  nameInput?.parentNode?.appendChild(nameError);
-
-  const psnError = document.createElement('div');
-  psnError.className = 'error-text';
-  psnInput?.parentNode?.appendChild(psnError);
-
   // Навигация по Enter
   nameInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); psnInput?.focus(); }
@@ -184,56 +175,41 @@ if (profileForm) {
     if (e.key === 'Enter') { e.preventDefault(); }
   });
 
-  function validateName() {
-    if (!nameInput) return true;
-    const val = (nameInput.value || '').trim();
-    const ok = !!val;
-    if (!ok) {
-      nameError.textContent = 'Укажите имя.';
-      nameInput.classList.add('error');
-    } else {
-      nameError.textContent = '';
-      nameInput.classList.remove('error');
-    }
-    return ok;
+  function isNameOk() {
+    return !!(nameInput && (nameInput.value || '').trim());
   }
-
-  function validatePSN() {
-    if (!psnInput) return true;
+  function isPSNOk() {
+    if (!psnInput) return false;
     const val = (psnInput.value || '').trim();
-    const ok = !!val && /^[A-Za-z0-9_-]{3,16}$/.test(val);
-    if (!ok) {
-      psnError.textContent = 'Ник обязателен: 3–16 символов, латиница, цифры, дефис или подчёркивание.';
-      psnInput.classList.add('error');
-    } else {
-      psnError.textContent = '';
-      psnInput.classList.remove('error');
-    }
-    return ok;
+    if (!val) return false;
+    return /^[A-Za-z0-9_-]{3,16}$/.test(val);
   }
-
-  nameInput?.addEventListener('input', validateName);
-  psnInput?.addEventListener('input', validatePSN);
 
   profileForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const okName = validateName();
-    const okPSN  = validatePSN();
-    if (!okName || !okPSN) { 
-      if (!okName) shake(nameInput);
-      if (!okPSN)  shake(psnInput);
-      return; 
+    const okName = isNameOk();
+    const okPSN  = isPSNOk();
+
+    if (!okName || !okPSN) {
+      // Собираем сообщения как в форме трофея
+      const msgs = [];
+      if (!okName) { msgs.push('Нужно указать Имя.'); shake(nameInput); }
+      if (!okPSN) {
+        const val = (psnInput?.value || '').trim();
+        if (!val) msgs.push('Нужно указать Ник PlayStation.');
+        else msgs.push('Неверный формат ника PlayStation (3–16: A–Z, a–z, 0–9, -, _).');
+        shake(psnInput);
+      }
+      tg?.showPopup?.({ title: 'Ошибка', message: msgs.join(''), buttons: [{ type: 'ok' }] });
+      return;
     }
 
     if (v_real_name) v_real_name.textContent = (nameInput?.value || '').trim() || '—';
     if (v_psn)       v_psn.textContent       = (psnInput?.value || '').trim()       || '—';
     refreshProfileView();
 
-    if (tg?.showPopup) {
-      tg.showPopup({ title: 'Профиль обновлён', message: 'Данные сохранены.', buttons: [{ type: 'ok' }] });
-      hapticOK();
-    }
+    tg?.showPopup?.({ title: 'Профиль обновлён', message: 'Данные сохранены.', buttons: [{ type: 'ok' }] });
     scrollTopSmooth();
   });
 
@@ -241,6 +217,7 @@ if (profileForm) {
 }
 
 // ---------------- Трофеи ----------------
+
 const trophyListEl  = $('trophyList');
 const trophyTitleEl = $('trophyTitle');
 const trophyDescEl  = $('trophyDesc');

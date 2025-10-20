@@ -102,6 +102,12 @@ body{
 .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
 .btn{border:1px solid var(--stroke);border-radius:12px;padding:12px 16px;background:transparent;color:var(--tg-tx);cursor:pointer;min-height:44px;font-size:16px}
 .btn.primary{background:var(--accent);border-color:transparent;color:#00131f;font-weight:700}
+.btn.danger{
+  background:#ff4d4f;
+  border-color:transparent;
+  color:#00131f;
+  font-weight:700;
+}
 .btn.ghost{opacity:.95}
 .btn.wide{width:100%}
 .btn:active{transform:translateY(1px)}

@@ -89,11 +89,11 @@ function showScreen(name) {
     }
   }
 
-  if (name === 'home')           setTopbar(false);
-  else if (name === 'profile')   setTopbar(true, 'Профиль');
-  else if (name === 'trophies')  setTopbar(true, 'Трофеи');
-  else if (name === 'trophyDetail') setTopbar(true, 'Трофеи');
-  else if (name === 'builds')    setTopbar(true, 'Билды');
+  if (name === 'home')             setTopbar(false);
+  else if (name === 'profile')     setTopbar(true, 'Профиль');
+  else if (name === 'trophies')    setTopbar(true, 'Трофеи');
+  else if (name === 'trophyDetail')setTopbar(true, 'Трофеи');
+  else if (name === 'builds')      setTopbar(true, 'Билды');
   else if (name === 'buildCreate') setTopbar(true, 'Создать билд');
   else if (name === 'buildDetail') setTopbar(true, 'Билд');
 
@@ -646,6 +646,11 @@ function openBuildDetail(id) {
   if (!b) { tg?.showAlert?.('Билд не найден'); return; }
   currentBuildId = b.id;
 
+  // прокинуть id в кнопку удаления (надёжная привязка)
+  if (deleteBuildBtn) {
+    deleteBuildBtn.dataset.id = String(b.id);
+  }
+
   buildDetailTitle.textContent = b.name || 'Билд';
   vd_class.textContent = b.class || '—';
   vd_tags.textContent  = (b.tags && b.tags.length) ? b.tags.join('\n') : '—';
@@ -666,20 +671,37 @@ function openBuildDetail(id) {
   showScreen('buildDetail');
 }
 
-// Кнопки действий на детальной странице билда (привязка)
+// === Кнопки действий на детальной странице билда (привязка)
 publishBuildBtn?.addEventListener('click', () => {
   hapticOK();
-  tg?.showPopup?.({ title: 'Публикация', message: 'В демо-версии публикация не реализована.', buttons: [{ type:'ok' }] });
+  tg?.showPopup?.({
+    title: 'Публикация',
+    message: 'В демо-версии публикация не реализована.',
+    buttons: [{ type: 'ok' }]
+  });
 });
-deleteBuildBtn?.addEventListener('click', handleDeleteCurrentBuild);
 
-function handleDeleteCurrentBuild() {
-  if (!currentBuildId) return;
-  const rest = loadBuilds().filter((b) => String(b.id) !== String(currentBuildId));
+// Обработчик удаления читает id из data-id (fallback — currentBuildId)
+deleteBuildBtn?.addEventListener('click', () => {
+  const idFromBtn = deleteBuildBtn?.dataset?.id;
+  const id = idFromBtn ?? currentBuildId;
+  if (!id) { tg?.showAlert?.('Не удалось определить билд для удаления.'); return; }
+  deleteBuildById(String(id));
+});
+
+// Универсальная функция удаления
+function deleteBuildById(id) {
+  const rest = loadBuilds().filter((b) => String(b.id) !== String(id));
   saveBuilds(rest);
   renderMyBuilds();
   tg?.showPopup?.({ title: 'Удалено', message: 'Билд удалён из списка.', buttons: [{ type:'ok' }] });
   showScreen('builds');
+}
+
+// (обёртка на случай использования в других местах)
+function handleDeleteCurrentBuild() {
+  if (!currentBuildId) { tg?.showAlert?.('Не выбран билд для удаления.'); return; }
+  deleteBuildById(String(currentBuildId));
 }
 
 // Лайтбокс

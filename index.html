@@ -8,7 +8,7 @@
     />
     <title>Tsushima.Ru</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="style.css?v=4" />
+    <link rel="stylesheet" href="style.css?v=5" />
   </head>
 
   <body>
@@ -197,12 +197,11 @@
               ></textarea>
             </div>
 
-            <!-- Для браузера своя кнопка (в Telegram скрыта) -->
-            <div class="actions only-browser">
-              <button type="submit" class="btn primary" id="sendProofBtn">
-                Отправить заявку
-              </button>
-            </div>
+          <!-- Кнопка под карточкой формы (как на «Профиль») -->
+          <div class="actions-bar">
+            <button type="button" id="proofSubmitBtn" class="btn primary wide">Отправить</button>
+          </div>
+          <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
 
             <!-- В Telegram JS добавит широкую кнопку отправки -->
           </form>
@@ -383,6 +382,6 @@
       <img id="lightboxImg" alt="Просмотр изображения" />
     </div>
 
-    <script src="app.js?v=4" defer></script>
+    <script src="app.js?v=5" defer></script>
   </body>
 </html>

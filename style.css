@@ -172,11 +172,11 @@ body {
   font-size:16px;
 }
 .btn.primary { background:var(--accent); border-color:transparent; color:#00131f; font-weight:700; }
-.btn.danger { background:#ff4d4f; border-color:transparent; color:#00131f; font-weight:700; }
-.btn.ghost { opacity:.95; }
-.btn.wide { width:100%; }
-.btn:active { transform:translateY(1px); }
-.only-browser { display:block; }
+.btn.danger  { background:#ff4d4f; border-color:transparent; color:#00131f; font-weight:700; }
+.btn.ghost   { opacity:.95; }
+.btn.wide    { width:100%; }
+.btn:active  { transform:translateY(1px); }
+.only-browser{ display:block; }
 
 /* Home */
 .home .brand { display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:12px; }
@@ -189,7 +189,7 @@ body {
   background:transparent; color:var(--tg-tx); font-size:16px; cursor:pointer; text-decoration:none; min-height:50px;
 }
 .big-btn.primary { background:var(--accent); border-color:transparent; color:#00131f; font-weight:700; }
-.big-btn.ghost { opacity:.95; }
+.big-btn.ghost   { opacity:.95; }
 
 /* Нижние кнопки — одинаковый зазор до низа */
 .footer-actions { margin:8px 0 calc(28px + var(--safe-bottom)); }
@@ -197,7 +197,9 @@ body {
 #submitInlineBtn { margin-bottom:8px; }
 
 /* List */
-.list-buttons { display:grid; gap:8px; }
+.list-buttons {
+  display:grid; gap:8px;
+}
 .list-btn {
   display:flex; justify-content:space-between; align-items:center;
   padding:12px 14px; border:1px solid var(--stroke); border-radius:12px;
@@ -211,7 +213,7 @@ body {
 .desc-list li { line-height:1.35; }
 #trophiesScreen .value { white-space:pre-line; line-height:1.15; }
 
-/* Узкая прозрачная кнопка-строка "＋ Прикрепить" (один плюс — без ::before) */
+/* Узкая прозрачная кнопка-строка "＋ Прикрепить" */
 .fileline-btn{
   width:100%;
   min-height:44px;
@@ -233,9 +235,12 @@ body {
 .thumbs-row{
   display:flex;
   gap:6px;
-  margin-top:8px;
-  flex-wrap:nowrap;        /* один ряд */
-  overflow:visible;        /* без горизонтального скролла, размеры подобраны */
+  margin-top:6px;          /* небольшой зазор, когда превью есть */
+  flex-wrap:nowrap;
+  overflow:visible;
+}
+.thumbs-row:empty{
+  display:none;            /* когда нет миниатюр — нет зазора */
 }
 .thumbs-row .preview-item,
 .thumbs-row .preview-more{
@@ -250,6 +255,7 @@ body {
   overflow:hidden;
   font-size:18px;
   flex:0 0 auto;
+  position:relative;       /* для overlay-крестика */
 }
 .thumbs-row .preview-item img{
   width:100%; height:100%;
@@ -258,6 +264,24 @@ body {
 .thumbs-row .preview-more{
   border:1px dashed var(--stroke);
   font-weight:700; opacity:.9;
+}
+
+/* Полупрозрачный крестик на миниатюре (понятно, что можно удалить) */
+.preview-item.removable::after{
+  content:"✕";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;            /* примерно «на пол миниатюры» */
+  color:rgba(255,255,255,.85);
+  background:rgba(0,0,0,.25);
+  opacity:.35;               /* всегда слегка видно */
+  pointer-events:none;       /* клики идут в сам tile */
+}
+.preview-item.removable:active::after{
+  opacity:.6;
 }
 
 /* Старый грид превью (если где-то нужен) */
@@ -272,6 +296,10 @@ body {
   display:flex; align-items:center; justify-content:center;
   border:1px dashed var(--stroke); border-radius:10px; height:80px; font-weight:700; opacity:.9;
 }
+
+/* Уплотняем форму заявки: меньше зазоров до «Комментарий» */
+#proofForm { gap: 8px; }
+#filePreview:empty { display:none; margin-top:0; }
 
 /* Ошибки и shake */
 .error { border-color:#ff4444!important; }
@@ -343,28 +371,5 @@ button, .btn, .big-btn, .list-btn, .chip-btn, .build-item, .upload-box {
   -webkit-tap-highlight-color:transparent; touch-action:manipulation;
 }
 
-/* В Telegram скрываем браузерную кнопку отправки */
+/* В Telegram скрываем браузерную кнопку отправки (если где-то осталась) */
 html.tg .only-browser { display:none; }
-
-/* --- Уплотняем форму заявки: меньше зазоров до комментария --- */
-#proofForm { 
-  gap: 8px;              /* было 12px от .form — делаем компактнее только тут */
-}
-
-/* Если превью пустое — вообще не показываем и не добавляем отступ */
-#filePreview:empty,
-.thumbs-row:empty { 
-  display: none; 
-  margin-top: 0;
-}
-
-/* Когда превью появится — делаем небольшой зазор, не большой */
-#filePreview,
-.thumbs-row { 
-  margin-top: 6px;       /* было больше — уменьшаем вертикальный отступ */
-}
-
-/* На всякий случай: сама кнопка-строка без лишнего внешнего отступа */
-.fileline-btn { 
-  margin-bottom: 0; 
-}

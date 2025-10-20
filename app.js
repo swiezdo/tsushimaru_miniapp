@@ -17,9 +17,11 @@ const tg = window.Telegram?.WebApp || null;
   } catch (e) {}
 })();
 
-function hapticOK()  { try { tg?.HapticFeedback?.notificationOccurred('success'); } catch {} }
-function hapticERR() { try { tg?.HapticFeedback?.notificationOccurred('error'); }   catch {} }
-function hapticTap() { try { tg?.HapticFeedback?.impactOccurred('light'); }         catch {} }
+// ---------------- Haptics OFF (полностью для наших кнопок)
+// (Telegram BackButton — нативный, не трогаем)
+function hapticOK()  {}
+function hapticERR() {}
+function hapticTap() {}
 
 function $(id) { return document.getElementById(id); }
 function scrollTopSmooth() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
@@ -33,21 +35,9 @@ function applyTopInset() {
 }
 window.addEventListener('resize', applyTopInset);
 
-// Подсветка при тапе + тактильная отдача
+// Подсветка при тапе — ОТКЛЮЧЕНА
 function addTapHighlight(selector) {
-  const els = document.querySelectorAll(selector);
-  els.forEach((el) => {
-    if (el.dataset.tapbound) return;
-    el.dataset.tapbound = '1';
-
-    const down = () => { el.classList.add('tap-hi'); hapticTap(); };
-    const up   = () => { el.classList.remove('tap-hi'); };
-
-    el.addEventListener('pointerdown', down);
-    el.addEventListener('pointerup',   up);
-    el.addEventListener('pointerleave',up);
-    el.addEventListener('blur',        up);
-  });
+  // Ничего не делаем: подсветка выключена глобально
 }
 
 // ---------------- Экранная навигация ----------------
@@ -83,7 +73,6 @@ function showScreen(name) {
   if (tg) {
     if (['profile','trophies','builds','buildCreate','buildDetail','trophyDetail'].includes(name)) {
       tg.BackButton.show();
-      // ранний вариант добавлял кнопку в форму — теперь кнопка вне формы, отдельная, так что ничего не делаем
     } else {
       tg.BackButton.hide();
     }
@@ -743,7 +732,7 @@ function openBuildDetail(id) {
   showScreen('buildDetail');
 }
 
-// === Кнопки действий на детальной странице билда (привязка)
+// === Кнопки действий на детальной странице билда
 publishBuildBtn?.addEventListener('click', () => {
   hapticOK();
   tg?.showPopup?.({
@@ -800,6 +789,6 @@ lightbox?.addEventListener('click', closeLightbox);
   refreshProfileView();
   renderMyBuilds();
 
-  // Хайлайт для основных кликабельных элементов
+  // Хайлайт для основных кликабельных элементов — вызов теперь без эффекта
   addTapHighlight('.btn, .big-btn, .list-btn, .build-item, .chip-btn');
 })();

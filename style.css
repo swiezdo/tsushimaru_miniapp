@@ -345,3 +345,26 @@ button, .btn, .big-btn, .list-btn, .chip-btn, .build-item, .upload-box {
 
 /* В Telegram скрываем браузерную кнопку отправки */
 html.tg .only-browser { display:none; }
+
+/* --- Уплотняем форму заявки: меньше зазоров до комментария --- */
+#proofForm { 
+  gap: 8px;              /* было 12px от .form — делаем компактнее только тут */
+}
+
+/* Если превью пустое — вообще не показываем и не добавляем отступ */
+#filePreview:empty,
+.thumbs-row:empty { 
+  display: none; 
+  margin-top: 0;
+}
+
+/* Когда превью появится — делаем небольшой зазор, не большой */
+#filePreview,
+.thumbs-row { 
+  margin-top: 6px;       /* было больше — уменьшаем вертикальный отступ */
+}
+
+/* На всякий случай: сама кнопка-строка без лишнего внешнего отступа */
+.fileline-btn { 
+  margin-bottom: 0; 
+}

@@ -17,6 +17,38 @@ const tg = window.Telegram?.WebApp || null;
   } catch (e) {}
 })();
 
+// ---------------- BackButton: точечный фикс ----------------
+const _tgBack = tg?.BackButton || null;
+let _backHandlerRef = null;
+
+function enableBack(handler) {
+  if (!_tgBack) return;
+  // снять старый, если есть
+  if (_backHandlerRef) {
+    try { _tgBack.offClick(_backHandlerRef); } catch {}
+  }
+  // сохранить единственную ссылку
+  _backHandlerRef = () => {
+    try { handler?.(); } catch {}
+    try { tg?.HapticFeedback?.impactOccurred?.('light'); } catch {}
+  };
+  try { _tgBack.onClick(_backHandlerRef); } catch {}
+  try { _tgBack.show(); } catch {}
+}
+
+function disableBack() {
+  if (!_tgBack) return;
+  if (_backHandlerRef) {
+    try { _tgBack.offClick(_backHandlerRef); } catch {}
+    _backHandlerRef = null;
+  }
+  try { _tgBack.hide(); } catch {}
+}
+
+window.addEventListener('beforeunload', () => {
+  disableBack();
+});
+
 // ---------------- Haptics OFF (заглушки) ----------------
 function hapticOK()  {}
 function hapticERR() {}
@@ -65,20 +97,25 @@ function setTopbar(visible, title) {
   }
 }
 
+// Маппинг «куда возвращаться» для BackButton
+function getBackHandlerFor(screenName) {
+  switch (screenName) {
+    case 'profile':      return () => showScreen('home');
+    case 'trophies':     return () => showScreen('home');
+    case 'trophyDetail': return () => showScreen('trophies');
+    case 'builds':       return () => showScreen('home');
+    case 'buildCreate':  return () => showScreen('builds');
+    case 'buildDetail':  return () => showScreen('builds');
+    default:             return null; // на home — нет назад
+  }
+}
+
 function showScreen(name) {
   Object.values(screens).forEach((el) => el && el.classList.add('hidden'));
   const el = screens[name];
   if (el) el.classList.remove('hidden');
 
-  if (tg) {
-    if (['profile','trophies','builds','buildCreate','buildDetail','trophyDetail'].includes(name)) {
-      tg.BackButton.show();
-      // кнопки внутри не добавляем
-    } else {
-      tg.BackButton.hide();
-    }
-  }
-
+  // Topbar заголовки (как было)
   if (name === 'home')             setTopbar(false);
   else if (name === 'profile')     setTopbar(true, 'Профиль');
   else if (name === 'trophies')    setTopbar(true, 'Трофеи');
@@ -86,6 +123,14 @@ function showScreen(name) {
   else if (name === 'builds')      setTopbar(true, 'Билды');
   else if (name === 'buildCreate') setTopbar(true, 'Создать билд');
   else if (name === 'buildDetail') setTopbar(true, 'Билд');
+
+  // BackButton: строго управляем привязкой
+  const handler = getBackHandlerFor(name);
+  if (handler) {
+    enableBack(handler);
+  } else {
+    disableBack();
+  }
 
   scrollTopSmooth();
 }
@@ -701,6 +746,9 @@ function openBuildDetail(id) {
 }
 
 // Кнопки действий (билд)
+const publishBuildBtn  = $('publishBuildBtn');
+const deleteBuildBtn   = $('deleteBuildBtn');
+
 publishBuildBtn?.addEventListener('click', () => {
   tg?.showPopup?.({
     title: 'Публикация',

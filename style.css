@@ -128,7 +128,6 @@ body {
   align-items:center;
   justify-content:center;
 }
-
 .shots-two .shot-thumb img {
   width:100%;
   height:100%;
@@ -247,7 +246,67 @@ body {
 .desc-list li { line-height:1.35; }
 #trophiesScreen .value { white-space:pre-line; line-height:1.15; }
 
-/* Превью файлов (трофеи) — компактнее, чем в билдах */
+/* Узкая прозрачная кнопка-строка "＋ Прикрепить" (в духе Telegram) */
+.fileline-btn{
+  width:100%;
+  min-height:44px;
+  border:1px dashed var(--stroke);
+  border-radius:12px;
+  background:transparent;
+  color:var(--tg-tx);
+  font-size:15px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  cursor:pointer;
+}
+.fileline-btn:active{ transform:translateY(1px); }
+.fileline-btn::before{
+  content:"＋";
+  display:inline-block;
+  font-weight:700;
+  line-height:1;
+  opacity:.95;
+}
+
+/* Превью файлов (трофеи) — компактные, 5 в один ряд */
+.thumbs-row{
+  display:flex;
+  gap:6px;
+  margin-top:8px;
+  flex-wrap:nowrap;        /* один ряд */
+  overflow:visible;        /* без горизонтального скролла, размеры подобраны под 5 шт */
+}
+.thumbs-row .preview-item,
+.thumbs-row .preview-more{
+  width:56px;
+  height:56px;            /* меньше, чем 88px из билдов */
+  border-radius:10px;
+  border:1px solid var(--stroke);
+  background:rgba(255,255,255,0.06);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  font-size:18px;
+  flex:0 0 auto;          /* фиксированный квадратик */
+}
+.thumbs-row .preview-item img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  border-radius:inherit;
+}
+.thumbs-row .preview-more{
+  border:1px dashed var(--stroke);
+  font-weight:700;
+  opacity:.9;
+}
+
+/* Старый грид превью, оставляем на случай переиспользования где-то ещё */
 .preview-grid {
   display:grid;
   grid-template-columns:repeat(4, 1fr);
@@ -255,7 +314,7 @@ body {
 }
 .preview-item {
   width:100%;
-  height:80px;                  /* меньше, чем 88px в билдах */
+  height:80px;
   border-radius:10px;
   border:1px solid var(--stroke);
   overflow:hidden;

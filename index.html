@@ -175,27 +175,18 @@
           <form id="proofForm" class="form">
             <div class="input">
               <label for="proofFiles">Прикрепите скриншоты/видео</label>
-
+            
               <!-- Скрытый инпут -->
-              <input
-                id="proofFiles"
-                type="file"
-                multiple
-                accept="image/*,video/*"
-                style="display:none"
-              />
-
-              <!-- Узкая прямоугольная кнопка запуска выбора -->
-              <button
-                type="button"
-                id="proofUploadBtn"
-                class="upload-bar"
-                aria-label="Добавить файлы"
-              >＋</button>
+              <input id="proofFiles" type="file" multiple accept="image/*,video/*" style="display:none" />
+            
+              <!-- Узкая прозрачная кнопка с контуром -->
+              <button type="button" id="proofAddBtn" class="fileline-btn" aria-label="Добавить файлы">
+                ＋ Прикрепить
+              </button>
             </div>
-
-            <!-- Превью выбранных файлов (микро-миниатюры) -->
-            <div id="filePreview" class="preview-grid preview-sm"></div>
+            
+            <!-- Компактные превью в один ряд -->
+            <div id="filePreview" class="thumbs-row"></div>
 
             <div class="input">
               <label for="commentText">Комментарий (необязательно)</label>

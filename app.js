@@ -25,6 +25,43 @@ function hapticTap() {}
 function $(id) { return document.getElementById(id); }
 function scrollTopSmooth() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
+// --- Smart focus & scroll into view (avoid keyboard overlap) ---
+function smartScrollIntoView(el){
+  if (!el) return;
+  try { el.focus({ preventScroll: true }); } catch(_) { try{ el.focus(); }catch{} }
+  const behavior = 'smooth';
+  const pad = 16;
+  const rect = el.getBoundingClientRect();
+
+  if (window.visualViewport) {
+    const vv = window.visualViewport;
+    const topOk = rect.top >= pad;
+    const bottomOk = rect.bottom <= (vv.height - pad);
+    if (!topOk || !bottomOk) {
+      const targetY = rect.top + window.scrollY - Math.max(0, (vv.height/2 - rect.height/2));
+      window.scrollTo({ top: targetY, behavior });
+    }
+  } else {
+    el.scrollIntoView({ block: 'center', behavior });
+  }
+}
+
+// Delegate focus handling for all inputs/textareas
+document.addEventListener('focusin', (e) => {
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) {
+    setTimeout(() => smartScrollIntoView(t), 50);
+  }
+});
+
+// Keep focused field visible when keyboard opens/resizes
+window.visualViewport?.addEventListener('resize', () => {
+  const a = document.activeElement;
+  if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) {
+    smartScrollIntoView(a);
+  }
+});
+
 // ---------------- Визуальные инклюды и отступы ----------------
 const TOP_OFFSET_PX = 64; // запас под верхние элементы Telegram
 function applyTopInset() {
@@ -192,16 +229,18 @@ if (profileForm) {
     const okPSN  = isPSNOk();
 
     if (!okName || !okPSN) {
-      // Собираем сообщения как в форме трофея
       const msgs = [];
-      if (!okName) { msgs.push('Нужно указать Имя.'); shake(nameInput); }
+      let firstBad = null;
+      if (!okName) { msgs.push('Нужно указать Имя.'); shake(nameInput); firstBad = firstBad || nameInput; }
       if (!okPSN) {
         const val = (psnInput?.value || '').trim();
         if (!val) msgs.push('Нужно указать Ник PlayStation.');
         else msgs.push('Неверный формат ника PlayStation (3–16: A–Z, a–z, 0–9, -, _).');
         shake(psnInput);
+        if (!firstBad) firstBad = psnInput;
       }
-      tg?.showPopup?.({ title: 'Ошибка', message: msgs.join(''), buttons: [{ type: 'ok' }] });
+      if (firstBad) smartScrollIntoView(firstBad);
+      tg?.showPopup?.({ title: 'Ошибка', message: msgs.join('\n'), buttons: [{ type: 'ok' }] });
       return;
     }
 
@@ -385,6 +424,7 @@ async function submitProof() {
   if (filesCount === 0 || !comment) {
     if (!filesCount) shake(previewEl || proofAddBtn || proofFilesEl);
     if (!comment)    shake(commentEl);
+    if (!comment && commentEl) smartScrollIntoView(commentEl);
     tg?.showPopup?.({ title: 'Ошибка', message: 'Добавьте файл и комментарий.', buttons: [{ type: 'ok' }] });
     return;
   }
@@ -745,7 +785,7 @@ if (buildForm) {
     const tags  = activeValues(tagsChipsEl);
     const desc  = (buildDescEl?.value || '').trim();
 
-    if (!name)   { shake(buildNameEl); buildNameEl?.focus(); return; }
+    if (!name)   { shake(buildNameEl); smartScrollIntoView(buildNameEl); return; }
     if (!klass)  { shake(classChipsEl); return; }
     if (!shot1Data || !shot2Data) { shake(shotsTwo); return; }
 

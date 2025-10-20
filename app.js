@@ -17,10 +17,12 @@ const tg = window.Telegram?.WebApp || null;
   } catch (e) {}
 })();
 
-function hapticOK()  { try { tg?.HapticFeedback?.notificationOccurred('success'); } catch {} }
-function hapticERR() { try { tg?.HapticFeedback?.notificationOccurred('error'); }   catch {} }
-function hapticTap() { try { tg?.HapticFeedback?.impactOccurred('light'); }         catch {} }
+// ---------------- Haptics OFF (заглушки) ----------------
+function hapticOK()  {}
+function hapticERR() {}
+function hapticTap() {}
 
+// Утилиты
 function $(id) { return document.getElementById(id); }
 function scrollTopSmooth() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
@@ -33,21 +35,9 @@ function applyTopInset() {
 }
 window.addEventListener('resize', applyTopInset);
 
-// Подсветка при тапе + тактильная отдача
-function addTapHighlight(selector) {
-  const els = document.querySelectorAll(selector);
-  els.forEach((el) => {
-    if (el.dataset.tapbound) return;
-    el.dataset.tapbound = '1';
-
-    const down = () => { el.classList.add('tap-hi'); hapticTap(); };
-    const up   = () => { el.classList.remove('tap-hi'); };
-
-    el.addEventListener('pointerdown', down);
-    el.addEventListener('pointerup',   up);
-    el.addEventListener('pointerleave',up);
-    el.addEventListener('blur',        up);
-  });
+// Подсветка при тапе (ОТКЛЮЧЕНО — заглушка)
+function addTapHighlight(_selector) {
+  // no-op
 }
 
 // ---------------- Экранная навигация ----------------
@@ -83,7 +73,7 @@ function showScreen(name) {
   if (tg) {
     if (['profile','trophies','builds','buildCreate','buildDetail','trophyDetail'].includes(name)) {
       tg.BackButton.show();
-      // ранний вариант добавлял кнопку в форму — теперь кнопка вне формы, отдельная, так что ничего не делаем
+      // кнопки внутри не добавляем
     } else {
       tg.BackButton.hide();
     }
@@ -129,7 +119,6 @@ function renderChips(container, values, { single = false, onChange } = {}) {
       } else {
         b.classList.toggle('active');
       }
-      hapticTap();
       onChange?.();
     });
     container.appendChild(b);
@@ -205,7 +194,7 @@ if (profileForm) {
 
   profileForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (!validatePSN()) { hapticERR(); return; }
+    if (!validatePSN()) { return; }
 
     if (v_real_name) v_real_name.textContent = (profileForm.real_name?.value || '').trim() || '—';
     if (v_psn)       v_psn.textContent       = (profileForm.psn?.value || '').trim()       || '—';
@@ -213,7 +202,6 @@ if (profileForm) {
 
     if (tg?.showPopup) {
       tg.showPopup({ title: 'Профиль обновлён', message: 'Данные сохранены.', buttons: [{ type: 'ok' }] });
-      hapticOK();
     }
     scrollTopSmooth();
   });
@@ -251,10 +239,9 @@ function renderTrophyList(data) {
     btn.addEventListener('click', () => openTrophyDetail(key));
     trophyListEl.appendChild(btn);
   });
-
-  addTapHighlight('#trophyList .list-btn');
 }
 
+// --- Подача заявки на трофей
 const proofFormEl     = $('proofForm');
 const proofFilesEl    = $('proofFiles');       // скрытый input[type=file]
 const proofSubmitBtn  = $('proofSubmitBtn');   // ВНЕ формы — общий actions-bar
@@ -262,10 +249,9 @@ const commentEl       = $('commentText');
 const previewEl       = $('filePreview');
 const proofAddBtn     = $('proofAddBtn');      // узкая кнопка-строка «＋ Прикрепить»
 
-// Локальный список выбранных файлов (мы контролируем превью и отправку)
+// Локальный список выбранных файлов
 let proofSelected = []; // Array<File>
 
-// Кнопка «＋ Прикрепить»
 proofAddBtn?.addEventListener('click', () => {
   try { proofFilesEl.value = ''; } catch {}
   proofFilesEl?.click();
@@ -299,7 +285,6 @@ function renderProofPreview() {
     tile.className = 'preview-item removable'; // overlay «×»
     tile.title = 'Нажмите, чтобы удалить';
 
-    // Контент
     if (file.type.startsWith('image/')) {
       const img = document.createElement('img');
       img.src = URL.createObjectURL(file);
@@ -311,10 +296,8 @@ function renderProofPreview() {
       tile.textContent = '📄';
     }
 
-    // Удаление по тапу
     tile.addEventListener('click', () => {
       proofSelected.splice(idx, 1);
-      hapticTap();
       renderProofPreview();
     });
 
@@ -371,7 +354,6 @@ function shake(el) {
   el.classList.remove('shake');
   void el.offsetWidth;
   el.classList.add('shake');
-  hapticERR();
 }
 
 async function submitProof() {
@@ -379,7 +361,7 @@ async function submitProof() {
   submitting = true;
   setTimeout(() => (submitting = false), 1200);
 
-  const filesCount = proofSelected.length; // используем наш список
+  const filesCount = proofSelected.length;
   const comment    = (commentEl?.value || '').trim();
 
   if (filesCount === 0 || !comment) {
@@ -389,39 +371,23 @@ async function submitProof() {
     return;
   }
 
-  // тут была бы отправка на сервер; в демо просто показываем ok
-  hapticOK();
   tg?.showPopup?.({ title: 'Заявка отправлена', message: '✅ Модераторы рассмотрят вашу заявку.' });
   resetProofForm();
   showScreen('trophies');
 }
 
-// Кнопка «Отправить» — теперь вне формы, в общем actions-bar
-proofSubmitBtn?.addEventListener('pointerdown', () => hapticTap());
+// Кнопка «Отправить» — вне формы
 proofSubmitBtn?.addEventListener('click', (e) => { e.preventDefault?.(); submitProof(); });
 
-// Защита от случайной отправки самой form (Enter в textarea и т.п.)
+// Защита от случайной отправки form
 if (proofFormEl) {
   proofFormEl.addEventListener('submit', (e) => { e.preventDefault(); submitProof(); });
-}
-
-// BackButton Telegram
-if (tg) {
-  tg.onEvent('backButtonClicked', () => {
-    if (isVisible('buildCreate')) { showScreen('builds'); return; }
-    if (isVisible('buildDetail')) { showScreen('builds'); return; }
-    if (isVisible('trophyDetail')) { resetProofForm(); showScreen('trophies'); return; }
-    if (isVisible('profile') || isVisible('trophies') || isVisible('builds')) { showScreen('home'); return; }
-    showScreen('home');
-  });
 }
 
 // ---------------- Главное меню ----------------
 $('openProfileBtn')?.addEventListener('click', () => showScreen('profile'));
 $('trophiesBtn')?.addEventListener('click', () => showScreen('trophies'));
 $('buildsBtn')?.addEventListener('click', () => { renderMyBuilds(); showScreen('builds'); });
-
-addTapHighlight('.big-btn');
 
 // ---------------- БИЛДЫ ----------------
 const LS_KEY_BUILDS = 'tsu_builds_v1';
@@ -558,7 +524,6 @@ function bindShotInput(input, idx){
     const file = input.files && input.files[0];
     if(!file) return;
     try{
-      // Сжатие: длинная сторона до 1280px, качество ~0.7
       const data = await compressImageFile(file, { maxEdge: 1280, quality: 0.7 });
 
       const targetEl =
@@ -573,7 +538,6 @@ function bindShotInput(input, idx){
       }
 
       if(idx === '1') shot1Data = data; else shot2Data = data;
-      hapticTap();
     }catch(_){
       shake(shotsTwo);
     }
@@ -599,7 +563,6 @@ function saveBuilds(arr){
       message: 'Не удалось сохранить билд: лимит хранения исчерпан. Уменьшите размер скриншотов или удалите старые билды.',
       buttons: [{ type:'ok' }]
     });
-    hapticERR();
     return false;
   }
 }
@@ -638,8 +601,6 @@ function renderMyBuilds() {
     row.addEventListener('click', () => openBuildDetail(b.id));
     myBuildsList.appendChild(row);
   });
-
-  addTapHighlight('#myBuildsList .build-item');
 }
 
 // Открыть «Создать билд»
@@ -647,7 +608,6 @@ createBuildBtn?.addEventListener('click', () => {
   resetBuildForm();
   showScreen('buildCreate');
 });
-createBuildBtn?.addEventListener('pointerdown', () => hapticTap());
 
 // Сброс формы билда
 function resetBuildForm() {
@@ -668,7 +628,6 @@ function resetBuildForm() {
 }
 
 // Кнопка «Создать»
-buildSubmitBtn?.addEventListener('pointerdown', () => hapticTap());
 buildSubmitBtn?.addEventListener('click', () => buildForm?.requestSubmit());
 
 // Создание билда
@@ -703,7 +662,6 @@ if (buildForm) {
       return;
     }
 
-    hapticOK();
     tg?.showPopup?.({ title: 'Билд создан', message: 'Сохранено локально (макет, без сервера).', buttons: [{ type:'ok' }] });
 
     renderMyBuilds();
@@ -718,7 +676,6 @@ function openBuildDetail(id) {
   if (!b) { tg?.showAlert?.('Билд не найден'); return; }
   currentBuildId = b.id;
 
-  // прокинуть id в кнопку удаления (надёжная привязка)
   if (deleteBuildBtn) {
     deleteBuildBtn.dataset.id = String(b.id);
   }
@@ -743,9 +700,8 @@ function openBuildDetail(id) {
   showScreen('buildDetail');
 }
 
-// === Кнопки действий на детальной странице билда (привязка)
+// Кнопки действий (билд)
 publishBuildBtn?.addEventListener('click', () => {
-  hapticOK();
   tg?.showPopup?.({
     title: 'Публикация',
     message: 'В демо-версии публикация не реализована.',
@@ -753,7 +709,6 @@ publishBuildBtn?.addEventListener('click', () => {
   });
 });
 
-// Обработчик удаления читает id из data-id (fallback — currentBuildId)
 deleteBuildBtn?.addEventListener('click', () => {
   const idFromBtn = deleteBuildBtn?.dataset?.id;
   const id = idFromBtn ?? currentBuildId;
@@ -761,7 +716,6 @@ deleteBuildBtn?.addEventListener('click', () => {
   deleteBuildById(String(id));
 });
 
-// Универсальная функция удаления
 function deleteBuildById(id) {
   const rest = loadBuilds().filter((b) => String(b.id) !== String(id));
   if (!saveBuilds(rest)) return;
@@ -770,7 +724,6 @@ function deleteBuildById(id) {
   showScreen('builds');
 }
 
-// (обёртка на случай использования в других местах)
 function handleDeleteCurrentBuild() {
   if (!currentBuildId) { tg?.showAlert?.('Не выбран билд для удаления.'); return; }
   deleteBuildById(String(currentBuildId));
@@ -800,6 +753,6 @@ lightbox?.addEventListener('click', closeLightbox);
   refreshProfileView();
   renderMyBuilds();
 
-  // Хайлайт для основных кликабельных элементов
+  // Подсветки тапов выключены (заглушка)
   addTapHighlight('.btn, .big-btn, .list-btn, .build-item, .chip-btn');
 })();

@@ -278,7 +278,7 @@ const proofFilesEl = $('proofFiles');
 const commentEl    = $('commentText');
 const previewEl    = $('filePreview');
 
-// NEW: кнопка-строка «＋ Прикрепить» (если присутствует в разметке)
+// NEW: кнопка-строка «＋ Прикрепить»
 $('proofAddBtn')?.addEventListener('click', () => {
   try { proofFilesEl.value = ''; } catch {}
   proofFilesEl?.click();
@@ -318,14 +318,14 @@ if (commentEl) {
   setTimeout(autoResize, 0);
 }
 
-// превью файлов (трофеи) — максимум 5, последняя плитка показывает "+N"
+// превью файлов (трофеи) — максимум 4, 5-я плитка показывает "+N"
 if (proofFilesEl && previewEl) {
   proofFilesEl.addEventListener('change', () => {
     previewEl.innerHTML = '';
     const files = Array.from(proofFilesEl.files || []);
     if (!files.length) return;
 
-    const limit = 5;
+    const limit = 4; // показываем максимум 4 миниатюры
     files.slice(0, limit).forEach((file) => {
       const div = document.createElement('div');
       div.className = 'preview-item';
@@ -345,7 +345,7 @@ if (proofFilesEl && previewEl) {
     if (files.length > limit) {
       const more = document.createElement('div');
       more.className = 'preview-more';
-      more.textContent = `+${files.length - limit}`;
+      more.textContent = `+${files.length - limit}`; // 5-я плитка — +N
       previewEl.appendChild(more);
     }
   });

@@ -523,6 +523,10 @@ const createBuildBtn   = $('createBuildBtn');
 const buildForm        = $('buildForm');
 const buildNameEl      = $('build_name');
 const buildDescEl      = $('build_desc');
+
+// Хаптик Tap при фокусе на полях создания билда
+buildNameEl?.addEventListener('focus', ()=>{ if (__shouldHaptic()) hapticTap(); }, {passive:true});
+buildDescEl?.addEventListener('focus', ()=>{ if (__shouldHaptic()) hapticTap(); }, {passive:true});
 const classChipsEl     = $('classChips');
 const tagsChipsEl      = $('tagsChips');
 
@@ -621,6 +625,7 @@ function renderShotThumb(idx, src) {
   img.src = src;
   btn.appendChild(img);
   btn.addEventListener('click', () => {
+    if (__shouldHaptic()) hapticTap();
     const input = getShotInputByIdx(String(idx));
     if (!input) return;
     try { input.value = ''; } catch {}
@@ -636,6 +641,7 @@ let shot2Data = null;
 // Делегирование клика по квадратам
 if (shotsTwo) {
   shotsTwo.addEventListener('click', (e) => {
+    if (__shouldHaptic()) hapticTap();
     const box = e.target.closest('.upload-box');
     if (!box) return;
     const idx = box.dataset.idx;
@@ -812,7 +818,7 @@ function resetBuildForm() {
   if (buildDescEl) buildDescEl.style.height = 'auto';
 }
 
-buildSubmitBtn?.addEventListener('pointerdown', () => { if (__shouldHaptic()) hapticTap(); });
+buildSubmitBtn?.addEventListener('pointerdown', () => { /* no haptic here; handled on result (OK/ERR) */ });
 buildSubmitBtn?.addEventListener('click', () => buildForm?.requestSubmit());
 
 if (buildForm) {
@@ -921,7 +927,7 @@ publishBuildBtn?.addEventListener('click', () => {
     savePublicBuilds(rest);
     updatePublishButton(me.id);
     renderAllBuilds();
-    tg?.showPopup?.({ title:'Скрыто', message:'Билд скрыт из списка «Все билды».', buttons:[{type:'ok'}] });
+    tg?.showPopup?.({ title:'Скрыто', message:'Билд успешно снят с публикации».', buttons:[{type:'ok'}] });
     return;
   }
 
@@ -943,7 +949,7 @@ publishBuildBtn?.addEventListener('click', () => {
   savePublicBuilds(pubs);
   updatePublishButton(me.id);
   renderAllBuilds();
-  tg?.showPopup?.({ title:'Опубликовано', message:'Билд добавлен в «Все билды».', buttons:[{type:'ok'}] });
+  tg?.showPopup?.({ title:'Опубликовано', message:'Билд успешно опубликован».', buttons:[{type:'ok'}] });
 });
 
 // Подтверждение удаления
@@ -979,7 +985,7 @@ deleteBuildBtn?.addEventListener('click', async () => {
   const id = idFromBtn ?? currentBuildId;
   if (!id) { tg?.showAlert?.('Не удалось определить билд для удаления.'); return; }
 
-  const ok = await tgConfirm('Удалить билд?', 'Вы уверены, что хотите удалить этот билд?');
+  const ok = await tgConfirm('Удалить билд', 'Вы уверены, что хотите удалить этот билд?');
   if (!ok) return;
 
   deleteBuildById(String(id));

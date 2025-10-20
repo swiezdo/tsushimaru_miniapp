@@ -1,16 +1,19 @@
-<!-- 1 -->
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <title>Tsushima.Ru</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css" />
   </head>
+
   <body>
     <main class="container">
-      <!-- Шапка -->
+      <!-- ====== TOPBAR ====== -->
       <header class="topbar">
         <div class="title" id="appTitle">Tsushima.Ru</div>
         <div id="userChip" class="chip">Гость</div>
@@ -24,7 +27,12 @@
         </div>
 
         <div class="home-buttons">
-          <a class="big-btn primary" href="https://t.me/+ZFiVYVrz-PEzYjBi" target="_blank" rel="noopener">
+          <a
+            class="big-btn primary"
+            href="https://t.me/+ZFiVYVrz-PEzYjBi"
+            target="_blank"
+            rel="noopener"
+          >
             🏯 Группа Tsushima.Ru
           </a>
 
@@ -39,13 +47,35 @@
         <section class="card">
           <h2 class="card-title">Ваш профиль</h2>
           <div class="profile-grid">
-            <div class="field"><label>Имя</label><div id="v_real_name" class="value">—</div></div>
-            <div class="field"><label>Ник в PlayStation Network</label><div id="v_psn" class="value">—</div></div>
+            <div class="field">
+              <label>Имя</label>
+              <div id="v_real_name" class="value">—</div>
+            </div>
 
-            <div class="field"><label>Платформы</label><div id="v_platform" class="value lines">—</div></div>
-            <div class="field"><label>Режимы</label><div id="v_modes" class="value lines">—</div></div>
-            <div class="field"><label>Цели</label><div id="v_goals" class="value lines">—</div></div>
-            <div class="field"><label>Сложность</label><div id="v_difficulty" class="value lines">—</div></div>
+            <div class="field">
+              <label>Ник в PlayStation Network</label>
+              <div id="v_psn" class="value">—</div>
+            </div>
+
+            <div class="field">
+              <label>Платформы</label>
+              <div id="v_platform" class="value lines">—</div>
+            </div>
+
+            <div class="field">
+              <label>Режимы</label>
+              <div id="v_modes" class="value lines">—</div>
+            </div>
+
+            <div class="field">
+              <label>Цели</label>
+              <div id="v_goals" class="value lines">—</div>
+            </div>
+
+            <div class="field">
+              <label>Сложность</label>
+              <div id="v_difficulty" class="value lines">—</div>
+            </div>
           </div>
         </section>
 
@@ -54,12 +84,25 @@
           <form id="profileForm" class="form" autocomplete="on">
             <div class="input">
               <label for="real_name">Имя</label>
-              <input id="real_name" name="real_name" type="text" maxlength="64" placeholder="например, Василий" />
+              <input
+                id="real_name"
+                name="real_name"
+                type="text"
+                maxlength="64"
+                placeholder="например, Василий"
+              />
             </div>
 
             <div class="input">
               <label for="psn">Ник в PlayStation Network</label>
-              <input id="psn" name="psn" type="text" inputmode="latin" maxlength="32" placeholder="например, PUPkin" />
+              <input
+                id="psn"
+                name="psn"
+                type="text"
+                inputmode="latin"
+                maxlength="32"
+                placeholder="например, PUPkin"
+              />
             </div>
 
             <div class="input">
@@ -84,11 +127,16 @@
           </form>
         </section>
 
-        <!-- КНОПКА ВНЕ КАРТОЧКИ + УМЕНЬШЕННЫЙ НИЖНИЙ ОТСТУП -->
+        <!-- Кнопка под карточкой -->
         <div class="actions-bar">
-          <button type="button" id="profileSaveBtn" class="btn primary wide">Сохранить</button>
+          <button
+            type="button"
+            id="profileSaveBtn"
+            class="btn primary wide"
+          >
+            Сохранить
+          </button>
         </div>
-        <!-- Было больше: уменьшил до компактного спейсера -->
         <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
       </section>
 
@@ -99,8 +147,10 @@
           <div class="profile-grid">
             <div class="field span-2">
               <label>Полученные трофеи</label>
-              <div class="value lines">Легенда Цусимы 🗡
-Легенда Эдзо 🏔</div>
+              <div class="value lines">
+                Легенда Цусимы 🗡
+                Легенда Эдзо 🏔
+              </div>
             </div>
           </div>
         </section>
@@ -109,7 +159,7 @@
           <h2 class="card-title">Список трофеев</h2>
           <div id="trophyList" class="list-buttons"></div>
         </section>
-        <!-- Небольшой отступ под списком трофеев -->
+
         <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
       </section>
 
@@ -125,17 +175,34 @@
           <form id="proofForm" class="form">
             <div class="input">
               <label for="proofFiles">Прикрепите скриншоты/видео</label>
-              <input id="proofFiles" type="file" multiple accept="image/*,video/*" />
+              <input
+                id="proofFiles"
+                type="file"
+                multiple
+                accept="image/*,video/*"
+              />
             </div>
+
+            <!-- Превью выбранных файлов -->
+            <div id="filePreview" class="preview-grid"></div>
 
             <div class="input">
               <label for="commentText">Комментарий (необязательно)</label>
-              <textarea id="commentText" rows="1" placeholder="Добавьте комментарий"></textarea>
+              <textarea
+                id="commentText"
+                rows="1"
+                placeholder="Добавьте комментарий"
+              ></textarea>
             </div>
 
+            <!-- Для браузера своя кнопка (в Telegram скрыта) -->
             <div class="actions only-browser">
-              <button type="submit" class="btn primary" id="sendProofBtn">Отправить заявку</button>
+              <button type="submit" class="btn primary" id="sendProofBtn">
+                Отправить заявку
+              </button>
             </div>
+
+            <!-- В Telegram JS добавит свою широкую кнопку отправки -->
           </form>
         </section>
       </section>
@@ -143,7 +210,12 @@
       <!-- ====== БИЛДЫ: СПИСОК ====== -->
       <section id="buildsScreen" class="hidden">
         <div class="top-action">
-          <button id="createBuildBtn" class="btn primary wide" type="button" aria-label="Создать билд">
+          <button
+            id="createBuildBtn"
+            class="btn primary wide"
+            type="button"
+            aria-label="Создать билд"
+          >
             ＋ Создать билд
           </button>
         </div>
@@ -153,7 +225,11 @@
         <section class="card">
           <h3 class="card-title">Мои билды</h3>
           <div id="myBuildsList" class="list-builds"></div>
-          <div id="noBuildsHint" class="hint muted" style="margin-top:8px;display:none">
+          <div
+            id="noBuildsHint"
+            class="hint muted"
+            style="margin-top: 8px; display: none"
+          >
             Пока пусто. Нажмите «Создать билд».
           </div>
         </section>
@@ -166,7 +242,13 @@
           <form id="buildForm" class="form" autocomplete="off">
             <div class="input">
               <label for="build_name">Название</label>
-              <input id="build_name" name="build_name" type="text" maxlength="40" placeholder="Название билда" />
+              <input
+                id="build_name"
+                name="build_name"
+                type="text"
+                maxlength="40"
+                placeholder="Название билда"
+              />
             </div>
 
             <div class="input">
@@ -181,41 +263,96 @@
 
             <div class="input">
               <label for="build_desc">Описание</label>
-              <textarea id="build_desc" rows="3" placeholder="Опишите как работает этот билд"></textarea>
+              <textarea
+                id="build_desc"
+                rows="3"
+                placeholder="Опишите как работает этот билд"
+              ></textarea>
             </div>
 
             <div class="input">
               <label>Скриншоты (2 изображения: «Техники» и «Снаряжение»)</label>
 
               <!-- Скрытые инпуты (по одному на каждый квадрат) -->
-              <input id="build_shot1" data-idx="1" type="file" accept="image/*" style="display:none" />
-              <input id="build_shot2" data-idx="2" type="file" accept="image/*" style="display:none" />
+              <input
+                id="build_shot1"
+                data-idx="1"
+                type="file"
+                accept="image/*"
+                style="display: none"
+              />
+              <input
+                id="build_shot2"
+                data-idx="2"
+                type="file"
+                accept="image/*"
+                style="display: none"
+              />
 
               <!-- Два квадрата в ряд -->
               <div class="shots-two" id="shotsTwo">
-                <button type="button" class="upload-box" data-idx="1" aria-label="Загрузить первое изображение">＋</button>
-                <button type="button" class="upload-box" data-idx="2" aria-label="Загрузить второе изображение">＋</button>
+                <button
+                  type="button"
+                  class="upload-box"
+                  data-idx="1"
+                  aria-label="Загрузить первое изображение"
+                >
+                  ＋
+                </button>
+                <button
+                  type="button"
+                  class="upload-box"
+                  data-idx="2"
+                  aria-label="Загрузить второе изображение"
+                >
+                  ＋
+                </button>
               </div>
             </div>
           </form>
         </section>
 
-        <!-- КНОПКА ПОД КАРТОЧКОЙ ФОРМЫ -->
+        <!-- Кнопка под карточкой формы -->
         <div class="actions-bar">
-          <button type="button" id="buildSubmitBtn" class="btn primary wide">Создать</button>
+          <button
+            type="button"
+            id="buildSubmitBtn"
+            class="btn primary wide"
+          >
+            Создать
+          </button>
         </div>
-        <!-- Небольшой отступ под кнопкой «Создать» -->
         <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
       </section>
 
       <!-- ====== ДЕТАЛИ БИЛДА ====== -->
       <section id="buildDetailScreen" class="hidden">
+        <!-- Верхняя кнопка действия (опубликовать) — перед разделом с названием -->
+        <div class="actions-bar">
+          <button
+            id="publishBuildBtn"
+            type="button"
+            class="btn primary wide"
+          >
+            Опубликовать
+          </button>
+        </div>
+
         <section class="card">
           <h2 id="buildDetailTitle" class="card-title">Билд</h2>
           <div class="profile-grid">
-            <div class="field"><label>Класс</label><div id="vd_class" class="value">—</div></div>
-            <div class="field"><label>Теги</label><div id="vd_tags" class="value lines">—</div></div>
-            <div class="field span-2"><label>Описание</label><div id="vd_desc" class="value lines">—</div></div>
+            <div class="field">
+              <label>Класс</label>
+              <div id="vd_class" class="value">—</div>
+            </div>
+            <div class="field">
+              <label>Теги</label>
+              <div id="vd_tags" class="value lines">—</div>
+            </div>
+            <div class="field span-2">
+              <label>Описание</label>
+              <div id="vd_desc" class="value lines">—</div>
+            </div>
           </div>
         </section>
 
@@ -223,12 +360,23 @@
           <h3 class="card-title">Скриншоты</h3>
           <div id="buildDetailShots" class="shots-grid"></div>
         </section>
-        <!-- Небольшой отступ под блоком «Скриншоты» -->
+
+        <!-- Нижняя кнопка действия (удалить) — после блока «Скриншоты» -->
+        <div class="actions-bar">
+          <button
+            id="deleteBuildBtn"
+            type="button"
+            class="btn danger wide"
+          >
+            Удалить
+          </button>
+        </div>
+
         <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
       </section>
     </main>
 
-    <!-- Лайтбокс для изображений -->
+    <!-- ====== LIGHTBOX ====== -->
     <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true">
       <img id="lightboxImg" alt="Просмотр изображения" />
     </div>

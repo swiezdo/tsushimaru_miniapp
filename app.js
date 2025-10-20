@@ -146,7 +146,7 @@ const v_modes      = $('v_modes');
 const v_goals      = $('v_goals');
 const v_difficulty = $('v_difficulty');
 
-function prettyLines(arr) { return (arr && arr.length) ? arr.join('\n') : '—'; }
+function prettyLines(arr) { return (arr && arr.length) ? arr.join('\\n') : '—'; }
 function refreshProfileView() {
   if (v_platform)   v_platform.textContent   = prettyLines(activeValues($('platformChips')));
   if (v_modes)      v_modes.textContent      = prettyLines(activeValues($('modesChips')));
@@ -164,13 +164,19 @@ if (profileForm) {
   renderChips($('goalsChips'),      GOALS,      { onChange: refreshProfileView });
   renderChips($('difficultyChips'), DIFFICULTY, { onChange: refreshProfileView });
 
-  const psnInput = profileForm.psn;
+  const nameInput = profileForm.real_name;
+  const psnInput  = profileForm.psn;
+
+  // контейнеры ошибок
+  const nameError = document.createElement('div');
+  nameError.className = 'error-text';
+  nameInput?.parentNode?.appendChild(nameError);
+
   const psnError = document.createElement('div');
   psnError.className = 'error-text';
   psnInput?.parentNode?.appendChild(psnError);
 
   // Навигация по Enter
-  const nameInput = profileForm.real_name;
   nameInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); psnInput?.focus(); }
   });
@@ -178,12 +184,26 @@ if (profileForm) {
     if (e.key === 'Enter') { e.preventDefault(); }
   });
 
+  function validateName() {
+    if (!nameInput) return true;
+    const val = (nameInput.value || '').trim();
+    const ok = !!val;
+    if (!ok) {
+      nameError.textContent = 'Укажите имя.';
+      nameInput.classList.add('error');
+    } else {
+      nameError.textContent = '';
+      nameInput.classList.remove('error');
+    }
+    return ok;
+  }
+
   function validatePSN() {
     if (!psnInput) return true;
-    const val = psnInput.value.trim();
-    const ok = !val || /^[A-Za-z0-9_-]{3,16}$/.test(val);
+    const val = (psnInput.value || '').trim();
+    const ok = !!val && /^[A-Za-z0-9_-]{3,16}$/.test(val);
     if (!ok) {
-      psnError.textContent = 'Ник должен быть 3–16 символов, латиница, цифры, дефис или подчёркивание.';
+      psnError.textContent = 'Ник обязателен: 3–16 символов, латиница, цифры, дефис или подчёркивание.';
       psnInput.classList.add('error');
     } else {
       psnError.textContent = '';
@@ -191,14 +211,23 @@ if (profileForm) {
     }
     return ok;
   }
+
+  nameInput?.addEventListener('input', validateName);
   psnInput?.addEventListener('input', validatePSN);
 
   profileForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (!validatePSN()) { hapticERR(); return; }
 
-    if (v_real_name) v_real_name.textContent = (profileForm.real_name?.value || '').trim() || '—';
-    if (v_psn)       v_psn.textContent       = (profileForm.psn?.value || '').trim()       || '—';
+    const okName = validateName();
+    const okPSN  = validatePSN();
+    if (!okName || !okPSN) { 
+      if (!okName) shake(nameInput);
+      if (!okPSN)  shake(psnInput);
+      return; 
+    }
+
+    if (v_real_name) v_real_name.textContent = (nameInput?.value || '').trim() || '—';
+    if (v_psn)       v_psn.textContent       = (psnInput?.value || '').trim()       || '—';
     refreshProfileView();
 
     if (tg?.showPopup) {
@@ -648,7 +677,7 @@ function renderMyBuilds() {
     const title = document.createElement('div');
     title.className = 'build-title';
     const name = (b.name || 'Без названия').toString();
-    const safeName = name.length > 40 ? (name.slice(0, 40) + '…') : name;
+    const safeName = name.length > 20 ? (name.slice(0, 20) + '…') : name;
     title.textContent = safeName;
 
     row.appendChild(icon);
@@ -685,7 +714,7 @@ function renderAllBuilds() {
     const title = document.createElement('div');
     title.className = 'build-title';
     const name = (p.name || 'Без названия').toString();
-    const safeName = name.length > 40 ? (name.slice(0, 40) + '…') : name;
+    const safeName = name.length > 20 ? (name.slice(0, 20) + '…') : name;
     title.textContent = safeName;
 
     row.appendChild(icon);
@@ -729,7 +758,7 @@ if (buildForm) {
     e.preventDefault();
 
     let name = (buildNameEl?.value || '').trim();
-    if (name.length > 40) name = name.slice(0, 40);
+    if (name.length > 20) name = name.slice(0, 20); // ограничение до 20
 
     const klass = activeValues(classChipsEl)[0] || '';
     const tags  = activeValues(tagsChipsEl);
@@ -792,7 +821,7 @@ function openBuildDetail(id) {
 
   buildDetailTitle.textContent = b.name || 'Билд';
   vd_class.textContent = b.class || '—';
-  vd_tags.textContent  = (b.tags && b.tags.length) ? b.tags.join('\n') : '—';
+  vd_tags.textContent  = (b.tags && b.tags.length) ? b.tags.join(', ') : '—'; // через запятую
   vd_desc.textContent  = b.desc || '—';
 
   buildDetailShots.innerHTML = '';
@@ -853,7 +882,7 @@ publishBuildBtn?.addEventListener('click', () => {
   tg?.showPopup?.({ title:'Опубликовано', message:'Билд добавлен в «Все билды».', buttons:[{type:'ok'}] });
 });
 
-// Подтверждение удаления (через Telegram popup с промисом)
+// Подтверждение удаления
 let _popupResolver = null;
 tg?.onEvent?.('popupClosed', (e) => {
   if (_popupResolver) {
@@ -915,7 +944,7 @@ function openPublicBuildDetail(pubId) {
 
   publicDetailTitle.textContent = p.name || 'Билд';
   pd_class.textContent = p.class || '—';
-  pd_tags.textContent  = (p.tags && p.tags.length) ? p.tags.join('\n') : '—';
+  pd_tags.textContent  = (p.tags && p.tags.length) ? p.tags.join(', ') : '—'; // через запятую
   pd_desc.textContent  = p.desc || '—';
   pd_author.textContent = p.author || '—';
 

@@ -169,43 +169,37 @@
           <h2 id="trophyTitle" class="card-title">Трофей</h2>
           <ul id="trophyDesc" class="desc-list"></ul>
         </section>
-
+      
         <section class="card">
           <h3 class="card-title">Отправить заявку</h3>
           <form id="proofForm" class="form">
             <div class="input">
               <label for="proofFiles">Прикрепите скриншоты/видео</label>
-            
-              <!-- Скрытый инпут -->
+      
+              <!-- скрытый input -->
               <input id="proofFiles" type="file" multiple accept="image/*,video/*" style="display:none" />
-            
-              <!-- Узкая прозрачная кнопка с контуром -->
-              <button type="button" id="proofAddBtn" class="fileline-btn" aria-label="Добавить файлы">
-                ＋ Прикрепить
-              </button>
+      
+              <!-- узкая прозрачная кнопка-строка с плюсом -->
+              <button type="button" id="proofAddBtn" class="fileline-btn" aria-label="Прикрепить файлы">＋ Прикрепить</button>
+      
+              <!-- компактные превью -->
+              <div id="filePreview" class="thumbs-row"></div>
             </div>
-            
-            <!-- Компактные превью в один ряд -->
-            <div id="filePreview" class="thumbs-row"></div>
-
+      
             <div class="input">
               <label for="commentText">Комментарий (необязательно)</label>
-              <textarea
-                id="commentText"
-                rows="1"
-                placeholder="Добавьте комментарий"
-              ></textarea>
+              <textarea id="commentText" rows="1" placeholder="Добавьте комментарий"></textarea>
             </div>
-
-          <!-- Кнопка под карточкой формы (как на «Профиль») -->
-          <div class="actions-bar">
-            <button type="button" id="proofSubmitBtn" class="btn primary wide">Отправить</button>
-          </div>
-          <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
-
-            <!-- В Telegram JS добавит широкую кнопку отправки -->
+      
+            <!-- ВНУТРИ этой карточки больше НЕТ кнопки отправки -->
           </form>
         </section>
+      
+        <!-- КНОПКА ПОД БЛОКОМ (как на «Профиль») -->
+        <div class="actions-bar">
+          <button type="button" id="proofSubmitBtn" class="btn primary wide">Отправить</button>
+        </div>
+        <div style="height: calc(env(safe-area-inset-bottom, 0px) + 12px)"></div>
       </section>
 
       <!-- ====== БИЛДЫ: СПИСОК ====== -->

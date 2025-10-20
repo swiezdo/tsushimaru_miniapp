@@ -451,7 +451,7 @@ if (buildDescEl) {
   setTimeout(autoResize, 0);
 }
 
-// Helpers
+// --------- Helpers для файлов / сжатия ---------
 function fileToDataURL(file) {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
@@ -460,6 +460,37 @@ function fileToDataURL(file) {
     r.readAsDataURL(file);
   });
 }
+
+// Сжатие изображения в JPEG (без EXIF), ограничение по длинной стороне
+async function compressImageFile(file, { maxEdge = 1280, quality = 0.7 } = {}) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        let { width, height } = img;
+        const scale = Math.min(1, maxEdge / Math.max(width, height));
+        const w = Math.max(1, Math.round(width * scale));
+        const h = Math.max(1, Math.round(height * scale));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+      } catch (e) { reject(e); }
+    };
+    img.onerror = reject;
+
+    const r = new FileReader();
+    r.onload = () => { img.src = r.result; };
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
 function getShotInputByIdx(idx) { return idx === '1' ? shotInput1 : shotInput2; }
 function renderShotThumb(idx, src) {
   const btn = document.createElement('button');
@@ -495,27 +526,29 @@ if (shotsTwo) {
   });
 }
 
-// Реакция на выбор файла
-function bindShotInput(input, idx) {
-  input?.addEventListener('change', async () => {
+// Реакция на выбор файла — сжатие перед сохранением
+function bindShotInput(input, idx){
+  input?.addEventListener('change', async ()=>{
     const file = input.files && input.files[0];
-    if (!file) return;
-    try {
-      const data = await fileToDataURL(file);
+    if(!file) return;
+    try{
+      // Сжатие: длинная сторона до 1280px, качество ~0.7
+      const data = await compressImageFile(file, { maxEdge: 1280, quality: 0.7 });
+
       const targetEl =
         shotsTwo?.querySelector(`.upload-box[data-idx="${idx}"]`) ||
         shotsTwo?.querySelector(`.shot-thumb[data-idx="${idx}"]`);
       const thumb = renderShotThumb(idx, data);
 
-      if (targetEl && targetEl.parentNode) {
+      if(targetEl && targetEl.parentNode){
         targetEl.parentNode.replaceChild(thumb, targetEl);
-      } else if (shotsTwo) {
+      } else if (shotsTwo){
         shotsTwo.appendChild(thumb);
       }
 
-      if (idx === '1') shot1Data = data; else shot2Data = data;
+      if(idx === '1') shot1Data = data; else shot2Data = data;
       hapticTap();
-    } catch (_) {
+    }catch(_){
       shake(shotsTwo);
     }
   });
@@ -530,8 +563,19 @@ function loadBuilds() {
     return raw ? JSON.parse(raw) : [];
   } catch (_) { return []; }
 }
-function saveBuilds(arr) {
-  try { localStorage.setItem(LS_KEY_BUILDS, JSON.stringify(arr || [])); } catch (_) {}
+function saveBuilds(arr){
+  try{
+    localStorage.setItem(LS_KEY_BUILDS, JSON.stringify(arr||[]));
+    return true;
+  }catch(e){
+    tg?.showPopup?.({
+      title: 'Хранилище заполнено',
+      message: 'Не удалось сохранить билд: лимит хранения исчерпан. Уменьшите размер скриншотов или удалите старые билды.',
+      buttons: [{ type:'ok' }]
+    });
+    hapticERR();
+    return false;
+  }
 }
 
 // Рендер «Мои билды»
@@ -629,7 +673,10 @@ if (buildForm) {
 
     const all = loadBuilds();
     all.push(item);
-    saveBuilds(all);
+    if (!saveBuilds(all)) {
+      // не сохранилось — остаёмся на экране, чтобы пользователь мог поправить
+      return;
+    }
 
     hapticOK();
     tg?.showPopup?.({ title: 'Билд создан', message: 'Сохранено локально (макет, без сервера).', buttons: [{ type:'ok' }] });
@@ -692,7 +739,7 @@ deleteBuildBtn?.addEventListener('click', () => {
 // Универсальная функция удаления
 function deleteBuildById(id) {
   const rest = loadBuilds().filter((b) => String(b.id) !== String(id));
-  saveBuilds(rest);
+  if (!saveBuilds(rest)) return;
   renderMyBuilds();
   tg?.showPopup?.({ title: 'Удалено', message: 'Билд удалён из списка.', buttons: [{ type:'ok' }] });
   showScreen('builds');

@@ -329,6 +329,7 @@ const proofSubmitBtn  = $('proofSubmitBtn');   // ВНЕ формы — общи
 const commentEl       = $('commentText');
 const previewEl       = $('filePreview');
 const proofAddBtn     = $('proofAddBtn');      // узкая кнопка-строка «＋ Прикрепить»
+const MAX_PROOF_FILES = 12;
 
 // Локальный список выбранных файлов (мы контролируем превью и отправку)
 let proofSelected = []; // Array<File>
@@ -346,12 +347,33 @@ if (proofFilesEl) {
     const files = Array.from(proofFilesEl.files || []);
     if (!files.length) { shake(previewEl || proofAddBtn); return; }
 
-    // Добавляем, избегая дублей (по name+size+lastModified)
     const keyOf = (f) => `${f.name}::${f.size}::${f.lastModified}`;
     const existing = new Set(proofSelected.map(keyOf));
-    files.forEach((f) => { if (!existing.has(keyOf(f))) proofSelected.push(f); });
+
+    // Сколько ещё можно добавить
+    const freeSlots = Math.max(0, MAX_PROOF_FILES - proofSelected.length);
+    const incoming = files.filter(f => !existing.has(keyOf(f)));
+
+    // Если прилетело больше, чем свободных слотов — обрежем и предупредим
+    if (incoming.length > freeSlots) {
+      incoming.length = freeSlots; // срез до доступного места
+      tg?.showPopup?.({
+        title: 'Лимит файлов',
+        message: `Можно прикрепить не более ${MAX_PROOF_FILES} файлов.`,
+        buttons: [{ type: 'ok' }]
+      });
+    }
+
+    // Добавляем оставшиеся
+    incoming.forEach(f => proofSelected.push(f));
 
     renderProofPreview();
+
+    // Если лимит исчерпан — небольшой «shake» для визуального сигнала при следующем нажатии
+    if (proofSelected.length >= MAX_PROOF_FILES) {
+      // Опционально можно поменять надпись на кнопке, если хотите:
+      // proofAddBtn.textContent = `＋ Прикрепить (12/12)`;
+    }
   });
 }
 

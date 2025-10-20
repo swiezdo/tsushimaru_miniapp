@@ -17,10 +17,10 @@ const tg = window.Telegram?.WebApp || null;
   } catch (e) {}
 })();
 
-// ---------------- Haptics OFF (для всех наших кнопок; BackButton нативный — не трогаем)
-function hapticOK()  {}
-function hapticERR() {}
-function hapticTap() {}
+// ---------------- Haptics (избирательно, с защитой от «пролистывания»)
+function hapticOK()  { try { tg?.HapticFeedback?.notificationOccurred('success'); } catch {} }
+function hapticERR() { try { tg?.HapticFeedback?.notificationOccurred('error'); } catch {} }
+function hapticTap() { try { tg?.HapticFeedback?.impactOccurred('light'); } catch {} }
 
 function $(id) { return document.getElementById(id); }
 function scrollTopSmooth() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
@@ -74,6 +74,32 @@ window.addEventListener('resize', applyTopInset);
 // Подсветка при тапе — ОТКЛЮЧЕНА
 function addTapHighlight(selector) {
   // Ничего не делаем: подсветка выключена глобально
+}
+
+// === Защита от «пролистывания» для хаптика ===
+let __lastDown = { x:0, y:0, sy:0, t:0 };
+document.addEventListener('pointerdown', (e)=>{
+  __lastDown = { x:e.clientX||0, y:e.clientY||0, sy:window.scrollY||0, t:Date.now() };
+}, { passive:true });
+
+function __shouldHaptic() {
+  const dt  = Date.now() - __lastDown.t;
+  const dx  = Math.abs((window.__lastUpX ?? __lastDown.x) - __lastDown.x);
+  const dy  = Math.abs((window.__lastUpY ?? __lastDown.y) - __lastDown.y);
+  const dsy = Math.abs((window.scrollY||0) - __lastDown.sy);
+  // если жест похож на «протягивание»/скролл — не вибрируем
+  return dt < 1200 && dx < 6 && dy < 6 && dsy < 6;
+}
+
+// Универсальная обёртка: безопасный хаптик на click
+function withHapticClick(el, kind='tap') {
+  if (!el) return;
+  el.addEventListener('click', () => {
+    if (!__shouldHaptic()) return;
+    if (kind === 'ok') hapticOK();
+    else if (kind === 'err') hapticERR();
+    else hapticTap();
+  });
 }
 
 // ---------------- Экранная навигация ----------------
@@ -160,6 +186,7 @@ function renderChips(container, values, { single = false, onChange } = {}) {
       onChange?.();
     });
     container.appendChild(b);
+    withHapticClick(b,'tap');
   });
 }
 
@@ -183,7 +210,7 @@ const v_modes      = $('v_modes');
 const v_goals      = $('v_goals');
 const v_difficulty = $('v_difficulty');
 
-function prettyLines(arr) { return (arr && arr.length) ? arr.join('\\n') : '—'; }
+function prettyLines(arr) { return (arr && arr.length) ? arr.join('\n') : '—'; }
 function refreshProfileView() {
   if (v_platform)   v_platform.textContent   = prettyLines(activeValues($('platformChips')));
   if (v_modes)      v_modes.textContent      = prettyLines(activeValues($('modesChips')));
@@ -211,6 +238,10 @@ if (profileForm) {
   psnInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); }
   });
+
+  // Хаптик Tap при фокусе на полях
+  nameInput?.addEventListener('focus', ()=>{ if (__shouldHaptic()) hapticTap(); }, {passive:true});
+  psnInput?.addEventListener('focus',  ()=>{ if (__shouldHaptic()) hapticTap(); }, {passive:true});
 
   function isNameOk() {
     return !!(nameInput && (nameInput.value || '').trim());
@@ -240,6 +271,7 @@ if (profileForm) {
         if (!firstBad) firstBad = psnInput;
       }
       if (firstBad) smartScrollIntoView(firstBad);
+      hapticERR();
       tg?.showPopup?.({ title: 'Ошибка', message: msgs.join('\n'), buttons: [{ type: 'ok' }] });
       return;
     }
@@ -248,6 +280,7 @@ if (profileForm) {
     if (v_psn)       v_psn.textContent       = (psnInput?.value || '').trim()       || '—';
     refreshProfileView();
 
+    hapticOK();
     tg?.showPopup?.({ title: 'Профиль обновлён', message: 'Данные сохранены.', buttons: [{ type: 'ok' }] });
     scrollTopSmooth();
   });
@@ -256,7 +289,6 @@ if (profileForm) {
 }
 
 // ---------------- Трофеи ----------------
-
 const trophyListEl  = $('trophyList');
 const trophyTitleEl = $('trophyTitle');
 const trophyDescEl  = $('trophyDesc');
@@ -284,6 +316,7 @@ function renderTrophyList(data) {
     btn.dataset.id = key;
     btn.innerHTML = `<span>${t.name || key} ${t.emoji || ''}</span><span class="right">›</span>`;
     btn.addEventListener('click', () => openTrophyDetail(key));
+    withHapticClick(btn,'tap');
     trophyListEl.appendChild(btn);
   });
 
@@ -302,6 +335,7 @@ let proofSelected = []; // Array<File>
 
 // Кнопка «＋ Прикрепить»
 proofAddBtn?.addEventListener('click', () => {
+  if (__shouldHaptic()) hapticTap();
   try { proofFilesEl.value = ''; } catch {}
   proofFilesEl?.click();
 });
@@ -310,7 +344,7 @@ proofAddBtn?.addEventListener('click', () => {
 if (proofFilesEl) {
   proofFilesEl.addEventListener('change', () => {
     const files = Array.from(proofFilesEl.files || []);
-    if (!files.length) return;
+    if (!files.length) { shake(previewEl || proofAddBtn); return; }
 
     // Добавляем, избегая дублей (по name+size+lastModified)
     const keyOf = (f) => `${f.name}::${f.size}::${f.lastModified}`;
@@ -401,6 +435,7 @@ if (commentEl) {
     commentEl.style.height = Math.min(commentEl.scrollHeight, 200) + 'px';
   };
   commentEl.addEventListener('input', autoResize);
+  commentEl.addEventListener('focus', ()=>{ if (__shouldHaptic()) hapticTap(); }, {passive:true});
   setTimeout(autoResize, 0);
 }
 
@@ -410,7 +445,7 @@ function shake(el) {
   el.classList.remove('shake');
   void el.offsetWidth;
   el.classList.add('shake');
-  hapticERR();
+  // без hapticERR здесь — ERR триггерится контекстно, когда показываем popup
 }
 
 async function submitProof() {
@@ -423,8 +458,8 @@ async function submitProof() {
 
   if (filesCount === 0 || !comment) {
     if (!filesCount) shake(previewEl || proofAddBtn || proofFilesEl);
-    if (!comment)    shake(commentEl);
-    if (!comment && commentEl) smartScrollIntoView(commentEl);
+    if (!comment)    { shake(commentEl); smartScrollIntoView(commentEl); }
+    if (__shouldHaptic()) hapticERR();
     tg?.showPopup?.({ title: 'Ошибка', message: 'Добавьте файл и комментарий.', buttons: [{ type: 'ok' }] });
     return;
   }
@@ -437,7 +472,7 @@ async function submitProof() {
 }
 
 // Кнопка «Отправить» — вне формы, в общем actions-bar
-proofSubmitBtn?.addEventListener('pointerdown', () => hapticTap());
+proofSubmitBtn?.addEventListener('pointerdown', () => { if (__shouldHaptic()) hapticTap(); });
 proofSubmitBtn?.addEventListener('click', (e) => { e.preventDefault?.(); submitProof(); });
 
 // Защита от случайной отправки самой form
@@ -448,6 +483,7 @@ if (proofFormEl) {
 // BackButton Telegram
 if (tg) {
   tg.onEvent('backButtonClicked', () => {
+    hapticTap();
     if (isVisible('buildCreate'))        { showScreen('builds'); return; }
     if (isVisible('buildDetail'))        { showScreen('builds'); return; }
     if (isVisible('buildPublicDetail'))  { showScreen('builds'); return; }
@@ -463,6 +499,8 @@ $('trophiesBtn')?.addEventListener('click', () => showScreen('trophies'));
 $('buildsBtn')?.addEventListener('click', () => { renderMyBuilds(); renderAllBuilds(); showScreen('builds'); });
 
 addTapHighlight('.big-btn');
+// Хаптик Tap на все большие кнопки главной
+setTimeout(()=>{ document.querySelectorAll('.big-btn').forEach(el=>withHapticClick(el,'tap')); },0);
 
 // ---------------- БИЛДЫ ----------------
 const LS_KEY_BUILDS      = 'tsu_builds_v1';            // мои локальные билды
@@ -704,6 +742,7 @@ function renderMyBuilds() {
     row.appendChild(icon);
     row.appendChild(title);
     row.addEventListener('click', () => openBuildDetail(b.id));
+    withHapticClick(row,'tap');
     myBuildsList.appendChild(row);
   });
 
@@ -741,6 +780,7 @@ function renderAllBuilds() {
     row.appendChild(icon);
     row.appendChild(title);
     row.addEventListener('click', () => openPublicBuildDetail(p.id));
+    withHapticClick(row,'tap');
     allBuildsList.appendChild(row);
   });
 
@@ -749,10 +789,11 @@ function renderAllBuilds() {
 
 // --------- Создание билда ---------
 createBuildBtn?.addEventListener('click', () => {
+  if (__shouldHaptic()) hapticOK();
   resetBuildForm();
   showScreen('buildCreate');
 });
-createBuildBtn?.addEventListener('pointerdown', () => hapticTap());
+createBuildBtn?.addEventListener('pointerdown', () => { if (__shouldHaptic()) hapticTap(); });
 
 function resetBuildForm() {
   try { buildForm?.reset(); } catch {}
@@ -771,7 +812,7 @@ function resetBuildForm() {
   if (buildDescEl) buildDescEl.style.height = 'auto';
 }
 
-buildSubmitBtn?.addEventListener('pointerdown', () => hapticTap());
+buildSubmitBtn?.addEventListener('pointerdown', () => { if (__shouldHaptic()) hapticTap(); });
 buildSubmitBtn?.addEventListener('click', () => buildForm?.requestSubmit());
 
 if (buildForm) {
@@ -785,9 +826,9 @@ if (buildForm) {
     const tags  = activeValues(tagsChipsEl);
     const desc  = (buildDescEl?.value || '').trim();
 
-    if (!name)   { shake(buildNameEl); smartScrollIntoView(buildNameEl); return; }
-    if (!klass)  { shake(classChipsEl); return; }
-    if (!shot1Data || !shot2Data) { shake(shotsTwo); return; }
+    if (!name)   { shake(buildNameEl); smartScrollIntoView(buildNameEl); if (__shouldHaptic()) hapticERR(); return; }
+    if (!klass)  { shake(classChipsEl); if (__shouldHaptic()) hapticERR(); return; }
+    if (!shot1Data || !shot2Data) { shake(shotsTwo); if (__shouldHaptic()) hapticERR(); return; }
 
     const item = {
       id: Date.now(),
@@ -863,6 +904,8 @@ function openBuildDetail(id) {
 
 // Публикация/Скрытие
 publishBuildBtn?.addEventListener('click', () => {
+  if (__shouldHaptic()) hapticOK();
+
   if (!currentBuildId) return;
 
   const myAll = loadBuilds();
@@ -930,6 +973,8 @@ function tgConfirm(title, message) {
 
 // Обработчик «Удалить»
 deleteBuildBtn?.addEventListener('click', async () => {
+  if (__shouldHaptic()) hapticOK();
+
   const idFromBtn = deleteBuildBtn?.dataset?.id;
   const id = idFromBtn ?? currentBuildId;
   if (!id) { tg?.showAlert?.('Не удалось определить билд для удаления.'); return; }
